@@ -1,6 +1,11 @@
+"use client"
+
 import Link from "next/link"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { useCart } from "@/lib/context/cart-context"
+import { createClient } from "@/lib/supabase/client"
 import type { Product } from "@/lib/types"
 
 interface ProductCardProps {
@@ -8,6 +13,36 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const [loading, setLoading] = useState(false)
+  const [added, setAdded] = useState(false)
+  const { addToCart } = useCart()
+  const supabase = createClient()
+
+  async function handleAddToCart() {
+    setLoading(true)
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        window.location.href = "/auth/login"
+        return
+      }
+
+      await addToCart(product.id, 1)
+      setAdded(true)
+      setTimeout(() => setAdded(false), 2000)
+    } catch (error) {
+      console.error("Error adding to cart:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const displayPrice = "Coming Soon"
+  const isPriceAvailable = product.price > 0
+
   return (
     <Card className="flex flex-col h-full">
       <CardHeader>
@@ -37,7 +72,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <p className="text-xs text-slate-600 mt-1 line-clamp-2">{product.description}</p>
         <p className="text-xs text-slate-500 mt-2">{product.brand}</p>
         <div className="flex justify-between items-center mt-3">
-          <span className="text-lg font-bold text-blue-600">${product.price.toFixed(2)}</span>
+          <span className="text-sm font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded">{displayPrice}</span>
           <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded">
             {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : "Out of stock"}
           </span>
@@ -49,8 +84,8 @@ export function ProductCard({ product }: ProductCardProps) {
             Details
           </Button>
         </Link>
-        <Button size="sm" disabled={product.stock_quantity === 0} className="flex-1 text-xs">
-          Add to Cart
+        <Button size="sm" disabled={true} className="flex-1 text-xs" title="Prices coming soon">
+          Coming Soon
         </Button>
       </CardFooter>
     </Card>

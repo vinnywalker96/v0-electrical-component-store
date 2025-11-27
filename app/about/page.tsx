@@ -6,7 +6,7 @@ export default function About() {
       {/* Hero Section */}
       <section className="bg-primary text-white py-16 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">About ElectroHub</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">About KG Compponents</h1>
           <p className="text-lg text-white/90">Your trusted partner for quality electrical components since 2015</p>
         </div>
       </section>
@@ -18,8 +18,8 @@ export default function About() {
             <div>
               <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
               <p className="text-muted-foreground mb-4">
-                At ElectroHub, we believe that access to quality electrical components should be simple, affordable, and
-                reliable. We're committed to serving engineers, makers, hobbyists, and businesses with the finest
+                At KG Compponents, we believe that access to quality electrical components should be simple, affordable,
+                and reliable. We're committed to serving engineers, makers, hobbyists, and businesses with the finest
                 selection of components available.
               </p>
               <p className="text-muted-foreground">

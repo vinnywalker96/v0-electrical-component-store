@@ -56,7 +56,7 @@ export default function BankingDetailsPage() {
         })
       }
     } catch (err: any) {
-      console.error("[v0] Error:", err)
+      console.error("Error:", err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -115,7 +115,7 @@ export default function BankingDetailsPage() {
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">Account Holder Name</label>
                   <Input
-                    placeholder="e.g., ElectroHub Ltd"
+                    placeholder="e.g., KG Compponents Ltd"
                     value={formData.account_holder}
                     onChange={(e) => setFormData({ ...formData, account_holder: e.target.value })}
                     required
@@ -125,7 +125,7 @@ export default function BankingDetailsPage() {
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">Bank Name</label>
                   <Input
-                    placeholder="e.g., Banco do Brasil"
+                    placeholder="e.g., First National Bank"
                     value={formData.bank_name}
                     onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
                     required
@@ -148,7 +148,7 @@ export default function BankingDetailsPage() {
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">Branch Code</label>
                   <Input
-                    placeholder="e.g., 0001"
+                    placeholder="e.g., 250655"
                     value={formData.branch_code}
                     onChange={(e) => setFormData({ ...formData, branch_code: e.target.value })}
                     disabled={saving}
@@ -159,7 +159,7 @@ export default function BankingDetailsPage() {
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">SWIFT Code</label>
                 <Input
-                  placeholder="e.g., XXXBBRSP"
+                  placeholder="e.g., FIRNZAJJ"
                   value={formData.swift_code}
                   onChange={(e) => setFormData({ ...formData, swift_code: e.target.value })}
                   disabled={saving}

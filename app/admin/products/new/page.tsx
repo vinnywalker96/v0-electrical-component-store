@@ -25,6 +25,8 @@ const CATEGORIES = [
   "Cables",
   "Potentiometers",
   "Relays",
+  "Circuit Boards",
+  "Cables & Wires",
 ]
 
 export default function NewProductPage() {

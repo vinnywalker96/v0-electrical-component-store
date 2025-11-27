@@ -1,9 +1,7 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
-import { Mail, Phone, MapPin } from "lucide-react"
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -22,7 +20,6 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Integrate with Web3Forms or email service
     console.log("Form submitted:", formData)
     alert("Thank you for your message! We will get back to you soon.")
     setFormData({ name: "", email: "", subject: "", message: "" })
@@ -38,26 +35,9 @@ export default function Contact() {
       </section>
 
       <section className="py-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="text-center">
-              <Phone className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="font-semibold mb-2">Phone</h3>
-              <p className="text-muted-foreground">+27 (0)11 555 0123</p>
-            </div>
-            <div className="text-center">
-              <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="font-semibold mb-2">Email</h3>
-              <p className="text-muted-foreground">info@electrohub.co.za</p>
-            </div>
-            <div className="text-center">
-              <MapPin className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="font-semibold mb-2">Address</h3>
-              <p className="text-muted-foreground">Johannesburg, South Africa</p>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-card border border-border rounded-lg p-8">
+            <h2 className="text-2xl font-bold mb-6">Send us a Message</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block font-semibold mb-2">Name</label>
@@ -114,29 +94,20 @@ export default function Contact() {
                 Send Message
               </button>
             </form>
+          </div>
 
-            <div className="bg-muted rounded-lg p-8">
-              <h3 className="font-bold text-2xl mb-6">Business Hours</h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="font-semibold">Monday - Friday</p>
-                  <p className="text-muted-foreground">8:00 AM - 6:00 PM SAST</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Saturday</p>
-                  <p className="text-muted-foreground">9:00 AM - 2:00 PM SAST</p>
-                </div>
-                <div>
-                  <p className="font-semibold">Sunday</p>
-                  <p className="text-muted-foreground">Closed</p>
-                </div>
-              </div>
-              <div className="mt-8 pt-8 border-t border-border">
-                <p className="font-semibold mb-2">Response Time</p>
-                <p className="text-muted-foreground">
-                  We typically respond to inquiries within 2 business hours during working hours.
-                </p>
-              </div>
+          <div className="mt-8 bg-muted rounded-lg p-8 text-center">
+            <h3 className="font-bold text-xl mb-4">Business Hours</h3>
+            <div className="space-y-2 text-muted-foreground">
+              <p>
+                <span className="font-semibold text-foreground">Monday - Friday:</span> 8:00 AM - 6:00 PM SAST
+              </p>
+              <p>
+                <span className="font-semibold text-foreground">Saturday:</span> 9:00 AM - 2:00 PM SAST
+              </p>
+              <p>
+                <span className="font-semibold text-foreground">Sunday:</span> Closed
+              </p>
             </div>
           </div>
         </div>

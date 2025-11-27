@@ -76,7 +76,7 @@ export function generateOrderConfirmationEmail(data: OrderEmailData, language: L
                 (item) => `
               <div class="order-item">
                 <span>${item.name} x${item.quantity}</span>
-                <span>R$ ${(item.price * item.quantity).toFixed(2)}</span>
+                <span>R ${(item.price * item.quantity).toFixed(2)}</span>
               </div>
             `,
               )
@@ -85,7 +85,7 @@ export function generateOrderConfirmationEmail(data: OrderEmailData, language: L
             <div class="total-section">
               <div class="total-row">
                 <span>${language === "pt" ? "Total:" : "Total:"}</span>
-                <span>R$ ${data.total.toFixed(2)}</span>
+                <span>R ${data.total.toFixed(2)}</span>
               </div>
             </div>
             
@@ -97,7 +97,8 @@ export function generateOrderConfirmationEmail(data: OrderEmailData, language: L
           </div>
           
           <div class="footer">
-            <p>${language === "pt" ? "Dúvidas? Entre em contato conosco em" : "Questions? Contact us at"} support@electrohub.com</p>
+            <p>${language === "pt" ? "Dúvidas? Entre em contato conosco através da página de contato" : "Questions? Contact us through the contact page"}</p>
+            <p>KG Components</p>
           </div>
         </div>
       </body>

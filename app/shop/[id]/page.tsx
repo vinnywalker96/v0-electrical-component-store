@@ -1,0 +1,204 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
+import Link from "next/link"
+import { ArrowLeft, Minus, Plus, ShoppingCart } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import { useCart } from "@/lib/context/cart-context"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import type { Product } from "@/lib/types"
+
+export default function ProductDetailPage() {
+  const params = useParams()
+  const router = useRouter()
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [quantity, setQuantity] = useState(1)
+  const [adding, setAdding] = useState(false)
+  const [added, setAdded] = useState(false)
+  const { addToCart } = useCart()
+  const supabase = createClient()
+
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const { data, error } = await supabase.from("products").select("*").eq("id", params.id).single()
+
+        if (error) throw error
+        setProduct(data)
+      } catch (error) {
+        console.error("Error fetching product:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (params.id) {
+      fetchProduct()
+    }
+  }, [params.id])
+
+  async function handleAddToCart() {
+    if (!product) return
+
+    setAdding(true)
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        router.push("/auth/login")
+        return
+      }
+
+      await addToCart(product.id, quantity)
+      setAdded(true)
+      setTimeout(() => setAdded(false), 2000)
+    } catch (error) {
+      console.error("Error adding to cart:", error)
+    } finally {
+      setAdding(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <p className="text-center text-muted-foreground">Loading product...</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (!product) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-4 py-8 text-center">
+          <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+          <Link href="/shop" className="text-primary hover:underline">
+            Back to Shop
+          </Link>
+        </div>
+      </main>
+    )
+  }
+
+  const displayPrice = product.price > 0 ? `R${product.price.toFixed(2)}` : "Price TBD"
+  const canAddToCart = product.stock_quantity > 0 && product.price > 0
+
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <Link href="/shop" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8">
+          <ArrowLeft className="w-4 h-4" />
+          Back to Shop
+        </Link>
+
+        <div className="grid md:grid-cols-2 gap-12">
+          {/* Product Image */}
+          <div className="bg-gradient-to-br from-blue-50 to-slate-100 rounded-lg h-96 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-6xl mb-4">
+                {product.category === "Resistors"
+                  ? "⧉"
+                  : product.category === "LEDs"
+                    ? "💡"
+                    : product.category === "Capacitors"
+                      ? "||"
+                      : product.category === "Wires & Connectors"
+                        ? "🔌"
+                        : product.category === "Breadboards"
+                          ? "📍"
+                          : product.category === "Microcontrollers"
+                            ? "🎮"
+                            : "⚙"}
+              </div>
+              <p className="text-muted-foreground">{product.category}</p>
+            </div>
+          </div>
+
+          {/* Product Info */}
+          <div>
+            <p className="text-accent font-semibold mb-2">{product.category}</p>
+            <h1 className="text-3xl font-bold text-foreground mb-4">{product.name}</h1>
+            <p className="text-muted-foreground mb-6">{product.description}</p>
+
+            <div className="flex items-center gap-4 mb-6">
+              <span className="text-3xl font-bold text-primary">{displayPrice}</span>
+              <span
+                className={`px-3 py-1 rounded-full text-sm ${
+                  product.stock_quantity > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                }`}
+              >
+                {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : "Out of stock"}
+              </span>
+            </div>
+
+            {/* Specifications */}
+            <Card className="mb-6">
+              <CardContent className="pt-6">
+                <h3 className="font-semibold mb-4">Specifications</h3>
+                <dl className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <dt className="text-muted-foreground">Brand</dt>
+                    <dd className="font-medium">{product.brand}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Category</dt>
+                    <dd className="font-medium">{product.category}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">SKU</dt>
+                    <dd className="font-medium">{product.sku || "N/A"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Stock</dt>
+                    <dd className="font-medium">{product.stock_quantity} units</dd>
+                  </div>
+                </dl>
+              </CardContent>
+            </Card>
+
+            {/* Quantity and Add to Cart */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center border border-border rounded-lg">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="p-3 hover:bg-muted transition"
+                  disabled={quantity <= 1}
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <span className="px-4 py-2 font-medium">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
+                  className="p-3 hover:bg-muted transition"
+                  disabled={quantity >= product.stock_quantity}
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+
+              <Button onClick={handleAddToCart} disabled={!canAddToCart || adding} size="lg" className="flex-1">
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                {adding ? "Adding..." : added ? "Added to Cart!" : "Add to Cart"}
+              </Button>
+            </div>
+
+            {!canAddToCart && (
+              <p className="text-sm text-muted-foreground mt-4">
+                {product.stock_quantity === 0
+                  ? "This product is currently out of stock."
+                  : "Price not yet available. Please check back later."}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </main>
+  )
+}

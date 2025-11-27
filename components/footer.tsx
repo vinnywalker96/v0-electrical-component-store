@@ -1,15 +1,14 @@
 import Link from "next/link"
-import { Mail, Phone, MapPin } from "lucide-react"
 import { NewsletterSignup } from "./newsletter-signup"
 
 export default function Footer() {
   return (
     <footer className="bg-primary text-white border-t border-border">
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Company Info */}
           <div>
-            <h3 className="font-bold text-lg mb-4">ElectroHub</h3>
+            <h3 className="font-bold text-lg mb-4">KG Compponents</h3>
             <p className="text-white/80 text-sm">
               Your trusted source for quality electrical components and professional electronics.
             </p>
@@ -32,11 +31,6 @@ export default function Footer() {
               <li>
                 <Link href="/faq" className="text-white/80 hover:text-white transition">
                   FAQ
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-white/80 hover:text-white transition">
-                  Contact
                 </Link>
               </li>
             </ul>
@@ -63,25 +57,6 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="font-semibold mb-4">Contact</h4>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4" />
-                <span className="text-white/80">+27 (0)11 555 0123</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                <span className="text-white/80">info@electrohub.co.za</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                <span className="text-white/80">Johannesburg, South Africa</span>
-              </li>
-            </ul>
-          </div>
         </div>
 
         <div className="bg-white/10 rounded-lg p-6 mb-8">
@@ -91,7 +66,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/20 pt-8 text-center text-sm text-white/80">
-          <p>&copy; 2025 ElectroHub. All rights reserved.</p>
+          <p>&copy; 2025 KG Compponents. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -15,7 +15,8 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [selectedBrand, setSelectedBrand] = useState<string>("all")
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100])
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
+  const [maxPrice, setMaxPrice] = useState(10000)
 
   const supabase = createClient()
 
@@ -29,6 +30,13 @@ export default function ShopPage() {
 
       if (error) throw error
       setProducts(data || [])
+
+      if (data && data.length > 0) {
+        const highestPrice = Math.max(...data.map((p) => p.price || 0))
+        const roundedMax = Math.ceil(highestPrice / 100) * 100 || 10000
+        setMaxPrice(roundedMax)
+        setPriceRange([0, roundedMax])
+      }
     } catch (error) {
       console.error("Error fetching products:", error)
     } finally {
@@ -57,11 +65,11 @@ export default function ShopPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">Shop Electrical Components</h1>
-          <p className="text-slate-600">Browse our complete selection of electronic components</p>
+          <p className="text-muted-foreground">Browse our complete selection of electronic components</p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg border p-6 mb-8">
+        <div className="bg-card rounded-lg border border-border p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <label className="text-sm font-medium text-foreground mb-2 block">Search</label>
@@ -109,9 +117,16 @@ export default function ShopPage() {
 
             <div>
               <label className="text-sm font-medium text-foreground mb-2 block">
-                Max Price: ${priceRange[1].toFixed(2)}
+                Max Price: R{priceRange[1].toFixed(0)}
               </label>
-              <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={100} step={1} className="w-full" />
+              <Slider
+                value={[priceRange[1]]}
+                onValueChange={(val) => setPriceRange([0, val[0]])}
+                min={0}
+                max={maxPrice}
+                step={10}
+                className="w-full"
+              />
             </div>
 
             <div className="flex items-end">
@@ -120,7 +135,7 @@ export default function ShopPage() {
                   setSearchQuery("")
                   setSelectedCategory("all")
                   setSelectedBrand("all")
-                  setPriceRange([0, 100])
+                  setPriceRange([0, maxPrice])
                 }}
                 variant="outline"
                 className="w-full"
@@ -134,11 +149,11 @@ export default function ShopPage() {
         {/* Products Grid */}
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-slate-600">Loading products...</p>
+            <p className="text-muted-foreground">Loading products...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-12 bg-slate-50 rounded-lg">
-            <p className="text-slate-600 text-lg">No products found matching your criteria</p>
+          <div className="text-center py-12 bg-muted rounded-lg">
+            <p className="text-muted-foreground text-lg">No products found matching your criteria</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -148,7 +163,7 @@ export default function ShopPage() {
           </div>
         )}
 
-        <div className="mt-8 text-center text-sm text-slate-600">
+        <div className="mt-8 text-center text-sm text-muted-foreground">
           Showing {filteredProducts.length} of {products.length} products
         </div>
       </div>
