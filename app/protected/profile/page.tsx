@@ -48,7 +48,7 @@ export default function ProfilePage() {
     }
 
     fetchProfile()
-  }, [])
+  }, [supabase])
 
   async function handleSave() {
     try {

@@ -80,7 +80,7 @@ export default function AdminDashboardPage() {
     }
 
     fetchStats()
-  }, [])
+  }, [supabase])
 
   async function handleLogout() {
     await supabase.auth.signOut()

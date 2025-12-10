@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Menu, X, ShoppingCart, User, LogOut } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
@@ -21,30 +21,30 @@ export default function Navbar() {
   const { itemCount } = useCart()
   const { t } = useLanguage()
 
+  const checkAuth = useCallback(async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      setUser(user)
+
+      if (user) {
+        const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+
+        setIsAdmin(profile?.role === "admin" || profile?.role === "super_admin")
+      }
+    } catch (error) {
+      console.error("Auth check error:", error)
+    } finally {
+      setLoading(false)
+    }
+  }, [supabase])
+
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
-        setUser(user)
-
-        if (user) {
-          const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-
-          setIsAdmin(profile?.role === "admin" || profile?.role === "super_admin")
-        }
-      } catch (error) {
-        console.error("Auth check error:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     if (mounted) {
       checkAuth()
 
@@ -59,7 +59,7 @@ export default function Navbar() {
         subscription?.unsubscribe()
       }
     }
-  }, [mounted])
+  }, [mounted, checkAuth, supabase])
 
   async function handleLogout() {
     await supabase.auth.signOut()

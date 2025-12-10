@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -27,11 +27,7 @@ export default function BankingDetailsPage() {
     reference_note: "",
   })
 
-  useEffect(() => {
-    fetchBankingDetails()
-  }, [])
-
-  async function fetchBankingDetails() {
+  const fetchBankingDetails = useCallback(async () => {
     try {
       const response = await fetch("/api/admin/banking-details")
 
@@ -61,7 +57,11 @@ export default function BankingDetailsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    fetchBankingDetails()
+  }, [fetchBankingDetails])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

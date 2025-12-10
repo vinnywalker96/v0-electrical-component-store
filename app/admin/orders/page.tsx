@@ -29,7 +29,7 @@ export default function AdminOrdersPage() {
     }
 
     fetchOrders()
-  }, [])
+  }, [supabase])
 
   async function updateOrderStatus(orderId: string, newStatus: string) {
     try {

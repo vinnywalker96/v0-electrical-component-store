@@ -7,22 +7,22 @@ import type { Product } from "@/lib/types"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Trash2, Edit, Plus, ArrowLeft } from "lucide-react"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
-export default function AdminProductsPage() {
+export default function VendorProductsPage() {
   const supabase = createClient()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchProducts = useCallback(async () => {
+  const fetchVendorProducts = useCallback(async () => {
     try {
+      setLoading(true)
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+      if (userError || !user) {
+        throw new Error("User not authenticated.")
+      }
+
       const { data, error } = await supabase
         .from("products")
         .select(`
@@ -32,13 +32,14 @@ export default function AdminProductsPage() {
             last_name
           )
         `)
+        .eq("seller_id", user.id) // Filter by seller_id
         .order("created_at", { ascending: false })
 
       if (error) throw error
 
       setProducts(data || [])
     } catch (error: any) {
-      console.error("[v0] Error fetching products:", error)
+      console.error("[v0] Error fetching vendor products:", error)
       setError(error.message || "Failed to fetch products")
     } finally {
       setLoading(false)
@@ -46,8 +47,8 @@ export default function AdminProductsPage() {
   }, [supabase])
 
   useEffect(() => {
-    fetchProducts()
-  }, [fetchProducts])
+    fetchVendorProducts()
+  }, [fetchVendorProducts])
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this product?")) return
@@ -64,42 +65,6 @@ export default function AdminProductsPage() {
     }
   }
 
-  async function handleStatusChange(productId: string, newStatus: Product['status']) {
-    try {
-      const { error } = await supabase
-        .from("products")
-        .update({ status: newStatus })
-        .eq("id", productId)
-
-      if (error) throw error
-
-      setProducts((prevProducts) =>
-        prevProducts.map((p) => (p.id === productId ? { ...p, status: newStatus } : p))
-      )
-    } catch (error: any) {
-      console.error("[v0] Error updating product status:", error)
-      setError(error.message || "Failed to update product status")
-    }
-  }
-
-  async function handleToggleFeatured(productId: string, currentFeatured: boolean) {
-    try {
-      const { error } = await supabase
-        .from("products")
-        .update({ is_featured: !currentFeatured })
-        .eq("id", productId)
-
-      if (error) throw error
-
-      setProducts((prevProducts) =>
-        prevProducts.map((p) => (p.id === productId ? { ...p, is_featured: !currentFeatured } : p))
-      )
-    } catch (error: any) {
-      console.error("[v0] Error toggling featured status:", error)
-      setError(error.message || "Failed to toggle featured status")
-    }
-  }
-
   if (loading) {
     return (
       <main className="min-h-screen bg-background flex items-center justify-center">
@@ -111,13 +76,19 @@ export default function AdminProductsPage() {
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <Link href="/admin/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
+        <Link href="/protected/vendor/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
           <ArrowLeft size={20} />
-          Back to Admin Dashboard
+          Back to Vendor Dashboard
         </Link>
 
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground">Manage Products</h1>
+          <h1 className="text-4xl font-bold text-foreground">My Products</h1>
+          <Link href="/protected/vendor/products/new">
+            <Button className="flex gap-2">
+              <Plus size={20} />
+              Add Product
+            </Button>
+          </Link>
         </div>
 
         <Card>
@@ -127,7 +98,7 @@ export default function AdminProductsPage() {
             {products.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-slate-600 mb-4">No products yet</p>
-                <Link href="/admin/products/new">
+                <Link href="/protected/vendor/products/new">
                   <Button>Create First Product</Button>
                 </Link>
               </div>
@@ -137,7 +108,6 @@ export default function AdminProductsPage() {
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-3 px-4 font-semibold">Name</th>
-                      <th className="text-left py-3 px-4 font-semibold">Seller</th>
                       <th className="text-left py-3 px-4 font-semibold">Category</th>
                       <th className="text-left py-3 px-4 font-semibold">Status</th>
                       <th className="text-left py-3 px-4 font-semibold">Featured</th>
@@ -150,34 +120,26 @@ export default function AdminProductsPage() {
                     {products.map((product) => (
                       <tr key={product.id} className="border-b hover:bg-slate-50">
                         <td className="py-3 px-4 font-semibold">{product.name}</td>
-                        <td className="py-3 px-4">
-                          {product.profiles?.first_name} {product.profiles?.last_name}
-                        </td>
                         <td className="py-3 px-4">{product.category}</td>
                         <td className="py-3 px-4">
-                          <Select
-                            value={product.status}
-                            onValueChange={(newStatus: Product['status']) => handleStatusChange(product.id, newStatus)}
+                          <span
+                            className={`px-2 py-1 rounded text-sm font-medium ${
+                              product.status === "approved" ? "bg-green-100 text-green-800" :
+                              product.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                              "bg-red-100 text-red-800"
+                            }`}
                           >
-                            <SelectTrigger className="w-[120px]">
-                              <SelectValue placeholder="Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="approved">Approved</SelectItem>
-                              <SelectItem value="rejected">Rejected</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                          </span>
                         </td>
                         <td className="py-3 px-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleToggleFeatured(product.id, product.is_featured)}
-                            className={product.is_featured ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
+                          <span
+                            className={`px-2 py-1 rounded text-sm font-medium ${
+                              product.is_featured ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+                            }`}
                           >
                             {product.is_featured ? "Yes" : "No"}
-                          </Button>
+                          </span>
                         </td>
                         <td className="py-3 px-4 text-right">${product.price.toFixed(2)}</td>
                         <td className="py-3 px-4 text-right">
@@ -188,7 +150,7 @@ export default function AdminProductsPage() {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center flex justify-center gap-2">
-                          <Link href={`/admin/products/${product.id}/edit`}>
+                          <Link href={`/protected/vendor/products/${product.id}/edit`}>
                             <Button variant="outline" size="sm" className="gap-1 bg-transparent">
                               <Edit size={16} />
                               Edit

@@ -62,6 +62,7 @@ export default function SignUpPage() {
             email: formData.email,
             first_name: formData.firstName,
             last_name: formData.lastName,
+            name: `${formData.firstName} ${formData.lastName}`.trim() || formData.email, // Populate the new 'name' field
             role: "customer",
           })
 
@@ -93,7 +94,7 @@ export default function SignUpPage() {
             <div className="text-green-600 text-5xl mb-4">✓</div>
             <h2 className="text-2xl font-bold mb-2">Account Created!</h2>
             <p className="text-slate-600">
-              A confirmation email has been sent. You'll be redirected to sign in shortly.
+              A confirmation email has been sent. You&apos;ll be redirected to sign in shortly.
             </p>
           </CardContent>
         </Card>

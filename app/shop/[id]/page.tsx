@@ -10,6 +10,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import type { Product } from "@/lib/types"
 
+// Dialog and its components
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+
 export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -20,6 +27,13 @@ export default function ProductDetailPage() {
   const [added, setAdded] = useState(false)
   const { addToCart } = useCart()
   const supabase = createClient()
+
+  // State for product reporting
+  const [isReporting, setIsReporting] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [reportSuccess, setReportSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -38,7 +52,7 @@ export default function ProductDetailPage() {
     if (params.id) {
       fetchProduct()
     }
-  }, [params.id])
+  }, [params.id, supabase])
 
   async function handleAddToCart() {
     if (!product) return
@@ -61,6 +75,49 @@ export default function ProductDetailPage() {
       console.error("Error adding to cart:", error)
     } finally {
       setAdding(false)
+    }
+  }
+
+  async function handleSubmitReport() {
+    setReportError(null);
+    setReportSuccess(null);
+    if (!product || !reportReason) {
+      setReportError("Please select a reason.");
+      return;
+    }
+
+    setIsReporting(true);
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        setReportError("You must be logged in to report a product.");
+        return;
+      }
+
+      const response = await fetch("/api/report-product", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          reason: reportReason,
+          description: reportDescription,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to submit report.");
+      }
+
+      setReportSuccess("Product reported successfully! Thank you for your feedback.");
+      setReportReason("");
+      setReportDescription("");
+    } catch (err: any) {
+      console.error("[v0] Error submitting report:", err);
+      setReportError(err.message || "An error occurred while submitting your report.");
+    } finally {
+      setIsReporting(false);
     }
   }
 
@@ -196,6 +253,63 @@ export default function ProductDetailPage() {
                   : "Price not yet available. Please check back later."}
               </p>
             )}
+
+            {/* Report Product Button */}
+            <div className="mt-8">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="w-full">
+                    Report Product
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Report Product</DialogTitle>
+                    <DialogDescription>
+                      Help us maintain product quality by reporting any issues.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="reason" className="text-right">
+                        Reason
+                      </Label>
+                      <Select value={reportReason} onValueChange={setReportReason}>
+                        <SelectTrigger className="col-span-3" id="reason">
+                          <SelectValue placeholder="Select a reason" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="inaccurate_description">Inaccurate Description</SelectItem>
+                          <SelectItem value="wrong_category">Wrong Category</SelectItem>
+                          <SelectItem value="offensive_content">Offensive Content</SelectItem>
+                          <SelectItem value="prohibited_item">Prohibited Item</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="description" className="text-right">
+                        Description (Optional)
+                      </Label>
+                      <Textarea
+                        id="description"
+                        value={reportDescription}
+                        onChange={(e) => setReportDescription(e.target.value)}
+                        className="col-span-3"
+                        placeholder="Provide more details about the issue..."
+                      />
+                    </div>
+                    {reportError && <p className="text-red-500 text-sm col-span-4 text-center">{reportError}</p>}
+                    {reportSuccess && <p className="text-green-500 text-sm col-span-4 text-center">{reportSuccess}</p>}
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={handleSubmitReport} disabled={isReporting || !reportReason}>
+                      {isReporting ? "Submitting..." : "Submit Report"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
       </div>

@@ -50,7 +50,7 @@ export default function CheckoutPage() {
     }
 
     fetchUser()
-  }, [])
+  }, [supabase.auth])
 
   if (loading) {
     return <div className="text-center py-12">Loading...</div>
@@ -84,41 +84,36 @@ export default function CheckoutPage() {
     setIsProcessing(true)
 
     try {
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          status: "pending",
-          payment_status: "unpaid",
-          total_amount: total,
-          tax_amount: tax,
-          shipping_address: `${formData.shippingAddress}, ${formData.shippingCity}, ${formData.shippingZip}`,
-          billing_address: `${formData.billingAddress}, ${formData.billingCity}, ${formData.billingZip}`,
-          payment_method: formData.paymentMethod,
-        })
-        .select()
-        .single()
+      const checkoutPayload = {
+        formData,
+        cartItems: items, // Pass cart items to the API
+        total,
+        tax,
+      }
 
-      if (orderError) throw orderError
+      const response = await fetch("/api/orders/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(checkoutPayload),
+      })
 
-      // Create order items
-      const orderItems = items.map((item) => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        unit_price: item.product?.price || 0,
-      }))
+      const result = await response.json()
 
-      const { error: itemsError } = await supabase.from("order_items").insert(orderItems)
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to create order")
+      }
 
-      if (itemsError) throw itemsError
+      const { orderId } = result;
 
+      // Send confirmation email after order is successfully created
       try {
         await fetch("/api/emails/order-confirmation", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            orderId: order.id,
+            orderId: orderId, // Use orderId from the API response
             firstName: formData.firstName,
             lastName: formData.lastName,
             email: formData.email,
@@ -136,10 +131,10 @@ export default function CheckoutPage() {
       }
 
       await clearCart()
-      router.push(`/order-confirmation/${order.id}`)
-    } catch (error) {
+      router.push(`/order-confirmation/${orderId}`) // Use orderId from the API response
+    } catch (error: any) {
       console.error("[v0] Checkout error:", error)
-      alert("An error occurred during checkout. Please try again.")
+      alert(error.message || "An error occurred during checkout. Please try again.")
     } finally {
       setIsProcessing(false)
     }

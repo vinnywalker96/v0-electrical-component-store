@@ -7,7 +7,9 @@ CREATE TABLE IF NOT EXISTS public.products (
   brand TEXT NOT NULL,
   price DECIMAL(10, 2) NOT NULL,
   stock_quantity INTEGER NOT NULL DEFAULT 0,
-  image_url TEXT,
+  seller_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  status TEXT DEFAULT 'pending', -- pending, approved, rejected
+  image_urls TEXT[], -- Changed to support multiple images
   specifications JSONB,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
@@ -17,6 +19,7 @@ CREATE TABLE IF NOT EXISTS public.products (
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL UNIQUE,
+  name TEXT, -- Added for combined first_name and last_name or email
   first_name TEXT,
   last_name TEXT,
   phone TEXT,
@@ -68,10 +71,13 @@ ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cart_items ENABLE ROW LEVEL SECURITY;
 
 -- Products: Allow public read access
-CREATE POLICY "Allow public read on products" ON public.products FOR SELECT USING (true);
-CREATE POLICY "Allow admin insert products" ON public.products FOR INSERT WITH CHECK ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
-CREATE POLICY "Allow admin update products" ON public.products FOR UPDATE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
-CREATE POLICY "Allow admin delete products" ON public.products FOR DELETE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+CREATE POLICY "Allow public read on products" ON public.products FOR SELECT USING (status = 'approved');
+CREATE POLICY "Allow vendors insert own products" ON public.products FOR INSERT WITH CHECK ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'vendor' AND seller_id = auth.uid());
+CREATE POLICY "Allow vendors update own products" ON public.products FOR UPDATE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'vendor' AND seller_id = auth.uid());
+CREATE POLICY "Allow vendors delete own products" ON public.products FOR DELETE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'vendor' AND seller_id = auth.uid());
+
+-- Admin policies
+CREATE POLICY "Allow admin to manage products" ON public.products FOR ALL USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin')) WITH CHECK ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin'));
 
 -- Profiles: Allow users to view and update their own profile
 CREATE POLICY "Allow users read own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);

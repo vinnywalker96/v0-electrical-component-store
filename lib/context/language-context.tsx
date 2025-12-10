@@ -14,16 +14,15 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("en")
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    const saved = localStorage.getItem("language") as Language | null
-    if (saved && (saved === "en" || saved === "pt")) {
-      setLanguageState(saved)
+  const [language, setLanguageState] = useState<Language>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("language") as Language | null
+      if (saved && (saved === "en" || saved === "pt")) {
+        return saved
+      }
     }
-    setMounted(true)
-  }, [])
+    return "en"
+  })
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang)
