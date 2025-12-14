@@ -6,6 +6,7 @@ import "./globals.css"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 import { ReduxProvider } from "@/components/redux-provider" // Import the new client wrapper
+import { Toaster } from "@/components/ui/toaster"
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
@@ -23,29 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased flex flex-col min-h-screen`}>
-        import { Toaster } from "@/components/ui/toaster"
-
-// ...
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
-  return (
-    <html lang="en">
-      <body className={`font-sans antialiased flex flex-col min-h-screen`}>
         <ReduxProvider> {/* Wrap with custom client provider */}
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />
             <Toaster />
         </ReduxProvider>
-        <Analytics />
-      </body>
-    </html>
-  )
-}
         <Analytics />
       </body>
     </html>
