@@ -196,6 +196,14 @@ export default function AdminDashboardPage() {
               </Button>
             </Link>
           )}
+          {isSuperAdmin && (
+            <Link href="/admin/users/pending">
+              <Button className="w-full h-16 text-lg justify-start gap-4 bg-transparent" variant="outline">
+                <Users size={24} />
+                Pending User Accounts
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Recent Orders */}

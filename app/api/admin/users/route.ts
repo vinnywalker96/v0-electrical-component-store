@@ -1,103 +1,112 @@
-import { createServerClient } from "@/lib/supabase/server";
-import { type NextRequest, NextResponse } from "next/server";
-import { logAuditAction } from "@/lib/audit-service"; // New import
-import { SupabaseClient } from "@supabase/supabase-js"; // Import SupabaseClient type
+import { NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 
-// Helper function to check current user's role
-async function getCurrentUserRole(supabase: SupabaseClient) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+export async function GET(request: Request) {
+  const supabase = createClient()
+  const { searchParams } = new URL(request.url)
+  const status = searchParams.get("status")
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  return profile?.role;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+
+  if (profileError || !profile || profile.role !== "super_admin") {
+    return NextResponse.json({ error: "Forbidden: Only Super Admins can view pending users" }, { status: 403 })
+  }
+
+  let query = supabase.from("profiles").select("id, email, first_name, last_name, role, account_status, role_requested, created_at", { count: 'exact' })
+
+  if (status) {
+    query = query.eq("account_status", status)
+  }
+
+  const { data: users, error } = await query.order("created_at", { ascending: false })
+
+  if (error) {
+    console.error("Error fetching users:", error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json(users)
 }
 
-// Helper function to get a target user's role
-async function getTargetUserRole(supabase: SupabaseClient, userId: string) {
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", userId).single();
-    return profile?.role;
-}
+export async function POST(request: Request) {
+  const supabase = createClient()
+  const { id, action } = await request.json()
 
-// GET /api/admin/users - Fetch all user profiles
-export async function GET(request: NextRequest) {
-  try {
-    const supabase = await createServerClient();
-    const currentUserRole = await getCurrentUserRole(supabase);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-    if (!currentUserRole || (currentUserRole !== "super_admin" && currentUserRole !== "admin")) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+
+  if (profileError || !profile || profile.role !== "super_admin") {
+    return NextResponse.json({ error: "Forbidden: Only Super Admins can manage user accounts" }, { status: 403 })
+  }
+
+  if (action === "approve") {
+    // Check for super_admin limit if the requested role is super_admin
+    const { data: userToApprove, error: fetchError } = await supabase
+      .from("profiles")
+      .select("role_requested")
+      .eq("id", id)
+      .single();
+
+    if (fetchError || !userToApprove) {
+      console.error("Error fetching user to approve:", fetchError);
+      return NextResponse.json({ error: fetchError?.message || "User not found." }, { status: 500 });
     }
 
-    const { data: profiles, error } = await supabase
+    if (userToApprove.role_requested === "super_admin") {
+      const { count, error: countError } = await supabase
+        .from("profiles")
+        .select("id", { count: "exact" })
+        .eq("role", "super_admin")
+        .neq("id", id); // Exclude the user being approved from the count
+
+
+      if (countError) {
+        console.error("Error counting super_admins:", countError);
+        return NextResponse.json({ error: countError.message }, { status: 500 });
+      }
+
+      if (count && count >= 2) {
+        return NextResponse.json({ error: "Cannot approve, maximum of 2 super_admin users already exist." }, { status: 400 });
+      }
+    }
+
+    const { error } = await supabase
       .from("profiles")
-      .select("id, email, first_name, last_name, phone, role, created_at");
+      .update({ account_status: "approved", role: userToApprove.role_requested }) // Set actual role upon approval
+      .eq("id", id)
 
     if (error) {
-      return Response.json({ error: error.message }, { status: 500 });
+      console.error("Error approving user:", error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
-
-    return Response.json(profiles);
-  } catch (error) {
-    console.error("[v0] Error fetching users:", error);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
-  }
-}
-
-// PUT /api/admin/users - Update a user's role
-export async function PUT(request: NextRequest) {
-  try {
-    const supabase = await createServerClient();
-    const currentUserRole = await getCurrentUserRole(supabase);
-
-    if (!currentUserRole || (currentUserRole !== "super_admin" && currentUserRole !== "admin")) {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const { userId, newRole } = await request.json();
-
-    if (!userId || !newRole || !["customer", "vendor", "admin", "super_admin"].includes(newRole)) {
-      return Response.json({ error: "Invalid input" }, { status: 400 });
-    }
-
-    // Prevent non-super_admin from promoting to or managing super_admin roles
-    if (currentUserRole === "admin" && (newRole === "super_admin" || (await getTargetUserRole(supabase, userId)) === "super_admin")) {
-        return Response.json({ error: "Admins cannot manage super_admin roles" }, { status: 403 });
-    }
-
-    // Prevent user from changing their own role
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    if (currentUser && currentUser.id === userId) {
-        return Response.json({ error: "Cannot change your own role" }, { status: 403 });
-    }
-
-    // Get old role for audit logging
-    const oldRole = await getTargetUserRole(supabase, userId);
-
-    const { error: updateError } = await supabase
+  } else if (action === "reject") {
+    const { error } = await supabase
       .from("profiles")
-      .update({ role: newRole })
-      .eq("id", userId);
+      .update({ account_status: "rejected", role_requested: null }) // Clear requested role on rejection
+      .eq("id", id)
 
-    if (updateError) {
-      return Response.json({ error: updateError.message }, { status: 500 });
+    if (error) {
+      console.error("Error rejecting user:", error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
-
-    // Log the audit action
-    if (currentUser) {
-        await logAuditAction({
-            user_id: currentUser.id,
-            action: 'user_role_changed',
-            table_name: 'profiles',
-            record_id: userId,
-            old_value: { role: oldRole },
-            new_value: { role: newRole },
-            ip_address: request.headers.get('x-forwarded-for') || 'unknown',
-        });
-    }
-
-    return Response.json({ success: true, message: `User role updated to ${newRole}` });
-  } catch (error) {
-    console.error("[v0] Error updating user role:", error);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+  } else {
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 })
   }
+
+  return NextResponse.json({ message: `User ${action}ed successfully` })
 }

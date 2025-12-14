@@ -30,13 +30,11 @@ export async function updateSession(request: NextRequest) {
   if (user) {
     const { data: profileData, error: profileError } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, account_status, role_requested")
       .eq("id", user.id)
       .single()
 
     if (profileError || !profileData) {
-      // The error code for "No rows found" is PGRST116. If we see this, it means the user is authenticated
-      // but doesn't have a profile. We should create one for them.
       if (profileError && profileError.code === "PGRST116") {
         console.log("No profile found for user, creating one...")
 
@@ -46,31 +44,33 @@ export async function updateSession(request: NextRequest) {
           first_name: user.user_metadata.first_name,
           last_name: user.user_metadata.last_name,
           role: "customer",
+          account_status: "approved", // Default for direct sign-ups not requesting special roles
         })
 
         if (newUserError) {
           console.error("Error creating profile in middleware:", newUserError)
         } else {
           console.log("Profile created successfully for user:", user.id)
-          // Profile is created, but we don't have the role yet in this path.
-          // We can let the request continue and on the next request the profile will be found.
-          // Or we can assume 'customer' role and proceed. For now, we'll let it proceed.
         }
       } else {
         console.error("Error fetching profile in middleware:", profileError)
-        // If a user is authenticated but their profile can't be found, log the error but don't redirect to login.
-        // This scenario should ideally not happen if profile creation on signup is robust.
       }
     } else {
       const userRole = profileData.role
+      const accountStatus = profileData.account_status
 
+      if (accountStatus === "pending") {
+        // Redirect pending accounts to an awaiting approval page
+        return NextResponse.redirect(new URL("/auth/login?message=awaiting-approval", request.url))
+      }
+      
       // Role-based protection for /admin routes
-      if (request.nextUrl.pathname.startsWith("/admin") && userRole !== "super_admin") {
+      if (request.nextUrl.pathname.startsWith("/admin") && !["super_admin", "admin"].includes(userRole)) {
         return NextResponse.redirect(new URL("/auth/login?message=unauthorized", request.url))
       }
 
       // Role-based protection for /protected/vendor routes
-      if (request.nextUrl.pathname.startsWith("/protected/vendor") && !["vendor", "admin", "super_admin"].includes(userRole)) {
+      if (request.nextUrl.pathname.startsWith("/protected/vendor") && !["vendor_admin", "super_admin"].includes(userRole)) {
         return NextResponse.redirect(new URL("/auth/login?message=unauthorized", request.url))
       }
     }

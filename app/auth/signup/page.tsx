@@ -9,10 +9,13 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function SignUpPage() {
   const router = useRouter()
   const supabase = createClient()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -22,6 +25,7 @@ export default function SignUpPage() {
     confirmPassword: "",
     firstName: "",
     lastName: "",
+    role: "customer", // Default role
   })
 
   async function handleSignUp(e: React.FormEvent) {
@@ -57,24 +61,39 @@ export default function SignUpPage() {
 
       if (authData.user) {
         try {
+          const isPendingApproval = formData.role === "admin" || formData.role === "vendor_admin"
+          const initialRole = isPendingApproval ? "customer" : formData.role // Default to customer until approved
+          const accountStatus = isPendingApproval ? "pending" : "approved"
+
           const { error: profileError } = await supabase.from("profiles").insert({
             id: authData.user.id,
             email: formData.email,
             first_name: formData.firstName,
             last_name: formData.lastName,
-            name: `${formData.firstName} ${formData.lastName}`.trim() || formData.email, // Populate the new 'name' field
-            role: "customer",
+            role: initialRole,
+            account_status: accountStatus,
+            role_requested: formData.role,
           })
 
           if (profileError && !profileError.message.includes("duplicate")) {
             console.error("[v0] Profile error:", profileError)
+            setError(profileError.message)
+            setLoading(false)
+            return
           }
         } catch (err) {
           console.error("[v0] Error creating profile:", err)
+          setError("Failed to create user profile.")
+          setLoading(false)
+          return
         }
       }
 
       setSuccess(true)
+      toast({
+        title: "Account Created!",
+        description: formData.role === "customer" ? "You will be redirected to sign in shortly." : "Your account is pending approval. You will be redirected to sign in shortly.",
+      })
       setTimeout(() => {
         router.push("/auth/login?message=signup-success")
       }, 2000)
@@ -169,6 +188,20 @@ export default function SignUpPage() {
                 required
                 disabled={loading}
               />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Register As</label>
+              <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })} disabled={loading}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="customer">Customer</SelectItem>
+                  <SelectItem value="vendor_admin">Vendor Admin</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <Button type="submit" disabled={loading} className="w-full">
