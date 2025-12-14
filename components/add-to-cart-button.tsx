@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useCart } from "@/lib/context/cart-context"
+import { useDispatch } from "react-redux"
+import { addToCart } from "@/lib/store/cartSlice"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 
@@ -16,7 +17,7 @@ interface AddToCartButtonProps {
 export function AddToCartButton({ productId, quantity = 1, disabled = false, className }: AddToCartButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [showMessage, setShowMessage] = useState(false)
-  const { addToCart } = useCart()
+  const dispatch = useDispatch()
   const router = useRouter()
   const supabase = createClient()
 
@@ -33,7 +34,7 @@ export function AddToCartButton({ productId, quantity = 1, disabled = false, cla
         return
       }
 
-      await addToCart(productId, quantity)
+      dispatch(addToCart({ productId, quantity }) as any)
 
       setShowMessage(true)
       setTimeout(() => setShowMessage(false), 2000)

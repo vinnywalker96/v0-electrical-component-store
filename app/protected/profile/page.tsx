@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import type { UserProfile } from "@/lib/types"
@@ -20,34 +20,35 @@ export default function ProfilePage() {
     phone: "",
   })
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
+  const fetchProfile = useCallback(async () => {
+    try {
+      setLoading(true)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-        if (user) {
-          const { data: profileData } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+      if (user) {
+        const { data: profileData } = await supabase.from("profiles").select("*").eq("id", user.id).single()
 
-          if (profileData) {
-            setProfile(profileData)
-            setFormData({
-              firstName: profileData.first_name || "",
-              lastName: profileData.last_name || "",
-              phone: profileData.phone || "",
-            })
-          }
+        if (profileData) {
+          setProfile(profileData)
+          setFormData({
+            firstName: profileData.first_name || "",
+            lastName: profileData.last_name || "",
+            phone: profileData.phone || "",
+          })
         }
-      } catch (error) {
-        console.error("[v0] Error fetching profile:", error)
-      } finally {
-        setLoading(false)
       }
+    } catch (error) {
+      console.error("[v0] Error fetching profile:", error)
+    } finally {
+      setLoading(false)
     }
-
-    fetchProfile()
   }, [supabase])
+
+  useEffect(() => {
+    fetchProfile()
+  }, [fetchProfile])
 
   async function handleSave() {
     try {
@@ -72,6 +73,7 @@ export default function ProfilePage() {
       if (error) throw error
 
       setSuccess(true)
+      await fetchProfile() // Re-fetch profile to show updated data
       setTimeout(() => setSuccess(false), 3000)
     } catch (error) {
       console.error("[v0] Error saving profile:", error)
@@ -140,9 +142,23 @@ export default function ProfilePage() {
               <Button onClick={handleSave} disabled={saving}>
                 {saving ? "Saving..." : "Save Changes"}
               </Button>
-              <Link href="/protected/dashboard">
-                <Button variant="outline">Cancel</Button>
-              </Link>
+              import { useRouter } from "next/navigation"
+
+//...
+
+export default function ProfilePage() {
+  const supabase = createClient()
+  const router = useRouter()
+  //...
+            <div className="flex gap-4">
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+              <Button variant="outline" onClick={() => router.back()}>
+                Cancel
+              </Button>
+            </div>
+//...
             </div>
           </CardContent>
         </Card>

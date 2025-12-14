@@ -45,7 +45,6 @@ export async function updateSession(request: NextRequest) {
           email: user.email,
           first_name: user.user_metadata.first_name,
           last_name: user.user_metadata.last_name,
-          name: `${user.user_metadata.first_name} ${user.user_metadata.last_name}`.trim() || user.email,
           role: "customer",
         })
 

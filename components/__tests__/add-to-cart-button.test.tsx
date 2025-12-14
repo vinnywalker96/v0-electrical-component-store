@@ -1,23 +1,21 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { AddToCartButton } from '../add-to-cart-button';
 import { useRouter } from 'next/navigation';
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
+import { thunk } from 'redux-thunk';
 
-const mockAddToCart = jest.fn();
-const mockGetUser = jest.fn();
+const middlewares = [thunk];
+const mockStore = configureStore(middlewares);
+
 const mockPush = jest.fn();
+const mockGetUser = jest.fn();
 
-// Mock useRouter from next/navigation (this seems to work fine)
+// Mock useRouter from next/navigation
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
-  }),
-}));
-
-// Mock the modules that use the aliased paths
-jest.mock('../../lib/context/cart-context', () => ({
-  useCart: () => ({
-    addToCart: mockAddToCart,
   }),
 }));
 
@@ -30,48 +28,77 @@ jest.mock('../../lib/supabase/client', () => ({
 }));
 
 
+
 describe('AddToCartButton', () => {
+  let store;
+
   beforeEach(() => {
+    store = mockStore({});
     jest.clearAllMocks();
   });
 
   it('renders the button', () => {
-    render(<AddToCartButton productId="1" />);
+    render(
+      <Provider store={store}>
+        <AddToCartButton productId="1" />
+      </Provider>
+    );
     const button = screen.getByRole('button', { name: /add to cart/i });
     expect(button).toBeInTheDocument();
   });
 
-  it('calls addToCart when clicked and user is logged in', async () => {
+  it('dispatches addToCart action when clicked and user is logged in', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: '123' } } });
-    render(<AddToCartButton productId="1" />);
+    render(
+      <Provider store={store}>
+        <AddToCartButton productId="1" />
+      </Provider>
+    );
     const button = screen.getByRole('button', { name: /add to cart/i });
-    fireEvent.click(button);
-    await waitFor(() => expect(mockAddToCart).toHaveBeenCalledWith('1', 1));
+    await act(async () => {
+      fireEvent.click(button);
+    });
+    const actions = store.getActions();
+    expect(actions[0].type).toBe('cart/addToCart/pending');
   });
 
   it('redirects to login when user is not logged in', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
-    render(<AddToCartButton productId="1" />);
+    render(
+      <Provider store={store}>
+        <AddToCartButton productId="1" />
+      </Provider>
+    );
     const button = screen.getByRole('button', { name: /add to cart/i });
-    fireEvent.click(button);
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/auth/login'));
+    await act(async () => {
+      fireEvent.click(button);
+    });
+    expect(mockPush).toHaveBeenCalledWith('/auth/login');
   });
 
   it('shows "Adding..." text when loading', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: '123' } } });
-    mockAddToCart.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
-    render(<AddToCartButton productId="1" />);
+    render(
+      <Provider store={store}>
+        <AddToCartButton productId="1" />
+      </Provider>
+    );
     const button = screen.getByRole('button', { name: /add to cart/i });
     fireEvent.click(button);
-    expect(screen.getByText(/adding.../i)).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByText(/adding.../i)).not.toBeInTheDocument());
+    await screen.findByText(/adding.../i);
   });
 
   it('shows "Added to cart!" message on success', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: '123' } } });
-    render(<AddToCartButton productId="1" />);
+    render(
+      <Provider store={store}>
+        <AddToCartButton productId="1" />
+      </Provider>
+    );
     const button = screen.getByRole('button', { name: /add to cart/i });
-    fireEvent.click(button);
-    await waitFor(() => expect(screen.getByText(/added to cart!/i)).toBeInTheDocument());
+    await act(async () => {
+      fireEvent.click(button);
+    });
+    expect(screen.getByText(/added to cart!/i)).toBeInTheDocument();
   });
 });

@@ -23,11 +23,29 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased flex flex-col min-h-screen`}>
+        import { Toaster } from "@/components/ui/toaster"
+
+// ...
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <html lang="en">
+      <body className={`font-sans antialiased flex flex-col min-h-screen`}>
         <ReduxProvider> {/* Wrap with custom client provider */}
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />
+            <Toaster />
         </ReduxProvider>
+        <Analytics />
+      </body>
+    </html>
+  )
+}
         <Analytics />
       </body>
     </html>
