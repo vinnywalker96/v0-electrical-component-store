@@ -20,7 +20,7 @@ ALTER TABLE banking_details ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow admin to read banking details" ON banking_details
   FOR SELECT USING (
     auth.uid() IN (
-      SELECT id FROM profiles WHERE role IN ('admin', 'super_admin')
+      SELECT id FROM profiles WHERE role = 'super_admin'
     )
   );
 

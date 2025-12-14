@@ -1,11 +1,13 @@
 "use client"
 
-import { useLanguage } from "@/lib/context/language-context"
 import { Globe } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useSelector, useDispatch } from 'react-redux';
+import { selectCurrentLanguage, setLanguage } from '@/lib/store/languageSlice';
 
 export function LanguageSwitcher() {
-  const { language, setLanguage } = useLanguage()
+  const language = useSelector(selectCurrentLanguage);
+  const dispatch = useDispatch();
 
   return (
     <Select value={language} onValueChange={(value: any) => setLanguage(value)}>

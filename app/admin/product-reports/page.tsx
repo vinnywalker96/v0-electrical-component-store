@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/client"
+// import { createClient } from "@/lib/supabase/client" // Not needed for direct Redux interaction
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
@@ -13,76 +13,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchAdminProductReports, updateProductReportStatus, selectAdminProductReports, selectAdminProductReportsLoading, selectAdminProductReportsError, ProductReport } from '@/lib/store/adminProductReportsSlice';
 
-interface ProductReport {
-  id: string;
-  product_id: string;
-  reporter_id: string;
-  reason: string;
-  description: string | null;
-  status: 'pending' | 'reviewed' | 'dismissed' | 'acted_upon';
-  created_at: string;
-  updated_at: string;
-  products: { // Joined product data
-    id: string;
-    name: string;
-  };
-  profiles: { // Joined reporter profile data
-    id: string;
-    email: string;
-  };
-}
 
 export default function AdminProductReportsPage() {
-  const supabase = createClient()
-  const [reports, setReports] = useState<ProductReport[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchReports = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from("product_reports")
-        .select(`
-          *,
-          products (id, name),
-          profiles (id, email)
-        `)
-        .order("created_at", { ascending: false })
-
-      if (error) throw error
-
-      setReports(data || [])
-    } catch (error: any) {
-      console.error("[v0] Error fetching product reports:", error)
-      setError(error.message || "Failed to fetch reports")
-    } finally {
-      setLoading(false)
-    }
-  }, [supabase])
+  const dispatch = useDispatch();
+  const reports = useSelector(selectAdminProductReports);
+  const loading = useSelector(selectAdminProductReportsLoading);
+  const error = useSelector(selectAdminProductReportsError);
 
   useEffect(() => {
-    fetchReports()
-  }, [fetchReports])
+    dispatch(fetchAdminProductReports() as any);
+  }, [dispatch]);
+
 
   async function handleStatusChange(reportId: string, newStatus: ProductReport['status']) {
     try {
-      const { error } = await supabase
-        .from("product_reports")
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq("id", reportId)
-
-      if (error) throw error
-
-      setReports((prevReports) =>
-        prevReports.map((r) => (r.id === reportId ? { ...r, status: newStatus } : r))
-      )
-    } catch (error: any) {
-      console.error("[v0] Error updating report status:", error)
-      setError(error.message || "Failed to update report status")
+      await dispatch(updateProductReportStatus({ reportId, status: newStatus }) as any);
+    } catch (err: any) {
+      alert(err.message || "Failed to update report status");
     }
   }
-
   if (loading) {
     return (
       <main className="min-h-screen bg-background flex items-center justify-center">
@@ -128,11 +80,11 @@ export default function AdminProductReportsPage() {
                       <tr key={report.id} className="border-b hover:bg-slate-50">
                         <td className="py-3 px-4 text-sm">{report.id.substring(0, 8)}...</td>
                         <td className="py-3 px-4">
-                          <Link href={`/shop/${report.products.id}`} className="text-blue-600 hover:underline">
-                            {report.products.name}
+                          <Link href={`/shop/${report.products?.id}`} className="text-blue-600 hover:underline">
+                            {report.products?.name}
                           </Link>
                         </td>
-                        <td className="py-3 px-4">{report.profiles.email}</td>
+                        <td className="py-3 px-4">{report.profiles?.email}</td>
                         <td className="py-3 px-4 text-sm">{report.reason}</td>
                         <td className="py-3 px-4">
                           <Select

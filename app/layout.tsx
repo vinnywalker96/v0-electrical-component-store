@@ -5,9 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
-import { CartProvider } from "@/lib/context/cart-context"
-import { LanguageProvider } from "@/lib/context/language-context"
-
+import { ReduxProvider } from "@/components/redux-provider" // Import the new client wrapper
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
@@ -25,13 +23,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased flex flex-col min-h-screen`}>
-        <LanguageProvider>
-          <CartProvider>
+        <ReduxProvider> {/* Wrap with custom client provider */}
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />
-          </CartProvider>
-        </LanguageProvider>
+        </ReduxProvider>
         <Analytics />
       </body>
     </html>

@@ -31,7 +31,25 @@ export default function LoginPage() {
 
       if (signInError) throw signInError
 
-      router.push("/protected/dashboard")
+      // Fetch user profile to get the role
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single()
+
+        if (profileError) throw profileError
+
+        if (profile?.role === "super_admin" || profile?.role === "admin") {
+          router.push("/admin/dashboard") // Redirect to admin dashboard
+        } else {
+          router.push("/protected/dashboard") // Default user dashboard
+        }
+      } else {
+          router.push("/protected/dashboard") // Fallback if user object is somehow missing
+      }
     } catch (err: any) {
       console.error("[v0] Login error:", err)
       setError(err.message || "Failed to sign in")

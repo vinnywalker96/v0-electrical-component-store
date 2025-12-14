@@ -76,8 +76,9 @@ CREATE POLICY "Allow vendors insert own products" ON public.products FOR INSERT 
 CREATE POLICY "Allow vendors update own products" ON public.products FOR UPDATE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'vendor' AND seller_id = auth.uid());
 CREATE POLICY "Allow vendors delete own products" ON public.products FOR DELETE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'vendor' AND seller_id = auth.uid());
 
--- Admin policies
-CREATE POLICY "Allow admin to manage products" ON public.products FOR ALL USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin')) WITH CHECK ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin'));
+-- Admin policies (super_admin and admin)
+CREATE POLICY "Allow super_admin to manage products" ON public.products FOR ALL USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'super_admin') WITH CHECK ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'super_admin');
+CREATE POLICY "Allow admin to manage products" ON public.products FOR SELECT, INSERT, UPDATE, DELETE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
 
 -- Profiles: Allow users to view and update their own profile
 CREATE POLICY "Allow users read own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
@@ -88,7 +89,14 @@ CREATE POLICY "Allow users insert own profile" ON public.profiles FOR INSERT WIT
 CREATE POLICY "Allow users read own orders" ON public.orders FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Allow users create orders" ON public.orders FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Allow users update own orders" ON public.orders FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Allow admin read all orders" ON public.orders FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+CREATE POLICY "Allow super_admin to read all orders" ON public.orders FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'super_admin');
+CREATE POLICY "Allow admin to read all orders" ON public.orders FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+CREATE POLICY "Allow admin to update orders status and payment_status" ON public.orders FOR UPDATE USING (
+  (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
+) WITH CHECK (
+  (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
+  AND (status IS DISTINCT FROM OLD.status OR payment_status IS DISTINCT FROM OLD.payment_status)
+);
 
 -- Order items: Allow users to read items from their orders
 CREATE POLICY "Allow users read own order items" ON public.order_items FOR SELECT USING (

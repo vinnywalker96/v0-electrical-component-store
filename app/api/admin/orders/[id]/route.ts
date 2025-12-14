@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createServerClient } from "@/lib/supabase/server"
+import { UpdateOrderSchema } from "@/lib/schemas"; // Import Zod schema
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -15,17 +16,23 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     // Check if user is admin
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-    if (!profile || !["admin", "super_admin"].includes(profile.role)) {
+    if (!profile || (profile.role !== "super_admin" && profile.role !== "admin")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const { id } = await params
     const body = await request.json()
-    const { status, payment_status } = body
+    const parsedBody = UpdateOrderSchema.safeParse(body);
 
-    const updates: any = {}
-    if (status) updates.status = status
-    if (payment_status) updates.payment_status = payment_status
+    if (!parsedBody.success) {
+      return NextResponse.json({ error: parsedBody.error.errors }, { status: 400 });
+    }
+
+    const { status, payment_status } = parsedBody.data;
+
+    const updates: any = {};
+    if (status) updates.status = status;
+    if (payment_status) updates.payment_status = payment_status;
 
     const { data: updatedOrder, error } = await supabase.from("orders").update(updates).eq("id", id).select().single()
 

@@ -1,8 +1,8 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useEffect } from "react"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client" // Keep createClient for auth check if needed
 import type { Product } from "@/lib/types"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,89 +14,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchAdminProducts, updateProduct, deleteProduct, selectAdminProducts, selectAdminProductsLoading, selectAdminProductsError } from '@/lib/store/adminProductsSlice';
 
 export default function AdminProductsPage() {
-  const supabase = createClient()
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchProducts = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from("products")
-        .select(`
-          *,
-          profiles (
-            first_name,
-            last_name
-          )
-        `)
-        .order("created_at", { ascending: false })
-
-      if (error) throw error
-
-      setProducts(data || [])
-    } catch (error: any) {
-      console.error("[v0] Error fetching products:", error)
-      setError(error.message || "Failed to fetch products")
-    } finally {
-      setLoading(false)
-    }
-  }, [supabase])
+  const dispatch = useDispatch();
+  const products = useSelector(selectAdminProducts);
+  const loading = useSelector(selectAdminProductsLoading);
+  const error = useSelector(selectAdminProductsError);
 
   useEffect(() => {
-    fetchProducts()
-  }, [fetchProducts])
+    dispatch(fetchAdminProducts() as any);
+  }, [dispatch]);
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this product?")) return
-
     try {
-      const { error } = await supabase.from("products").delete().eq("id", id)
-
-      if (error) throw error
-
-      setProducts(products.filter((p) => p.id !== id))
-    } catch (error: any) {
-      console.error("[v0] Error deleting product:", error)
-      setError(error.message || "Failed to delete product")
+      await dispatch(deleteProduct(id) as any);
+    } catch (err: any) {
+      alert(err.message || "Failed to delete product");
     }
   }
 
   async function handleStatusChange(productId: string, newStatus: Product['status']) {
     try {
-      const { error } = await supabase
-        .from("products")
-        .update({ status: newStatus })
-        .eq("id", productId)
-
-      if (error) throw error
-
-      setProducts((prevProducts) =>
-        prevProducts.map((p) => (p.id === productId ? { ...p, status: newStatus } : p))
-      )
-    } catch (error: any) {
-      console.error("[v0] Error updating product status:", error)
-      setError(error.message || "Failed to update product status")
+      await dispatch(updateProduct({ id: productId, status: newStatus }) as any);
+    } catch (err: any) {
+      alert(err.message || "Failed to update product status");
     }
   }
 
   async function handleToggleFeatured(productId: string, currentFeatured: boolean) {
     try {
-      const { error } = await supabase
-        .from("products")
-        .update({ is_featured: !currentFeatured })
-        .eq("id", productId)
-
-      if (error) throw error
-
-      setProducts((prevProducts) =>
-        prevProducts.map((p) => (p.id === productId ? { ...p, is_featured: !currentFeatured } : p))
-      )
-    } catch (error: any) {
-      console.error("[v0] Error toggling featured status:", error)
-      setError(error.message || "Failed to toggle featured status")
+      await dispatch(updateProduct({ id: productId, is_featured: !currentFeatured }) as any);
+    } catch (err: any) {
+      alert(err.message || "Failed to toggle featured status");
     }
   }
 

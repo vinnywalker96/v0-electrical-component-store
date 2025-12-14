@@ -14,16 +14,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchAdminUsers, updateAdminUserRole, selectAdminUsers, selectAdminUsersLoading, selectAdminUsersError } from '@/lib/store/adminUsersSlice';
 
 export default function AdminUsersPage() {
   const supabase = createClient()
-  const [profiles, setProfiles] = useState<UserProfile[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const dispatch = useDispatch();
+  const users = useSelector(selectAdminUsers);
+  const loading = useSelector(selectAdminUsersLoading);
+  const error = useSelector(selectAdminUsersError);
+
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null)
 
-  const fetchUsers = useCallback(async () => {
+  // This part still uses local state for current user's info
+  const checkCurrentUser = useCallback(async () => {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
@@ -32,27 +37,15 @@ export default function AdminUsersPage() {
       const { data: profileData, error: profileError } = await supabase.from("profiles").select("role").eq("id", user?.id).single();
       if (profileError) throw profileError;
       setCurrentUserRole(profileData?.role || null);
-
-
-      const response = await fetch("/api/admin/users")
-      const data: UserProfile[] | { error: string } = await response.json()
-
-      if (!response.ok) {
-        throw new Error((data as { error: string }).error || "Failed to fetch users")
-      }
-
-      setProfiles(data as UserProfile[])
-    } catch (err: any) {
-      console.error("[v0] Error fetching users:", err)
-      setError(err.message || "Failed to fetch users")
-    } finally {
-      setLoading(false)
+    } catch (err) {
+      console.error("Error fetching current user info:", err);
     }
-  }, [supabase])
+  }, [supabase]);
 
   useEffect(() => {
-    fetchUsers()
-  }, [fetchUsers])
+    checkCurrentUser();
+    dispatch(fetchAdminUsers() as any); // Fetch users from Redux thunk
+  }, [dispatch, checkCurrentUser]);
 
   async function handleRoleChange(userId: string, newRole: string) {
     if (userId === currentUserId) {
@@ -65,24 +58,9 @@ export default function AdminUsersPage() {
     }
 
     try {
-      const response = await fetch("/api/admin/users", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, newRole }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to update role")
-      }
-
-      setProfiles((prevProfiles) =>
-        prevProfiles.map((p) => (p.id === userId ? { ...p, role: newRole } : p))
-      )
+      await dispatch(updateAdminUserRole({ userId, newRole }) as any);
     } catch (err: any) {
-      console.error("[v0] Error updating role:", err)
-      setError(err.message || "Failed to update role")
+      alert(err.message || "Failed to update role"); // Display error to user
     }
   }
 
@@ -108,7 +86,7 @@ export default function AdminUsersPage() {
           <CardContent className="pt-6">
             {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
 
-            {profiles.length === 0 ? (
+            {users.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-slate-600 mb-4">No users found</p>
               </div>
@@ -124,17 +102,17 @@ export default function AdminUsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {profiles.map((profile) => (
-                      <tr key={profile.id} className="border-b hover:bg-slate-50">
+                    {users.map((user) => (
+                      <tr key={user.id} className="border-b hover:bg-slate-50">
                         <td className="py-3 px-4 font-semibold">
-                          {profile.name}
+                          {user.first_name} {user.last_name}
                         </td>
-                        <td className="py-3 px-4">{profile.email}</td>
+                        <td className="py-3 px-4">{user.email}</td>
                         <td className="py-3 px-4">
                           <Select
-                            value={profile.role}
-                            onValueChange={(newRole) => handleRoleChange(profile.id, newRole)}
-                            disabled={profile.id === currentUserId || (profile.role === "super_admin" && currentUserRole !== "super_admin")}
+                            value={user.role}
+                            onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
+                            disabled={user.id === currentUserId || (user.role === "super_admin" && currentUserRole !== "super_admin")}
                           >
                             <SelectTrigger className="w-[150px]">
                               <SelectValue placeholder="Select Role" />

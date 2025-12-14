@@ -35,7 +35,7 @@ export default async function VendorLayout({
     .eq("id", user.id)
     .single();
 
-  if (profileError || !profileData || !["vendor", "admin", "super_admin"].includes(profileData.role)) {
+  if (profileError || !profileData || !["vendor", "super_admin"].includes(profileData.role)) {
     redirect("/auth/login?message=unauthorized");
   }
 

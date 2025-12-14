@@ -1,13 +1,24 @@
 "use client"
 
 import Link from "next/link"
-import { useCart } from "@/lib/context/cart-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, ArrowLeft, Plus, Minus } from "lucide-react"
+import { useSelector, useDispatch } from 'react-redux';
+import { selectCartItems, selectCartTotal, selectCartTax, selectCartLoading, fetchCart, removeFromCart, updateQuantity, clearCart } from '@/lib/store/cartSlice';
+import { useEffect } from "react";
 
 export default function CartPage() {
-  const { items, total, tax, clearCart, removeFromCart, updateQuantity, loading } = useCart()
+  const items = useSelector(selectCartItems);
+  const total = useSelector(selectCartTotal);
+  const tax = useSelector(selectCartTax);
+  const loading = useSelector(selectCartLoading);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchCart() as any); // Fetch cart when component mounts
+  }, [dispatch]);
+
 
   if (loading) {
     return (
@@ -72,14 +83,14 @@ export default function CartPage() {
                     {/* Quantity Controls */}
                     <div className="flex items-center gap-2 border rounded px-2">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() => dispatch(updateQuantity({ cartItemId: item.id, quantity: item.quantity - 1 }) as any)}
                         className="p-1 hover:bg-slate-100 rounded"
                       >
                         <Minus size={16} />
                       </button>
                       <span className="w-8 text-center font-semibold">{item.quantity}</span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => dispatch(updateQuantity({ cartItemId: item.id, quantity: item.quantity + 1 }) as any)}
                         className="p-1 hover:bg-slate-100 rounded"
                       >
                         <Plus size={16} />
@@ -94,7 +105,7 @@ export default function CartPage() {
 
                     {/* Remove Button */}
                     <button
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => dispatch(removeFromCart(item.id) as any)}
                       className="p-2 hover:bg-red-50 rounded text-red-600"
                     >
                       <Trash2 size={20} />
@@ -133,7 +144,7 @@ export default function CartPage() {
                   </Button>
                 </Link>
 
-                <Button variant="outline" className="w-full bg-transparent" onClick={() => clearCart()}>
+                <Button variant="outline" className="w-full bg-transparent" onClick={() => dispatch(clearCart() as any)}>
                   Clear Cart
                 </Button>
               </CardContent>

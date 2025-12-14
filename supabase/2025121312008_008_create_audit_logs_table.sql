@@ -18,9 +18,9 @@ ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Only admins and super_admins can read audit logs
 CREATE POLICY "Allow admin and super_admin read audit logs" ON public.audit_logs
-FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin'));
+FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'super_admin');
 
 -- No one except database functions/triggers should insert directly, but for API usage:
 -- Only authenticated users (admins/super_admins) can insert
 CREATE POLICY "Allow authenticated admin/super_admin to insert audit logs" ON public.audit_logs
-FOR INSERT WITH CHECK ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin'));
+FOR INSERT WITH CHECK ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'super_admin');

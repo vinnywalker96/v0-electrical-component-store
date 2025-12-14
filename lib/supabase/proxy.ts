@@ -35,14 +35,38 @@ export async function updateSession(request: NextRequest) {
       .single()
 
     if (profileError || !profileData) {
-      console.error("Error fetching profile in middleware:", profileError)
-      // If a user is authenticated but their profile can't be found, log the error but don't redirect to login.
-      // This scenario should ideally not happen if profile creation on signup is robust.
+      // The error code for "No rows found" is PGRST116. If we see this, it means the user is authenticated
+      // but doesn't have a profile. We should create one for them.
+      if (profileError && profileError.code === "PGRST116") {
+        console.log("No profile found for user, creating one...")
+
+        const { data: newUser, error: newUserError } = await supabase.from("profiles").insert({
+          id: user.id,
+          email: user.email,
+          first_name: user.user_metadata.first_name,
+          last_name: user.user_metadata.last_name,
+          name: `${user.user_metadata.first_name} ${user.user_metadata.last_name}`.trim() || user.email,
+          role: "customer",
+        })
+
+        if (newUserError) {
+          console.error("Error creating profile in middleware:", newUserError)
+        } else {
+          console.log("Profile created successfully for user:", user.id)
+          // Profile is created, but we don't have the role yet in this path.
+          // We can let the request continue and on the next request the profile will be found.
+          // Or we can assume 'customer' role and proceed. For now, we'll let it proceed.
+        }
+      } else {
+        console.error("Error fetching profile in middleware:", profileError)
+        // If a user is authenticated but their profile can't be found, log the error but don't redirect to login.
+        // This scenario should ideally not happen if profile creation on signup is robust.
+      }
     } else {
       const userRole = profileData.role
 
       // Role-based protection for /admin routes
-      if (request.nextUrl.pathname.startsWith("/admin") && !["admin", "super_admin"].includes(userRole)) {
+      if (request.nextUrl.pathname.startsWith("/admin") && userRole !== "super_admin") {
         return NextResponse.redirect(new URL("/auth/login?message=unauthorized", request.url))
       }
 

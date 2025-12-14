@@ -34,7 +34,7 @@ FOR DELETE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 've
 
 -- Admins and Super Admins have full CUD access to all products
 CREATE POLICY "Allow admin and super_admin full products access" ON public.products
-FOR ALL USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin'));
+FOR ALL USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('super_admin', 'admin'));
 
 
 -- RLS for profiles table
@@ -57,17 +57,19 @@ FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Admins and Super Admins can read all profiles
 CREATE POLICY "Allow admin and super_admin read all profiles" ON public.profiles
-FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin'));
+FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('super_admin', 'admin'));
 
 -- Admins and Super Admins can update roles (except super_admin role for admin)
-CREATE POLICY "Allow admin to update profiles excluding super_admin role" ON public.profiles
+-- Super Admins can update any profile
+CREATE POLICY "Allow super_admin to update any profile" ON public.profiles
 FOR UPDATE
-USING (
-  (SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin')
-)
-WITH CHECK (
-  (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'super_admin' OR (role <> 'super_admin')
-);
+USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'super_admin');
+
+-- Admins can update non-super_admin profiles
+CREATE POLICY "Allow admin to update non_super_admin profiles" ON public.profiles
+FOR UPDATE
+USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin')
+WITH CHECK (NEW.role <> 'super_admin' AND OLD.role <> 'super_admin');
 
 -- Super Admins can delete any profile
 CREATE POLICY "Allow super_admin delete profiles" ON public.profiles
@@ -105,11 +107,11 @@ FOR SELECT USING (
 
 -- Admins and Super Admins have full read access to all orders
 CREATE POLICY "Allow admin and super_admin read all orders" ON public.orders
-FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin'));
+FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('super_admin', 'admin'));
 
 -- Admins and Super Admins can update all orders (e.g., status, payment_status)
 CREATE POLICY "Allow admin and super_admin update all orders" ON public.orders
-FOR UPDATE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin'));
+FOR UPDATE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('super_admin', 'admin'));
 
 -- RLS for order_items table
 -- Remove existing policies to redefine them
@@ -135,4 +137,4 @@ FOR SELECT USING (
 
 -- Admins and Super Admins can read all order items
 CREATE POLICY "Allow admin and super_admin read all order_items" ON public.order_items
-FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin'));
+FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('super_admin', 'admin'));

@@ -11,7 +11,7 @@ DROP POLICY IF EXISTS "Allow admin read all orders" ON orders;
 CREATE POLICY "Allow admin read all orders" ON orders
   FOR SELECT USING (
     auth.uid() IN (
-      SELECT id FROM profiles WHERE role IN ('admin', 'super_admin')
+      SELECT id FROM profiles WHERE role = 'super_admin'
     ) OR auth.uid() = user_id
   );
 
@@ -21,6 +21,6 @@ DROP POLICY IF EXISTS "Allow admin update orders" ON orders;
 CREATE POLICY "Allow admin update orders" ON orders
   FOR UPDATE USING (
     auth.uid() IN (
-      SELECT id FROM profiles WHERE role IN ('admin', 'super_admin')
+      SELECT id FROM profiles WHERE role = 'super_admin'
     )
   );

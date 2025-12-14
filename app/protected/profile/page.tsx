@@ -7,7 +7,6 @@ import type { UserProfile } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft } from "lucide-react"
 
 export default function ProfilePage() {
   const supabase = createClient()
@@ -88,12 +87,9 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <Link href="/protected/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
-          <ArrowLeft size={20} />
-          Back to Dashboard
-        </Link>
-
-        <h1 className="text-4xl font-bold text-foreground mb-8">My Profile</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-foreground">My Profile</h1>
+        </div>
 
         <Card>
           <CardHeader>

@@ -24,8 +24,8 @@ FOR SELECT USING (reporter_id = auth.uid());
 
 -- Allow admins and super_admins to read all reports
 CREATE POLICY "Allow admin and super_admin read all product reports" ON public.product_reports
-FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin'));
+FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'super_admin');
 
 -- Allow admins and super_admins to update report status
 CREATE POLICY "Allow admin and super_admin update product reports" ON public.product_reports
-FOR UPDATE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('admin', 'super_admin'));
+FOR UPDATE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'super_admin');

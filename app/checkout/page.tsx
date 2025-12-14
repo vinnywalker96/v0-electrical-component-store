@@ -3,8 +3,8 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useCart } from "@/lib/context/cart-context"
-import { useLanguage } from "@/lib/context/language-context"
+// Removed: import { useCart } from "@/lib/context/cart-context"
+// Removed: import { useLanguage } from "@/lib/context/language-context"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,27 +12,45 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 
+import { useSelector, useDispatch } from 'react-redux';
+import { selectCartItems, selectCartTotal, selectCartTax, selectCartLoading, clearCart } from '@/lib/store/cartSlice';
+import { selectT } from '@/lib/store/languageSlice';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckoutFormSchema } from "@/lib/schemas";
+import type { z } from 'zod';
+
+type CheckoutFormInputs = z.infer<typeof CheckoutFormSchema>;
+
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, total, tax, clearCart, loading } = useCart()
-  const { t } = useLanguage()
-  const supabase = createClient()
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const dispatch = useDispatch();
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    shippingAddress: "",
-    shippingCity: "",
-    shippingZip: "",
-    billingAddress: "",
-    billingCity: "",
-    billingZip: "",
-    paymentMethod: "bank_transfer",
-  })
+  const items = useSelector(selectCartItems);
+  const total = useSelector(selectCartTotal);
+  const tax = useSelector(selectCartTax);
+  const cartLoading = useSelector(selectCartLoading); // Renamed to avoid conflict
+  const t = useSelector(selectT);
+  const supabase = createClient(); // Keep for user auth check
+
+  const [user, setUser] = useState<any>(null); // Keep local for now, can be moved to auth slice later
+
+  const { register, handleSubmit, setValue, getValues, formState: { errors, isSubmitting } } = useForm<CheckoutFormInputs>({
+    resolver: zodResolver(CheckoutFormSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      shippingAddress: "",
+      shippingCity: "",
+      shippingZip: "",
+      billingAddress: "",
+      billingCity: "",
+      billingZip: "",
+      paymentMethod: "bank_transfer",
+    }
+  });
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -42,17 +60,14 @@ export default function CheckoutPage() {
       setUser(user)
 
       if (user?.email) {
-        setFormData((prev) => ({
-          ...prev,
-          email: user.email || "",
-        }))
+        setValue("email", user.email);
       }
     }
 
     fetchUser()
-  }, [supabase.auth])
+  }, [supabase.auth, setValue]);
 
-  if (loading) {
+  if (cartLoading || isSubmitting) { // Use cartLoading for cart items, isSubmitting for form submission
     return <div className="text-center py-12">Loading...</div>
   }
 
@@ -73,25 +88,22 @@ export default function CheckoutPage() {
     )
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-
+  const onSubmit = async (data: CheckoutFormInputs) => {
     if (!user) {
       router.push("/auth/login")
       return
     }
 
-    setIsProcessing(true)
-
+    // isSubmitting from useForm takes care of processing state
     try {
       const checkoutPayload = {
-        formData,
-        cartItems: items, // Pass cart items to the API
-        total,
-        tax,
+        formData: data, // Use data from react-hook-form
+        cartItems: items, // Pass cart items from Redux
+        total, // From Redux
+        tax, // From Redux
       }
 
-      const response = await fetch("/api/orders/create", {
+      const response = await fetch("/api/checkout", { // API is /api/checkout, not /api/orders/create
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -114,29 +126,27 @@ export default function CheckoutPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             orderId: orderId, // Use orderId from the API response
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
             total,
             items: items.map((item) => ({
               name: item.product?.name || "Product",
               quantity: item.quantity,
               price: item.product?.price || 0,
             })),
-            paymentMethod: formData.paymentMethod,
+            paymentMethod: data.paymentMethod,
           }),
         })
       } catch (error) {
         console.error("[v0] Error sending confirmation email:", error)
       }
 
-      await clearCart()
+      await dispatch(clearCart() as any); // Use Redux clearCart thunk
       router.push(`/order-confirmation/${orderId}`) // Use orderId from the API response
     } catch (error: any) {
       console.error("[v0] Checkout error:", error)
       alert(error.message || "An error occurred during checkout. Please try again.")
-    } finally {
-      setIsProcessing(false)
     }
   }
 
@@ -147,7 +157,7 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Checkout Form */}
-          <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="lg:col-span-2 space-y-6">
             {/* Personal Information */}
             <Card>
               <CardHeader>
@@ -157,30 +167,26 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <Input
                     placeholder={t("checkout.first_name")}
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    required
+                    {...register("firstName")}
                   />
+                  {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName.message}</p>}
                   <Input
                     placeholder={t("checkout.last_name")}
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    required
+                    {...register("lastName")}
                   />
+                  {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName.message}</p>}
                 </div>
                 <Input
                   placeholder={t("checkout.email")}
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
+                  {...register("email")}
                 />
+                {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
                 <Input
                   placeholder={t("checkout.phone")}
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
+                  {...register("phone")}
                 />
+                {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
               </CardContent>
             </Card>
 
@@ -192,23 +198,20 @@ export default function CheckoutPage() {
               <CardContent className="space-y-4">
                 <Textarea
                   placeholder={t("checkout.street_address")}
-                  value={formData.shippingAddress}
-                  onChange={(e) => setFormData({ ...formData, shippingAddress: e.target.value })}
-                  required
+                  {...register("shippingAddress")}
                 />
+                {errors.shippingAddress && <p className="text-red-500 text-sm">{errors.shippingAddress.message}</p>}
                 <div className="grid grid-cols-2 gap-4">
                   <Input
                     placeholder={t("checkout.city")}
-                    value={formData.shippingCity}
-                    onChange={(e) => setFormData({ ...formData, shippingCity: e.target.value })}
-                    required
+                    {...register("shippingCity")}
                   />
+                  {errors.shippingCity && <p className="text-red-500 text-sm">{errors.shippingCity.message}</p>}
                   <Input
                     placeholder={t("checkout.zip_code")}
-                    value={formData.shippingZip}
-                    onChange={(e) => setFormData({ ...formData, shippingZip: e.target.value })}
-                    required
+                    {...register("shippingZip")}
                   />
+                  {errors.shippingZip && <p className="text-red-500 text-sm">{errors.shippingZip.message}</p>}
                 </div>
               </CardContent>
             </Card>
@@ -221,23 +224,20 @@ export default function CheckoutPage() {
               <CardContent className="space-y-4">
                 <Textarea
                   placeholder={t("checkout.street_address")}
-                  value={formData.billingAddress}
-                  onChange={(e) => setFormData({ ...formData, billingAddress: e.target.value })}
-                  required
+                  {...register("billingAddress")}
                 />
+                {errors.billingAddress && <p className="text-red-500 text-sm">{errors.billingAddress.message}</p>}
                 <div className="grid grid-cols-2 gap-4">
                   <Input
                     placeholder={t("checkout.city")}
-                    value={formData.billingCity}
-                    onChange={(e) => setFormData({ ...formData, billingCity: e.target.value })}
-                    required
+                    {...register("billingCity")}
                   />
+                  {errors.billingCity && <p className="text-red-500 text-sm">{errors.billingCity.message}</p>}
                   <Input
                     placeholder={t("checkout.zip_code")}
-                    value={formData.billingZip}
-                    onChange={(e) => setFormData({ ...formData, billingZip: e.target.value })}
-                    required
+                    {...register("billingZip")}
                   />
+                  {errors.billingZip && <p className="text-red-500 text-sm">{errors.billingZip.message}</p>}
                 </div>
               </CardContent>
             </Card>
@@ -249,8 +249,8 @@ export default function CheckoutPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Select
-                  value={formData.paymentMethod}
-                  onValueChange={(value) => setFormData({ ...formData, paymentMethod: value })}
+                  value={getValues("paymentMethod")}
+                  onValueChange={(value) => setValue("paymentMethod", value as CheckoutFormInputs["paymentMethod"])}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -262,21 +262,21 @@ export default function CheckoutPage() {
                   </SelectContent>
                 </Select>
 
-                {formData.paymentMethod === "bank_transfer" && (
+                {getValues("paymentMethod") === "bank_transfer" && (
                   <div className="p-4 bg-blue-50 rounded text-sm text-slate-700">
                     <p className="font-semibold mb-2">{t("checkout.bank_transfer_instructions")}</p>
                     <p>{t("checkout.receive_bank_details")}</p>
                   </div>
                 )}
 
-                {formData.paymentMethod === "cash_on_delivery" && (
+                {getValues("paymentMethod") === "cash_on_delivery" && (
                   <div className="p-4 bg-blue-50 rounded text-sm text-slate-700">
                     <p className="font-semibold mb-2">{t("checkout.cash_on_delivery_instructions")}</p>
                     <p>{t("checkout.pay_delivery_driver")}</p>
                   </div>
                 )}
 
-                {formData.paymentMethod === "card" && (
+                {getValues("paymentMethod") === "card" && (
                   <div className="p-4 bg-yellow-50 rounded text-sm text-slate-700">
                     <p>{t("checkout.card_payment_coming_soon")}</p>
                   </div>
@@ -286,11 +286,11 @@ export default function CheckoutPage() {
 
             <Button
               type="submit"
-              disabled={isProcessing || formData.paymentMethod === "card"}
+              disabled={isSubmitting || getValues("paymentMethod") === "card"}
               size="lg"
               className="w-full"
             >
-              {isProcessing ? t("checkout.processing") : t("checkout.complete_order")}
+              {isSubmitting ? t("checkout.processing") : t("checkout.complete_order")}
             </Button>
           </form>
 

@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createServerClient();
     const currentUserRole = await getCurrentUserRole(supabase);
 
-    if (!currentUserRole || !["admin", "super_admin"].includes(currentUserRole)) {
+    if (!currentUserRole || (currentUserRole !== "super_admin" && currentUserRole !== "admin")) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -49,7 +49,7 @@ export async function PUT(request: NextRequest) {
     const supabase = await createServerClient();
     const currentUserRole = await getCurrentUserRole(supabase);
 
-    if (!currentUserRole || !["admin", "super_admin"].includes(currentUserRole)) {
+    if (!currentUserRole || (currentUserRole !== "super_admin" && currentUserRole !== "admin")) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 

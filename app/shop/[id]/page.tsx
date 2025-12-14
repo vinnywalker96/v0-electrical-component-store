@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Minus, Plus, ShoppingCart } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
-import { useCart } from "@/lib/context/cart-context"
+// Removed: import { useCart } from "@/lib/context/cart-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import type { Product } from "@/lib/types"
@@ -16,6 +16,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+import { useDispatch } from 'react-redux';
+import { addToCart } from '@/lib/store/cartSlice';
+
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -25,7 +28,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState(false)
-  const { addToCart } = useCart()
+  const dispatch = useDispatch(); // Use Redux dispatch
   const supabase = createClient()
 
   // State for product reporting
@@ -68,7 +71,7 @@ export default function ProductDetailPage() {
         return
       }
 
-      await addToCart(product.id, quantity)
+      await dispatch(addToCart({ productId: product.id, quantity }) as any)
       setAdded(true)
       setTimeout(() => setAdded(false), 2000)
     } catch (error) {

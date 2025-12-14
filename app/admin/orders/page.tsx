@@ -2,47 +2,33 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client" // Keep createClient if needed for auth in future
 import type { Order } from "@/lib/types"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft } from "lucide-react"
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchAdminOrders, updateOrderStatus as updateOrderReduxStatus, selectAdminOrders, selectAdminOrdersLoading, selectAdminOrdersError } from '@/lib/store/adminOrdersSlice';
 
 export default function AdminOrdersPage() {
-  const supabase = createClient()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
+  const dispatch = useDispatch();
+  const orders = useSelector(selectAdminOrders);
+  const loading = useSelector(selectAdminOrdersLoading);
+  const error = useSelector(selectAdminOrdersError); // Add error state from Redux
   const [statusFilter, setStatusFilter] = useState<string>("all")
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false })
-
-        setOrders(data || [])
-      } catch (error) {
-        console.error("[v0] Error fetching orders:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchOrders()
-  }, [supabase])
+    dispatch(fetchAdminOrders() as any);
+  }, [dispatch]);
 
   async function updateOrderStatus(orderId: string, newStatus: string) {
     try {
-      const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId)
-
-      if (error) throw error
-
-      setOrders(orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)))
-    } catch (error) {
-      console.error("[v0] Error updating order:", error)
+      await dispatch(updateOrderReduxStatus({ orderId, status: newStatus }) as any);
+    } catch (err: any) {
+      alert(err.message || "Failed to update order status"); // Display error to user
     }
   }
-
   const filteredOrders = statusFilter === "all" ? orders : orders.filter((o) => o.status === statusFilter)
 
   if (loading) {
@@ -79,6 +65,8 @@ export default function AdminOrdersPage() {
 
         <Card>
           <CardContent className="pt-6">
+            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
+
             {filteredOrders.length === 0 ? (
               <p className="text-center text-slate-600 py-12">No orders found</p>
             ) : (
