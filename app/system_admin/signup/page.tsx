@@ -9,10 +9,9 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
 
-export default function SignUpPage() {
+export default function SystemAdminSignUpPage() {
   const router = useRouter()
   const supabase = createClient()
   const { toast } = useToast()
@@ -60,13 +59,19 @@ export default function SignUpPage() {
 
       if (authData.user) {
         try {
+          // Hardcode super_admin role for system admin signup
+          const initialRole = "customer" // Default to customer until approved
+          const accountStatus = "pending" // Super Admins always need approval
+          const roleRequested = "super_admin"
+
           const { error: profileError } = await supabase.from("profiles").insert({
             id: authData.user.id,
             email: formData.email,
             first_name: formData.firstName,
             last_name: formData.lastName,
-            role: "customer",
-            account_status: "approved",
+            role: initialRole,
+            account_status: accountStatus,
+            role_requested: roleRequested,
           })
 
           if (profileError && !profileError.message.includes("duplicate")) {
@@ -85,11 +90,11 @@ export default function SignUpPage() {
 
       setSuccess(true)
       toast({
-        title: "Account Created!",
-        description: "You will be redirected to sign in shortly.",
+        title: "Super Admin Account Created!",
+        description: "Your account is pending approval by an existing Super Administrator.",
       })
       setTimeout(() => {
-        router.push("/auth/login?message=signup-success")
+        router.push("/system_admin/login?message=signup-success")
       }, 2000)
     } catch (err: any) {
       console.error("[v0] Sign up error:", err)
@@ -105,9 +110,9 @@ export default function SignUpPage() {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <div className="text-green-600 text-5xl mb-4">✓</div>
-            <h2 className="text-2xl font-bold mb-2">Account Created!</h2>
+            <h2 className="text-2xl font-bold mb-2">Super Admin Account Created!</h2>
             <p className="text-slate-600">
-              A confirmation email has been sent. You&apos;ll be redirected to sign in shortly.
+              Your account is pending approval by an existing Super Administrator. You will be redirected to the login page shortly.
             </p>
           </CardContent>
         </Card>
@@ -119,7 +124,7 @@ export default function SignUpPage() {
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Create Account</CardTitle>
+          <CardTitle className="text-2xl text-center">Create System Admin Account</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUp} className="space-y-4">
@@ -191,8 +196,8 @@ export default function SignUpPage() {
 
           <div className="mt-6 text-center text-sm">
             <p className="text-slate-600">
-              Already have an account?{" "}
-              <Link href="/auth/login" className="text-blue-600 hover:text-blue-700 font-semibold">
+              Already have a system admin account?{" "}
+              <Link href="/system_admin/login" className="text-blue-600 hover:text-blue-700 font-semibold">
                 Sign in
               </Link>
             </p>
@@ -201,18 +206,6 @@ export default function SignUpPage() {
           <Link href="/" className="block text-center mt-4 text-sm text-blue-600 hover:text-blue-700">
             Back to Home
           </Link>
-
-          <div className="mt-6 text-center text-sm">
-            <p className="text-slate-600">
-              Want to sell on our platform?{" "}
-              <Link href="/vendor_admin/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Register as a Vendor
-              </Link>
-            </p>
-            <p className="text-xs text-slate-500 mt-1">
-              Vendor accounts require approval from a Super Administrator.
-            </p>
-          </div>
         </CardContent>
       </Card>
     </main>

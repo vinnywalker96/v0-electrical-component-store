@@ -1,179 +1,152 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import type { Product } from "@/lib/types"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Trash2, Edit, Plus, ArrowLeft } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useToast } from "@/components/ui/use-toast"
+import { PackagePlus, Edit, Trash2, ArrowLeft } from "lucide-react"
+import Image from "next/image"
 
 export default function VendorProductsPage() {
   const supabase = createClient()
+  const router = useRouter()
+  const { toast } = useToast()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const fetchVendorProducts = useCallback(async () => {
+    setLoading(true)
+    setError(null)
     try {
-      setLoading(true)
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-
-      if (userError || !user) {
-        throw new Error("User not authenticated.")
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setError("User not authenticated.")
+        router.push("/vendor_admin/login")
+        return
       }
 
-      const { data, error } = await supabase
+      // In a real application, this would be an API route /api/vendor/products
+      const { data, error: fetchError } = await supabase
         .from("products")
-        .select(`
-          *,
-          profiles (
-            first_name,
-            last_name
-          )
-        `)
-        .eq("seller_id", user.id) // Filter by seller_id
+        .select("*")
+        .eq("seller_id", user.id)
         .order("created_at", { ascending: false })
 
-      if (error) throw error
-
+      if (fetchError) throw fetchError
       setProducts(data || [])
-    } catch (error: any) {
-      console.error("[v0] Error fetching vendor products:", error)
-      setError(error.message || "Failed to fetch products")
+    } catch (err: any) {
+      console.error("Error fetching vendor products:", err)
+      setError(err.message)
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
-  }, [supabase])
+  }, [supabase, router, toast])
 
   useEffect(() => {
     fetchVendorProducts()
   }, [fetchVendorProducts])
 
-  async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this product?")) return
-
+  const handleDeleteProduct = async (productId: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) {
+      return
+    }
     try {
-      const { error } = await supabase.from("products").delete().eq("id", id)
+      // In a real application, this would be an API route /api/vendor/products
+      const { error: deleteError } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", productId)
+      
+      if (deleteError) throw deleteError
 
-      if (error) throw error
-
-      setProducts(products.filter((p) => p.id !== id))
-    } catch (error: any) {
-      console.error("[v0] Error deleting product:", error)
-      setError(error.message || "Failed to delete product")
+      toast({
+        title: "Success",
+        description: "Product deleted successfully.",
+      })
+      fetchVendorProducts() // Refresh list
+    } catch (err: any) {
+      console.error("Error deleting product:", err)
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      })
     }
   }
 
   if (loading) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-xl text-foreground">Loading products...</p>
-      </main>
-    )
+    return <div className="text-center py-12">Loading products...</div>
+  }
+
+  if (error) {
+    return <div className="text-center py-12 text-destructive">Error: {error}</div>
   }
 
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <Link href="/protected/vendor/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
-          <ArrowLeft size={20} />
-          Back to Vendor Dashboard
-        </Link>
-
         <div className="flex justify-between items-center mb-8">
+          <Link href="/protected/vendor/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-700">
+            <ArrowLeft size={20} />
+            Back to Dashboard
+          </Link>
           <h1 className="text-4xl font-bold text-foreground">My Products</h1>
           <Link href="/protected/vendor/products/new">
-            <Button className="flex gap-2">
-              <Plus size={20} />
-              Add Product
+            <Button>
+              <PackagePlus className="w-4 h-4 mr-2" />
+              Add New Product
             </Button>
           </Link>
         </div>
 
-        <Card>
-          <CardContent className="pt-6">
-            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
+        {products.length === 0 ? (
+          <p className="text-foreground">You haven&apos;t added any products yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map((product) => (
+              <Card key={product.id}>
+                <CardHeader>
+                  <CardTitle>{product.name}</CardTitle>
+                  <p className="text-sm text-muted-foreground">SKU: {product.sku || "N/A"}</p>
+                </CardHeader>
+                <CardContent>
+                  {product.image_url && (
+                    <div className="relative w-full h-48 mb-4">
+                      <Image src={product.image_url} alt={product.name} layout="fill" objectFit="contain" className="rounded-md" />
+                    </div>
+                  )}
+                  <p className="text-xl font-bold mb-2">R{product.price.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{product.description}</p>
+                  <p className="text-sm">Stock: {product.stock_quantity}</p>
+                  <p className="text-sm">Status: <span className={`capitalize font-semibold ${product.status === "approved" ? "text-green-600" : product.status === "pending" ? "text-orange-600" : "text-red-600"}`}>{product.status}</span></p>
 
-            {products.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-slate-600 mb-4">No products yet</p>
-                <Link href="/protected/vendor/products/new">
-                  <Button>Create First Product</Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-semibold">Name</th>
-                      <th className="text-left py-3 px-4 font-semibold">Category</th>
-                      <th className="text-left py-3 px-4 font-semibold">Status</th>
-                      <th className="text-left py-3 px-4 font-semibold">Featured</th>
-                      <th className="text-right py-3 px-4 font-semibold">Price</th>
-                      <th className="text-right py-3 px-4 font-semibold">Stock</th>
-                      <th className="text-center py-3 px-4 font-semibold">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {products.map((product) => (
-                      <tr key={product.id} className="border-b hover:bg-slate-50">
-                        <td className="py-3 px-4 font-semibold">{product.name}</td>
-                        <td className="py-3 px-4">{product.category}</td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-1 rounded text-sm font-medium ${
-                              product.status === "approved" ? "bg-green-100 text-green-800" :
-                              product.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                              "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-1 rounded text-sm font-medium ${
-                              product.is_featured ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {product.is_featured ? "Yes" : "No"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">${product.price.toFixed(2)}</td>
-                        <td className="py-3 px-4 text-right">
-                          <span
-                            className={`px-2 py-1 rounded text-sm ${product.stock_quantity > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-                          >
-                            {product.stock_quantity}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-center flex justify-center gap-2">
-                          <Link href={`/protected/vendor/products/${product.id}/edit`}>
-                            <Button variant="outline" size="sm" className="gap-1 bg-transparent">
-                              <Edit size={16} />
-                              Edit
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 gap-1 bg-transparent"
-                            onClick={() => handleDelete(product.id)}
-                          >
-                            <Trash2 size={16} />
-                            Delete
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <div className="flex gap-2 mt-4">
+                    <Link href={`/protected/vendor/products/${product.id}/edit`}>
+                      <Button variant="outline" size="sm">
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                    </Link>
+                    <Button variant="destructive" size="sm" onClick={() => handleDeleteProduct(product.id)}>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   )

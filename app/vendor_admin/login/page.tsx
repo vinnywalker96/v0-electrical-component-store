@@ -9,14 +9,16 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 
-export default function LoginPage() {
+export default function VendorAdminLoginPage() {
   const router = useRouter()
   const supabase = createClient()
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  })
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -25,8 +27,8 @@ export default function LoginPage() {
 
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: formData.email,
+        password: formData.password,
       })
 
       if (signInError) throw signInError
@@ -50,15 +52,10 @@ export default function LoginPage() {
           throw new Error("Your account has been rejected. Please contact support.")
         }
 
-        // Redirect based on role
-        if (profile.role === "customer") {
-          router.push("/protected/dashboard")
-        } else if (profile.role === "vendor_admin") {
-          router.push("/protected/vendor/dashboard") // Will create this page later
-        } else if (profile.role === "admin" || profile.role === "super_admin") {
-          router.push("/admin/dashboard")
+        if (profile.role === "vendor_admin") {
+          router.push("/protected/vendor/dashboard") // Redirect to vendor dashboard
         } else {
-          throw new Error("You do not have the correct privileges to log in via this portal.")
+          throw new Error("You do not have vendor admin privileges.")
         }
       }
     } catch (err: any) {
@@ -77,7 +74,7 @@ export default function LoginPage() {
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Sign In</CardTitle>
+          <CardTitle className="text-2xl text-center">Vendor Admin Login</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -88,8 +85,8 @@ export default function LoginPage() {
               <Input
                 type="email"
                 placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
                 disabled={loading}
               />
@@ -100,27 +97,22 @@ export default function LoginPage() {
               <Input
                 type="password"
                 placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 disabled={loading}
               />
-              <div className="text-right mt-1">
-                <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
-                  Forgot Password?
-                </Link>
-              </div>
             </div>
 
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? "Logging in..." : "Login"}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm">
             <p className="text-slate-600">
-              Don&apos;t have an account?{" "}
-              <Link href="/auth/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
+              Don&apos;t have a vendor admin account?{" "}
+              <Link href="/vendor_admin/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
                 Sign up
               </Link>
             </p>
@@ -129,21 +121,6 @@ export default function LoginPage() {
           <Link href="/" className="block text-center mt-4 text-sm text-blue-600 hover:text-blue-700">
             Back to Home
           </Link>
-
-          <div className="mt-6 text-center text-sm">
-            <p className="text-slate-600">
-              Are you a system admin?{" "}
-              <Link href="/system_admin/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Sign in here
-              </Link>
-            </p>
-            <p className="text-slate-600 mt-2">
-              Are you a vendor admin?{" "}
-              <Link href="/vendor_admin/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Sign in here
-              </Link>
-            </p>
-          </div>
         </CardContent>
       </Card>
     </main>

@@ -1,181 +1,117 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/client"
+import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useToast } from "@/components/ui/use-toast"
 import { ArrowLeft } from "lucide-react"
-import type { Product } from "@/lib/types"
 
-const CATEGORIES = [
-  "Resistors",
-  "LEDs",
-  "Capacitors",
-  "Wires & Connectors",
-  "Breadboards",
-  "Microcontrollers",
-  "Switches",
-  "Diodes",
-  "PCBs",
-  "Cables",
-  "Potentiometers",
-  "Relays",
-  "Circuit Boards",
-  "Cables & Wires",
-]
-
-interface EditProductFormData {
-  name: string;
-  description: string;
-  category: string;
-  brand: string;
-  price: number;
-  stock_quantity: number;
-  image_urls: string;
-  specifications: string;
-}
-
-export default function VendorEditProductPage({ params }: { params: { id: string } }) {
+export default function EditProductPage() {
   const router = useRouter()
-  const supabase = createClient()
+  const params = useParams()
+  const productId = params.id as string
+  const { toast } = useToast()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [formData, setFormData] = useState<EditProductFormData>({
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
-    category: "Resistors",
-    brand: "Generic",
-    price: 0,
-    stock_quantity: 0,
-    image_urls: "", // Changed to handle multiple URLs as a comma-separated string
-    specifications: "",
+    category: "",
+    brand: "",
+    price: "",
+    stock_quantity: "",
+    image_url: "",
   })
 
   useEffect(() => {
-    async function fetchProduct() {
+    if (!productId) return
+
+    const fetchProduct = async () => {
+      setLoading(true)
+      setError(null)
       try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-          throw new Error("User not authenticated.");
+        // In a real application, this would be an API route /api/vendor/products/[id]
+        const response = await fetch(`/api/vendor/products?id=${productId}`) // Using GET with ID for now
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || "Failed to fetch product")
         }
-
-        const { data, error } = await supabase
-          .from("products")
-          .select("*")
-          .eq("id", params.id)
-          .eq("seller_id", user.id) // Ensure vendor can only edit their own products
-          .single();
-
-        if (error) throw error;
-        if (!data) {
-          setError("Product not found or you don't have permission to edit it.");
-          setLoading(false);
-          return;
-        }
-
+        const product = await response.json() as typeof formData
         setFormData({
-          name: data.name,
-          description: data.description || "",
-          category: data.category,
-          brand: data.brand || "",
-          price: data.price,
-          stock_quantity: data.stock_quantity,
-          image_urls: data.image_urls ? data.image_urls.join(', ') : "", // Join array to string for textarea
-          specifications: data.specifications ? JSON.stringify(data.specifications, null, 2) : "",
-        });
+          ...product,
+          price: product.price.toString(),
+          stock_quantity: product.stock_quantity.toString(),
+        })
       } catch (err: any) {
-        console.error("[v0] Error fetching product:", err);
-        setError(err.message || "Failed to load product data.");
+        console.error("Error fetching product:", err)
+        setError(err.message)
+        toast({
+          title: "Error",
+          description: err.message,
+          variant: "destructive",
+        })
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     }
-    fetchProduct();
-  }, [params.id, supabase]);
+    fetchProduct()
+  }, [productId, toast])
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-
-    if (!formData.name.trim()) {
-      setError("Product name is required")
-      return
-    }
-
-    if (formData.price <= 0) {
-      setError("Price must be greater than 0")
-      return
-    }
-
     setSaving(true)
 
     try {
-      const specs = formData.specifications ? JSON.parse(formData.specifications) : {}
-      const imageUrlsArray = formData.image_urls.split(',').map(url => url.trim()).filter(url => url !== '');
+      const response = await fetch(`/api/vendor/products?id=${productId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          price: parseFloat(formData.price),
+          stock_quantity: parseInt(formData.stock_quantity),
+        }),
+      })
 
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        throw new Error("User not authenticated.");
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to update product")
       }
 
-      const { error: updateError } = await supabase
-        .from("products")
-        .update({
-          name: formData.name,
-          description: formData.description,
-          category: formData.category,
-          brand: formData.brand,
-          price: Number.parseFloat(formData.price.toString()),
-          stock_quantity: Number.parseInt(formData.stock_quantity.toString()),
-          image_urls: imageUrlsArray, // Update to image_urls array
-          specifications: specs,
-          // seller_id, status, is_featured are not updated by vendor
-        })
-        .eq("id", params.id)
-        .eq("seller_id", user.id); // Ensure vendor can only update their own products
-
-      if (updateError) throw updateError
-
+      toast({
+        title: "Success",
+        description: "Product updated successfully! Awaiting re-approval.",
+      })
       router.push("/protected/vendor/products")
     } catch (err: any) {
-      console.error("[v0] Error updating product:", err)
-      setError(err.message || "Failed to update product")
+      console.error("Error updating product:", err)
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
   }
 
   if (loading) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-xl text-foreground">Loading product...</p>
-      </main>
-    )
+    return <div className="text-center py-12">Loading product data...</div>
   }
 
-  if (error && !loading) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-xl text-red-600 mb-4">{error}</p>
-          <Link href="/protected/vendor/products">
-            <Button>Back to My Products</Button>
-          </Link>
-        </div>
-      </main>
-    );
+  if (error) {
+    return <div className="text-center py-12 text-destructive">Error: {error}</div>
   }
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         <Link href="/protected/vendor/products" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
           <ArrowLeft size={20} />
           Back to My Products
@@ -184,118 +120,96 @@ export default function VendorEditProductPage({ params }: { params: { id: string
         <h1 className="text-4xl font-bold text-foreground mb-8">Edit Product</h1>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardHeader>
+            <CardTitle>Product Details</CardTitle>
+          </CardHeader>
+          <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{error}</div>}
-
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Product Name *</label>
+                <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="name">Product Name</label>
                 <Input
+                  id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Resistor 1K Ohm"
                   required
                   disabled={saving}
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Description</label>
+                <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="description">Description</label>
                 <Textarea
+                  id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Product description..."
-                  rows={4}
+                  required
                   disabled={saving}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Category</label>
-                  <select
+                  <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="category">Category</label>
+                  <Input
+                    id="category"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
-                    disabled={saving}
-                  >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Brand</label>
-                  <Input
-                    value={formData.brand}
-                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    placeholder="e.g., Generic, Arduino"
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Price ($) *</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: Number.parseFloat(e.target.value) })}
-                    placeholder="0.00"
                     required
                     disabled={saving}
                   />
                 </div>
-
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Stock Quantity</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="brand">Brand</label>
                   <Input
+                    id="brand"
+                    value={formData.brand}
+                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                    required
+                    disabled={saving}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="price">Price (R)</label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    required
+                    disabled={saving}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="stock_quantity">Stock Quantity</label>
+                  <Input
+                    id="stock_quantity"
                     type="number"
                     value={formData.stock_quantity}
-                    onChange={(e) => setFormData({ ...formData, stock_quantity: Number.parseInt(e.target.value) })}
-                    placeholder="0"
+                    onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
+                    required
                     disabled={saving}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Image URLs (comma-separated)</label>
-                <Textarea
-                  value={formData.image_urls}
-                  onChange={(e) => setFormData({ ...formData, image_urls: e.target.value })}
-                  placeholder="e.g., https://example.com/img1.jpg, https://example.com/img2.png"
-                  rows={3}
+                <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="image_url">Image URL</label>
+                <Input
+                  id="image_url"
+                  type="url"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                   disabled={saving}
                 />
-                <p className="text-xs text-slate-600 mt-1">Enter multiple URLs separated by commas</p>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Specifications (JSON)</label>
-                <Textarea
-                  value={formData.specifications}
-                  onChange={(e) => setFormData({ ...formData, specifications: e.target.value })}
-                  placeholder='{"key": "value", "color": "red"}'
-                  rows={4}
-                  disabled={saving}
-                />
-                <p className="text-xs text-slate-600 mt-1">Optional: Enter specifications as valid JSON</p>
-              </div>
-
-              <div className="flex gap-4">
-                <Button type="submit" disabled={saving}>
-                  {saving ? "Updating..." : "Update Product"}
-                </Button>
-                <Link href="/protected/vendor/products">
-                  <Button variant="outline" disabled={saving}>Cancel</Button>
-                </Link>
-              </div>
+              <Button type="submit" disabled={saving} className="w-full">
+                {saving ? "Saving Changes..." : "Save Changes"}
+              </Button>
             </form>
           </CardContent>
         </Card>

@@ -1,108 +1,71 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useToast } from "@/components/ui/use-toast"
 import { ArrowLeft } from "lucide-react"
 
-const CATEGORIES = [
-  "Resistors",
-  "LEDs",
-  "Capacitors",
-  "Wires & Connectors",
-  "Breadboards",
-  "Microcontrollers",
-  "Switches",
-  "Diodes",
-  "PCBs",
-  "Cables",
-  "Potentiometers",
-  "Relays",
-  "Circuit Boards",
-  "Cables & Wires",
-]
-
-export default function VendorNewProductPage() {
+export default function AddNewProductPage() {
   const router = useRouter()
-  const supabase = createClient()
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    category: "Resistors",
-    brand: "Generic",
-    price: 0,
-    stock_quantity: 0,
-    image_urls: "", // Changed to handle multiple URLs as a comma-separated string
-    specifications: "",
+    category: "",
+    brand: "",
+    price: "",
+    stock_quantity: "",
+    image_url: "",
   })
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-
-    if (!formData.name.trim()) {
-      setError("Product name is required")
-      return
-    }
-
-    if (formData.price <= 0) {
-      setError("Price must be greater than 0")
-      return
-    }
-
-    setSaving(true)
+    setLoading(true)
 
     try {
-      const specs = formData.specifications ? JSON.parse(formData.specifications) : {}
-      const imageUrlsArray = formData.image_urls.split(',').map(url => url.trim()).filter(url => url !== '');
-
-      // Get the current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        setError(userError?.message || "User not authenticated. Please log in again.");
-        setSaving(false);
-        return;
-      }
-
-      const { error: insertError } = await supabase.from("products").insert({
-        name: formData.name,
-        description: formData.description,
-        category: formData.category,
-        brand: formData.brand,
-        price: Number.parseFloat(formData.price.toString()),
-        stock_quantity: Number.parseInt(formData.stock_quantity.toString()),
-        specifications: specs,
-        image_urls: imageUrlsArray, // Insert as array
-        seller_id: user.id,
-        status: 'pending',
-        is_featured: false,
+      const response = await fetch("/api/vendor/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          price: parseFloat(formData.price),
+          stock_quantity: parseInt(formData.stock_quantity),
+        }),
       })
 
-      if (insertError) throw insertError
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to add product")
+      }
 
+      toast({
+        title: "Success",
+        description: "Product added successfully! Awaiting approval.",
+      })
       router.push("/protected/vendor/products")
     } catch (err: any) {
-      console.error("[v0] Error creating product:", err)
-      setError(err.message || "Failed to create product")
+      console.error("Error adding product:", err)
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      })
     } finally {
-      setSaving(false)
+      setLoading(false)
     }
   }
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         <Link href="/protected/vendor/products" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
           <ArrowLeft size={20} />
           Back to My Products
@@ -111,110 +74,96 @@ export default function VendorNewProductPage() {
         <h1 className="text-4xl font-bold text-foreground mb-8">Add New Product</h1>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardHeader>
+            <CardTitle>Product Details</CardTitle>
+          </CardHeader>
+          <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{error}</div>}
-
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Product Name *</label>
+                <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="name">Product Name</label>
                 <Input
+                  id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Resistor 1K Ohm"
                   required
+                  disabled={loading}
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Description</label>
+                <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="description">Description</label>
                 <Textarea
+                  id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Product description..."
-                  rows={4}
+                  required
+                  disabled={loading}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Category</label>
-                  <select
+                  <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="category">Category</label>
+                  <Input
+                    id="category"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
-                  >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+                    required
+                    disabled={loading}
+                  />
                 </div>
-
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Brand</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="brand">Brand</label>
                   <Input
+                    id="brand"
                     value={formData.brand}
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    placeholder="e.g., Generic, Arduino"
+                    required
+                    disabled={loading}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Price ($) *</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="price">Price (R)</label>
                   <Input
+                    id="price"
                     type="number"
                     step="0.01"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: Number.parseFloat(e.target.value) })}
-                    placeholder="0.00"
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     required
+                    disabled={loading}
                   />
                 </div>
-
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Stock Quantity</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="stock_quantity">Stock Quantity</label>
                   <Input
+                    id="stock_quantity"
                     type="number"
                     value={formData.stock_quantity}
-                    onChange={(e) => setFormData({ ...formData, stock_quantity: Number.parseInt(e.target.value) })}
-                    placeholder="0"
+                    onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
+                    required
+                    disabled={loading}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Image URLs (comma-separated)</label>
-                <Textarea
-                  value={formData.image_urls}
-                  onChange={(e) => setFormData({ ...formData, image_urls: e.target.value })}
-                  placeholder="e.g., https://example.com/img1.jpg, https://example.com/img2.png"
-                  rows={3}
+                <label className="text-sm font-medium text-foreground mb-2 block" htmlFor="image_url">Image URL</label>
+                <Input
+                  id="image_url"
+                  type="url"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  disabled={loading}
                 />
-                <p className="text-xs text-slate-600 mt-1">Enter multiple URLs separated by commas</p>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Specifications (JSON)</label>
-                <Textarea
-                  value={formData.specifications}
-                  onChange={(e) => setFormData({ ...formData, specifications: e.target.value })}
-                  placeholder='{"key": "value", "color": "red"}'
-                  rows={4}
-                />
-                <p className="text-xs text-slate-600 mt-1">Optional: Enter specifications as valid JSON</p>
-              </div>
-
-              <div className="flex gap-4">
-                <Button type="submit" disabled={saving}>
-                  {saving ? "Creating..." : "Create Product"}
-                </Button>
-                <Link href="/protected/vendor/products">
-                  <Button variant="outline">Cancel</Button>
-                </Link>
-              </div>
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? "Adding Product..." : "Add Product"}
+              </Button>
             </form>
           </CardContent>
         </Card>

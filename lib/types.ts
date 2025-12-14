@@ -1,3 +1,6 @@
+export type AccountStatus = "pending" | "approved" | "rejected"
+export type UserRole = "customer" | "vendor_admin" | "admin" | "super_admin" | "vendor_manager" | "vendor_sales" | "vendor_general"
+
 export interface Product {
   id: string
   name: string
@@ -59,8 +62,10 @@ export interface UserProfile {
   first_name?: string
   last_name?: string
   phone?: string
-  role: string
+  role: UserRole
   name?: string // Added name
+  account_status: AccountStatus
+  role_requested?: UserRole
   created_at: string
   updated_at: string
 }

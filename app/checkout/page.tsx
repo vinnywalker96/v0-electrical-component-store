@@ -103,7 +103,7 @@ export default function CheckoutPage() {
         tax, // From Redux
       }
 
-      const response = await fetch("/api/checkout", { // API is /api/checkout, not /api/orders/create
+      const response = await fetch("/api/orders/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
