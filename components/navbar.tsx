@@ -3,17 +3,24 @@
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Menu, X, ShoppingCart, User, LogOut } from "lucide-react"
+import { Menu, X, ShoppingCart, User, LogOut, Settings, LayoutDashboard, Store } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useCart } from "@/lib/context/cart-context"
 import { useLanguage } from "@/lib/context/language-context"
 import { Button } from "@/components/ui/button"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [userRole, setUserRole] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
@@ -35,8 +42,7 @@ export default function Navbar() {
 
         if (user) {
           const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-
-          setIsAdmin(profile?.role === "admin" || profile?.role === "super_admin")
+          setUserRole(profile?.role || null)
         }
       } catch (error) {
         console.error("Auth check error:", error)
@@ -48,7 +54,6 @@ export default function Navbar() {
     if (mounted) {
       checkAuth()
 
-      // Listen for auth state changes
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(() => {
@@ -64,8 +69,20 @@ export default function Navbar() {
   async function handleLogout() {
     await supabase.auth.signOut()
     setUser(null)
-    setIsAdmin(false)
+    setUserRole(null)
     router.push("/")
+  }
+
+  const getDashboardLink = () => {
+    if (userRole === "vendor") return "/vendor/dashboard"
+    if (userRole === "admin" || userRole === "super_admin") return "/admin/dashboard"
+    return "/protected/dashboard"
+  }
+
+  const getDashboardLabel = () => {
+    if (userRole === "vendor") return "Vendor Dashboard"
+    if (userRole === "admin" || userRole === "super_admin") return "Admin Dashboard"
+    return "Dashboard"
   }
 
   return (
@@ -75,8 +92,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-bold text-xl">
             <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-white">⚡</div>
-            {/* Renamed to KG Components */}
-            <span className="text-foreground">KG Components</span>
+            <span className="text-foreground">KG Compponents</span>
           </Link>
 
           {/* Desktop Menu */}
@@ -90,9 +106,6 @@ export default function Navbar() {
             <Link href="/about" className="text-foreground hover:text-primary transition">
               {t("common.about")}
             </Link>
-            <Link href="/faq" className="text-foreground hover:text-primary transition">
-              {t("common.faq")}
-            </Link>
             <Link href="/contact" className="text-foreground hover:text-primary transition">
               {t("common.contact")}
             </Link>
@@ -101,16 +114,10 @@ export default function Navbar() {
                 Messages
               </Link>
             )}
-            {isAdmin && (
-              <Link href="/admin/dashboard" className="text-foreground hover:text-primary transition font-semibold">
-                {t("common.admin")}
-              </Link>
-            )}
           </div>
 
           {/* Right Side Icons */}
           <div className="flex items-center gap-4">
-            {/* Language Switcher */}
             <LanguageSwitcher />
 
             <Link href="/cart" className="relative p-2 hover:bg-muted rounded transition">
@@ -125,24 +132,84 @@ export default function Navbar() {
             {!loading && (
               <>
                 {user ? (
-                  <div className="flex items-center gap-2">
-                    <Link href="/protected/dashboard" className="p-2 hover:bg-muted rounded transition">
-                      <User className="w-5 h-5" />
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleLogout}
-                      className="hidden sm:flex items-center gap-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {t("common.logout")}
-                    </Button>
-                  </div>
+                  /* Added profile dropdown menu */
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="p-2 h-auto">
+                        <User className="w-5 h-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem asChild>
+                        <Link href={getDashboardLink()} className="flex items-center gap-2 cursor-pointer">
+                          <LayoutDashboard className="w-4 h-4" />
+                          {getDashboardLabel()}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/protected/profile" className="flex items-center gap-2 cursor-pointer">
+                          <User className="w-4 h-4" />
+                          Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/protected/settings" className="flex items-center gap-2 cursor-pointer">
+                          <Settings className="w-4 h-4" />
+                          Settings
+                        </Link>
+                      </DropdownMenuItem>
+                      {userRole === "customer" && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <Link href="/auth/vendor/signup" className="flex items-center gap-2 cursor-pointer">
+                              <Store className="w-4 h-4" />
+                              Become a Vendor
+                            </Link>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 cursor-pointer text-red-600"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 ) : (
-                  <Link href="/auth/login" className="p-2 hover:bg-muted rounded transition">
-                    <User className="w-5 h-5" />
-                  </Link>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="p-2 h-auto">
+                        <User className="w-5 h-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem asChild>
+                        <Link href="/auth/login" className="cursor-pointer">
+                          Customer Login
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/auth/vendor/login" className="cursor-pointer">
+                          Vendor Login
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/auth/admin/login" className="cursor-pointer">
+                          Admin Login
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/auth/signup" className="cursor-pointer">
+                          Sign Up
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </>
             )}
@@ -166,26 +233,18 @@ export default function Navbar() {
             <Link href="/about" className="block px-2 py-2 hover:bg-muted rounded transition">
               {t("common.about")}
             </Link>
-            <Link href="/faq" className="block px-2 py-2 hover:bg-muted rounded transition">
-              {t("common.faq")}
-            </Link>
             <Link href="/contact" className="block px-2 py-2 hover:bg-muted rounded transition">
               {t("common.contact")}
             </Link>
             {user && (
-              <Link href="/chat" className="block px-2 py-2 hover:bg-muted rounded transition">
-                Messages
-              </Link>
-            )}
-            {isAdmin && (
-              <Link href="/admin/dashboard" className="block px-2 py-2 hover:bg-muted rounded transition font-semibold">
-                {t("common.admin")}
-              </Link>
-            )}
-            {!user && (
-              <Link href="/auth/login" className="block px-2 py-2 hover:bg-muted rounded transition">
-                Login
-              </Link>
+              <>
+                <Link href="/chat" className="block px-2 py-2 hover:bg-muted rounded transition">
+                  Messages
+                </Link>
+                <Link href={getDashboardLink()} className="block px-2 py-2 hover:bg-muted rounded transition">
+                  {getDashboardLabel()}
+                </Link>
+              </>
             )}
           </div>
         )}

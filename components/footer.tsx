@@ -33,6 +33,11 @@ export default function Footer() {
                   FAQ
                 </Link>
               </li>
+              <li>
+                <Link href="/contact" className="text-white/80 hover:text-white transition">
+                  Contact
+                </Link>
+              </li>
             </ul>
           </div>
 
