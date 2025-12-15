@@ -52,3 +52,40 @@ export interface UserProfile {
   created_at: string
   updated_at: string
 }
+
+export interface Seller {
+  id: string
+  user_id: string
+  store_name: string
+  store_description: string
+  business_address: string
+  phone_number: string
+  bank_account_name: string
+  bank_account_number: string
+  bank_name: string
+  verification_status: "pending" | "approved" | "rejected"
+  rating: number
+  created_at: string
+  updated_at: string
+}
+
+export interface Address {
+  id: string
+  user_id: string
+  address_type: "shipping" | "billing"
+  full_address: string
+  city: string
+  postal_code: string
+  is_default: boolean
+  created_at: string
+}
+
+export interface Message {
+  id: string
+  sender_id: string
+  receiver_id: string
+  product_id: string | null
+  message: string
+  is_read: boolean
+  created_at: string
+}

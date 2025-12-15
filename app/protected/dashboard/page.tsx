@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import type { UserProfile, Order } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { LogOut, Package, UserIcon, Settings } from "lucide-react"
+import { LogOut, Package, UserIcon, Settings, MapPin, MessageSquare, Store } from "lucide-react"
 
 export default function DashboardPage() {
   const supabase = createClient()
@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
+  const [isSeller, setIsSeller] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,6 +30,10 @@ export default function DashboardPage() {
           if (profileData) {
             setProfile(profileData)
           }
+
+          // Check if user is a seller
+          const { data: sellerData } = await supabase.from("sellers").select("id").eq("user_id", user.id).single()
+          setIsSeller(!!sellerData)
 
           const { data: ordersData } = await supabase
             .from("orders")
@@ -85,6 +90,30 @@ export default function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/protected/addresses">
+            <Card className="hover:shadow-lg transition cursor-pointer">
+              <CardContent className="pt-6 flex items-center gap-4">
+                <MapPin className="w-10 h-10 text-blue-600" />
+                <div>
+                  <p className="font-semibold">My Addresses</p>
+                  <p className="text-sm text-slate-600">Manage addresses</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/chat">
+            <Card className="hover:shadow-lg transition cursor-pointer">
+              <CardContent className="pt-6 flex items-center gap-4">
+                <MessageSquare className="w-10 h-10 text-blue-600" />
+                <div>
+                  <p className="font-semibold">Messages</p>
+                  <p className="text-sm text-slate-600">Chat with sellers</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
           <Link href="/shop">
             <Card className="hover:shadow-lg transition cursor-pointer">
               <CardContent className="pt-6 flex items-center gap-4">
@@ -108,6 +137,32 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </Link>
+
+          {isSeller ? (
+            <Link href="/seller/dashboard">
+              <Card className="hover:shadow-lg transition cursor-pointer border-primary">
+                <CardContent className="pt-6 flex items-center gap-4">
+                  <Store className="w-10 h-10 text-primary" />
+                  <div>
+                    <p className="font-semibold">Seller Dashboard</p>
+                    <p className="text-sm text-slate-600">Manage your store</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ) : (
+            <Link href="/seller/register">
+              <Card className="hover:shadow-lg transition cursor-pointer">
+                <CardContent className="pt-6 flex items-center gap-4">
+                  <Store className="w-10 h-10 text-blue-600" />
+                  <div>
+                    <p className="font-semibold">Become a Seller</p>
+                    <p className="text-sm text-slate-600">Start selling products</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
         </div>
 
         {/* Orders Section */}

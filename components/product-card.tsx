@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { useCart } from "@/lib/context/cart-context"
 import { createClient } from "@/lib/supabase/client"
+import { Store } from "lucide-react"
 import type { Product } from "@/lib/types"
 
 interface ProductCardProps {
-  product: Product
+  product: Product & { seller?: any }
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -40,7 +41,7 @@ export function ProductCard({ product }: ProductCardProps) {
     }
   }
 
-  const displayPrice = "Coming Soon"
+  const displayPrice = product.price > 0 ? `R${product.price.toFixed(2)}` : "Coming Soon"
   const isPriceAvailable = product.price > 0
 
   return (
@@ -66,13 +67,25 @@ export function ProductCard({ product }: ProductCardProps) {
             <p className="text-xs text-slate-500">{product.category}</p>
           </div>
         </div>
+
+        {product.seller && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Store className="h-3 w-3" />
+            <span>{product.seller.store_name}</span>
+            {product.seller.rating && <span className="ml-1">⭐ {product.seller.rating.toFixed(1)}</span>}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="flex-1">
         <h3 className="font-semibold text-sm line-clamp-2">{product.name}</h3>
         <p className="text-xs text-slate-600 mt-1 line-clamp-2">{product.description}</p>
         <p className="text-xs text-slate-500 mt-2">{product.brand}</p>
         <div className="flex justify-between items-center mt-3">
-          <span className="text-sm font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded">{displayPrice}</span>
+          <span
+            className={`text-sm font-semibold px-2 py-1 rounded ${isPriceAvailable ? "text-primary bg-primary/10" : "text-orange-600 bg-orange-50"}`}
+          >
+            {displayPrice}
+          </span>
           <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded">
             {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : "Out of stock"}
           </span>
@@ -84,8 +97,13 @@ export function ProductCard({ product }: ProductCardProps) {
             Details
           </Button>
         </Link>
-        <Button size="sm" disabled={true} className="flex-1 text-xs" title="Prices coming soon">
-          Coming Soon
+        <Button
+          size="sm"
+          disabled={!isPriceAvailable || product.stock_quantity === 0 || loading}
+          className="flex-1 text-xs"
+          onClick={handleAddToCart}
+        >
+          {loading ? "Adding..." : added ? "Added!" : isPriceAvailable ? "Add to Cart" : "Coming Soon"}
         </Button>
       </CardFooter>
     </Card>

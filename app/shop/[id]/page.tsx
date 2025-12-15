@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Minus, Plus, ShoppingCart } from "lucide-react"
+import { ArrowLeft, Minus, Plus, ShoppingCart, MessageSquare } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useCart } from "@/lib/context/cart-context"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,7 @@ export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
   const [product, setProduct] = useState<Product | null>(null)
+  const [seller, setSeller] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const [adding, setAdding] = useState(false)
@@ -24,10 +25,15 @@ export default function ProductDetailPage() {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const { data, error } = await supabase.from("products").select("*").eq("id", params.id).single()
+        const { data, error } = await supabase
+          .from("products")
+          .select("*, seller:sellers(*)")
+          .eq("id", params.id)
+          .single()
 
         if (error) throw error
         setProduct(data)
+        setSeller(data.seller)
       } catch (error) {
         console.error("Error fetching product:", error)
       } finally {
@@ -61,6 +67,21 @@ export default function ProductDetailPage() {
       console.error("Error adding to cart:", error)
     } finally {
       setAdding(false)
+    }
+  }
+
+  async function handleContactSeller() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      router.push("/auth/login")
+      return
+    }
+
+    if (seller) {
+      router.push(`/chat/${seller.user_id}?product=${product?.id}`)
     }
   }
 
@@ -126,6 +147,24 @@ export default function ProductDetailPage() {
             <p className="text-accent font-semibold mb-2">{product.category}</p>
             <h1 className="text-3xl font-bold text-foreground mb-4">{product.name}</h1>
             <p className="text-muted-foreground mb-6">{product.description}</p>
+
+            {seller && (
+              <Card className="mb-6">
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Sold by</p>
+                      <p className="font-semibold">{seller.store_name}</p>
+                      <p className="text-xs text-muted-foreground">⭐ {seller.rating?.toFixed(1) || "New"}</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={handleContactSeller}>
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Contact Seller
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             <div className="flex items-center gap-4 mb-6">
               <span className="text-3xl font-bold text-primary">{displayPrice}</span>

@@ -96,6 +96,11 @@ export default function Navbar() {
             <Link href="/contact" className="text-foreground hover:text-primary transition">
               {t("common.contact")}
             </Link>
+            {user && (
+              <Link href="/chat" className="text-foreground hover:text-primary transition">
+                Messages
+              </Link>
+            )}
             {isAdmin && (
               <Link href="/admin/dashboard" className="text-foreground hover:text-primary transition font-semibold">
                 {t("common.admin")}
@@ -167,18 +172,20 @@ export default function Navbar() {
             <Link href="/contact" className="block px-2 py-2 hover:bg-muted rounded transition">
               {t("common.contact")}
             </Link>
+            {user && (
+              <Link href="/chat" className="block px-2 py-2 hover:bg-muted rounded transition">
+                Messages
+              </Link>
+            )}
             {isAdmin && (
               <Link href="/admin/dashboard" className="block px-2 py-2 hover:bg-muted rounded transition font-semibold">
                 {t("common.admin")}
               </Link>
             )}
-            {user && (
-              <button
-                onClick={handleLogout}
-                className="block w-full text-left px-2 py-2 hover:bg-muted rounded transition text-red-600"
-              >
-                {t("common.logout")}
-              </button>
+            {!user && (
+              <Link href="/auth/login" className="block px-2 py-2 hover:bg-muted rounded transition">
+                Login
+              </Link>
             )}
           </div>
         )}

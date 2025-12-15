@@ -15,18 +15,24 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [selectedBrand, setSelectedBrand] = useState<string>("all")
+  const [selectedSeller, setSelectedSeller] = useState<string>("all")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
   const [maxPrice, setMaxPrice] = useState(10000)
+  const [sellers, setSellers] = useState<any[]>([])
 
   const supabase = createClient()
 
   useEffect(() => {
     fetchProducts()
+    fetchSellers()
   }, [])
 
   async function fetchProducts() {
     try {
-      const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false })
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, seller:sellers(id, store_name, rating)")
+        .order("created_at", { ascending: false })
 
       if (error) throw error
       setProducts(data || [])
@@ -44,6 +50,15 @@ export default function ShopPage() {
     }
   }
 
+  async function fetchSellers() {
+    try {
+      const { data } = await supabase.from("sellers").select("id, store_name").eq("verification_status", "approved")
+      setSellers(data || [])
+    } catch (error) {
+      console.error("Error fetching sellers:", error)
+    }
+  }
+
   const categories = useMemo(() => [...new Set(products.map((p) => p.category))], [products])
   const brands = useMemo(() => [...new Set(products.map((p) => p.brand))], [products])
 
@@ -54,23 +69,24 @@ export default function ShopPage() {
         product.description?.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
       const matchesBrand = selectedBrand === "all" || product.brand === selectedBrand
+      const matchesSeller = selectedSeller === "all" || product.seller_id === selectedSeller
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
 
-      return matchesSearch && matchesCategory && matchesBrand && matchesPrice
+      return matchesSearch && matchesCategory && matchesBrand && matchesSeller && matchesPrice
     })
-  }, [products, searchQuery, selectedCategory, selectedBrand, priceRange])
+  }, [products, searchQuery, selectedCategory, selectedBrand, selectedSeller, priceRange])
 
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">Shop Electrical Components</h1>
-          <p className="text-muted-foreground">Browse our complete selection of electronic components</p>
+          <p className="text-muted-foreground">Browse products from multiple sellers</p>
         </div>
 
         {/* Filters */}
         <div className="bg-card rounded-lg border border-border p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <div>
               <label className="text-sm font-medium text-foreground mb-2 block">Search</label>
               <Input
@@ -116,6 +132,23 @@ export default function ShopPage() {
             </div>
 
             <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">Seller</label>
+              <Select value={selectedSeller} onValueChange={setSelectedSeller}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All sellers" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All sellers</SelectItem>
+                  {sellers.map((seller) => (
+                    <SelectItem key={seller.id} value={seller.id}>
+                      {seller.store_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
               <label className="text-sm font-medium text-foreground mb-2 block">
                 Max Price: R{priceRange[1].toFixed(0)}
               </label>
@@ -135,6 +168,7 @@ export default function ShopPage() {
                   setSearchQuery("")
                   setSelectedCategory("all")
                   setSelectedBrand("all")
+                  setSelectedSeller("all")
                   setPriceRange([0, maxPrice])
                 }}
                 variant="outline"

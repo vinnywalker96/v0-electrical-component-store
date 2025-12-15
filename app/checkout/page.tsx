@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Store } from "lucide-react"
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -19,6 +20,8 @@ export default function CheckoutPage() {
   const supabase = createClient()
   const [isProcessing, setIsProcessing] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([])
+  const [selectedAddress, setSelectedAddress] = useState<string>("")
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -31,7 +34,7 @@ export default function CheckoutPage() {
     billingAddress: "",
     billingCity: "",
     billingZip: "",
-    paymentMethod: "bank_transfer",
+    paymentMethod: "cash_on_delivery",
   })
 
   useEffect(() => {
@@ -46,11 +49,60 @@ export default function CheckoutPage() {
           ...prev,
           email: user.email || "",
         }))
+
+        // Fetch saved addresses
+        const { data: addresses } = await supabase
+          .from("addresses")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("is_default", { ascending: false })
+
+        setSavedAddresses(addresses || [])
+
+        // Auto-select default address
+        const defaultAddress = addresses?.find((a) => a.is_default)
+        if (defaultAddress) {
+          setSelectedAddress(defaultAddress.id)
+          setFormData((prev) => ({
+            ...prev,
+            shippingAddress: defaultAddress.full_address,
+            shippingCity: defaultAddress.city,
+            shippingZip: defaultAddress.postal_code,
+          }))
+        }
       }
     }
 
     fetchUser()
   }, [])
+
+  const itemsBySeller = items.reduce(
+    (acc, item) => {
+      const sellerId = item.product?.seller_id || "direct"
+      if (!acc[sellerId]) {
+        acc[sellerId] = {
+          seller: item.product?.seller,
+          items: [],
+        }
+      }
+      acc[sellerId].items.push(item)
+      return acc
+    },
+    {} as Record<string, any>,
+  )
+
+  const handleAddressChange = (addressId: string) => {
+    setSelectedAddress(addressId)
+    const address = savedAddresses.find((a) => a.id === addressId)
+    if (address) {
+      setFormData((prev) => ({
+        ...prev,
+        shippingAddress: address.full_address,
+        shippingCity: address.city,
+        shippingZip: address.postal_code,
+      }))
+    }
+  }
 
   if (loading) {
     return <div className="text-center py-12">Loading...</div>
@@ -195,6 +247,23 @@ export default function CheckoutPage() {
                 <CardTitle>{t("checkout.shipping_address")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {savedAddresses.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Select Saved Address</label>
+                    <Select value={selectedAddress} onValueChange={handleAddressChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose an address" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {savedAddresses.map((addr) => (
+                          <SelectItem key={addr.id} value={addr.id}>
+                            {addr.full_address.substring(0, 50)}... ({addr.city})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <Textarea
                   placeholder={t("checkout.street_address")}
                   value={formData.shippingAddress}
@@ -263,7 +332,6 @@ export default function CheckoutPage() {
                   <SelectContent>
                     <SelectItem value="bank_transfer">{t("checkout.bank_transfer")}</SelectItem>
                     <SelectItem value="cash_on_delivery">{t("checkout.cash_on_delivery")}</SelectItem>
-                    <SelectItem value="card">{t("checkout.credit_card")}</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -280,21 +348,10 @@ export default function CheckoutPage() {
                     <p>{t("checkout.pay_delivery_driver")}</p>
                   </div>
                 )}
-
-                {formData.paymentMethod === "card" && (
-                  <div className="p-4 bg-yellow-50 rounded text-sm text-slate-700">
-                    <p>{t("checkout.card_payment_coming_soon")}</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
-            <Button
-              type="submit"
-              disabled={isProcessing || formData.paymentMethod === "card"}
-              size="lg"
-              className="w-full"
-            >
+            <Button type="submit" disabled={isProcessing} size="lg" className="w-full">
               {isProcessing ? t("checkout.processing") : t("checkout.complete_order")}
             </Button>
           </form>
@@ -306,13 +363,25 @@ export default function CheckoutPage() {
                 <CardTitle>{t("checkout.order_summary")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {items.map((item) => (
-                    <div key={item.id} className="text-sm flex justify-between">
-                      <span>
-                        {item.product?.name} x{item.quantity}
-                      </span>
-                      <span className="font-medium">${((item.product?.price || 0) * item.quantity).toFixed(2)}</span>
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {Object.entries(itemsBySeller).map(([sellerId, data]) => (
+                    <div key={sellerId} className="border-b pb-3">
+                      {data.seller && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+                          <Store className="h-3 w-3" />
+                          <span className="font-semibold">{data.seller.store_name}</span>
+                        </div>
+                      )}
+                      {data.items.map((item: any) => (
+                        <div key={item.id} className="text-sm flex justify-between ml-4 mb-1">
+                          <span>
+                            {item.product?.name} x{item.quantity}
+                          </span>
+                          <span className="font-medium">
+                            R{((item.product?.price || 0) * item.quantity).toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
@@ -320,15 +389,15 @@ export default function CheckoutPage() {
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">{t("checkout.subtotal")}</span>
-                    <span>${(total - tax).toFixed(2)}</span>
+                    <span>R{(total - tax).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">{t("checkout.tax")}</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>R{tax.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg pt-2 border-t">
                     <span>{t("checkout.total")}</span>
-                    <span className="text-blue-600">${total.toFixed(2)}</span>
+                    <span className="text-blue-600">R{total.toFixed(2)}</span>
                   </div>
                 </div>
 
