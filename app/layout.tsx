@@ -1,8 +1,6 @@
-import dynamic from "next/dynamic"
+import { ToasterProvider } from "@/components/toaster-provider"
 
 // ... (other imports)
-
-const DynamicToaster = dynamic(() => import("@/components/ui/toaster").then((mod) => mod.Toaster), { ssr: false })
 
 export default function RootLayout({
   children,
@@ -16,7 +14,7 @@ export default function RootLayout({
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />
-            <DynamicToaster />
+            <ToasterProvider />
         </ReduxProvider>
         <Analytics />
       </body>
