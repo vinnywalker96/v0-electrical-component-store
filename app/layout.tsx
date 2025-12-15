@@ -1,20 +1,8 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import "./globals.css"
-import Navbar from "@/components/navbar"
-import Footer from "@/components/footer"
-import { ReduxProvider } from "@/components/redux-provider" // Import the new client wrapper
-import { Toaster } from "@/components/ui/toaster"
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+import dynamic from "next/dynamic"
 
-export const metadata: Metadata = {
-  title: "KG Compponents - Electrical Components Store",
-  description: "Professional quality electrical and electronic components for professionals and makers",
-  generator: "v0.app",
-}
+// ... (other imports)
+
+const DynamicToaster = dynamic(() => import("@/components/ui/toaster").then((mod) => mod.Toaster), { ssr: false })
 
 export default function RootLayout({
   children,
@@ -28,7 +16,7 @@ export default function RootLayout({
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />
-            <Toaster />
+            <DynamicToaster />
         </ReduxProvider>
         <Analytics />
       </body>
