@@ -8,7 +8,7 @@ export default function Returns() {
           <section>
             <h2 className="text-2xl font-bold mb-4">Our Return Promise</h2>
             <p className="text-muted-foreground leading-relaxed">
-              We stand behind every product we sell. If you&apos;re not completely satisfied with your purchase, we offer a
+              We stand behind every product we sell. If you're not completely satisfied with your purchase, we offer a
               hassle-free 30-day return policy.
             </p>
           </section>

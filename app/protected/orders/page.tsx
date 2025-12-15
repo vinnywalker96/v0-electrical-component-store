@@ -55,7 +55,7 @@ export default function OrdersPage() {
     }
 
     fetchOrders()
-  }, [supabase])
+  }, [])
 
   if (loading) {
     return <div className="text-center py-12">Loading orders...</div>

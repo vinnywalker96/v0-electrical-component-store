@@ -1,23 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Menu, X, ShoppingCart, User, LogOut } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { useCart } from "@/lib/context/cart-context"
+import { useLanguage } from "@/lib/context/language-context"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { LanguageSwitcher } from "@/components/language-switcher"
-import { useSelector, useDispatch } from 'react-redux';
-import { selectCartItemCount, fetchCart } from '@/lib/store/cartSlice';
-import { selectT } from '@/lib/store/languageSlice'; // Import language selector
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -27,51 +18,48 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const supabase = createClient()
-  const itemCount = useSelector(selectCartItemCount); // Use Redux selector for cart item count
-  const dispatch = useDispatch(); // Get dispatch function
-  const t = useSelector(selectT); // Use Redux selector for translation function
-
-  const checkAuth = useCallback(async () => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
-
-      if (user) {
-        const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-
-        setIsAdmin(profile?.role === "super_admin" || profile?.role === "admin")
-      }
-    } catch (error) {
-      console.error("Auth check error:", error)
-    } finally {
-      setLoading(false)
-    }
-  }, [supabase])
+  const { itemCount } = useCart()
+  const { t } = useLanguage()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        setUser(user)
+
+        if (user) {
+          const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+
+          setIsAdmin(profile?.role === "admin" || profile?.role === "super_admin")
+        }
+      } catch (error) {
+        console.error("Auth check error:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     if (mounted) {
       checkAuth()
-      dispatch(fetchCart() as any); // Fetch cart on initial load and auth changes, casting as any to bypass type issues temporarily
 
       // Listen for auth state changes
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(() => {
         checkAuth()
-        dispatch(fetchCart() as any); // Also fetch cart when auth state changes, casting as any
       })
 
       return () => {
         subscription?.unsubscribe()
       }
     }
-  }, [mounted, checkAuth, supabase, dispatch]) // Add dispatch to dependency array
+  }, [mounted])
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -129,44 +117,23 @@ export default function Navbar() {
               )}
             </Link>
 
-            
-
             {!loading && (
               <>
                 {user ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative w-8 h-8 rounded-full">
-                        <User className="w-5 h-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="end" forceMount>
-                      <DropdownMenuLabel className="font-normal">
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">{user.email}</p>
-                        </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/protected/dashboard">Dashboard</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/protected/profile">Profile</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/protected/settings">Settings</Link>
-                      </DropdownMenuItem>
-                      {isAdmin && (
-                        <DropdownMenuItem asChild>
-                          <Link href="/admin/dashboard">Admin Dashboard</Link>
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
-                        Log out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex items-center gap-2">
+                    <Link href="/protected/dashboard" className="p-2 hover:bg-muted rounded transition">
+                      <User className="w-5 h-5" />
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleLogout}
+                      className="hidden sm:flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {t("common.logout")}
+                    </Button>
+                  </div>
                 ) : (
                   <Link href="/auth/login" className="p-2 hover:bg-muted rounded transition">
                     <User className="w-5 h-5" />
@@ -174,8 +141,6 @@ export default function Navbar() {
                 )}
               </>
             )}
-
-
 
             {/* Mobile Menu Toggle */}
             <button className="md:hidden p-2 hover:bg-muted rounded transition" onClick={() => setIsOpen(!isOpen)}>

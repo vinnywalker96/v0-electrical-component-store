@@ -4,11 +4,9 @@ import Link from "next/link"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-// Removed: import { useCart } from "@/lib/context/cart-context"
+import { useCart } from "@/lib/context/cart-context"
 import { createClient } from "@/lib/supabase/client"
 import type { Product } from "@/lib/types"
-import { useDispatch } from 'react-redux';
-import { addToCart } from '@/lib/store/cartSlice';
 
 interface ProductCardProps {
   product: Product
@@ -17,7 +15,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const [loading, setLoading] = useState(false)
   const [added, setAdded] = useState(false)
-  const dispatch = useDispatch(); // Use Redux dispatch
+  const { addToCart } = useCart()
   const supabase = createClient()
 
   async function handleAddToCart() {
@@ -32,7 +30,7 @@ export function ProductCard({ product }: ProductCardProps) {
         return
       }
 
-      await dispatch(addToCart({ productId: product.id, quantity: 1 }) as any)
+      await addToCart(product.id, 1)
       setAdded(true)
       setTimeout(() => setAdded(false), 2000)
     } catch (error) {

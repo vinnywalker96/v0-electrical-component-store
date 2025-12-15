@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -7,12 +9,10 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/components/ui/use-toast"
 
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
-  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [email, setEmail] = useState("")
@@ -24,50 +24,17 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (signInError) throw signInError
 
-      if (data.user) {
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("role, account_status")
-          .eq("id", data.user.id)
-          .single()
-
-        if (profileError || !profile) {
-          throw new Error("User profile not found or accessible.")
-        }
-
-        if (profile.account_status === "pending") {
-          throw new Error("Your account is pending approval. Please wait for an administrator to approve it.")
-        }
-
-        if (profile.account_status === "rejected") {
-          throw new Error("Your account has been rejected. Please contact support.")
-        }
-
-        // Redirect based on role
-        if (profile.role === "customer") {
-          router.push("/protected/dashboard")
-        } else if (profile.role === "vendor_admin") {
-          router.push("/protected/vendor/dashboard") // Will create this page later
-        } else if (profile.role === "admin" || profile.role === "super_admin") {
-          router.push("/admin/dashboard")
-        } else {
-          throw new Error("You do not have the correct privileges to log in via this portal.")
-        }
-      }
+      router.push("/protected/dashboard")
     } catch (err: any) {
-      setError(err.message)
-      toast({
-        title: "Login Failed",
-        description: err.message,
-        variant: "destructive",
-      })
+      console.error("[v0] Login error:", err)
+      setError(err.message || "Failed to sign in")
     } finally {
       setLoading(false)
     }
@@ -105,11 +72,6 @@ export default function LoginPage() {
                 required
                 disabled={loading}
               />
-              <div className="text-right mt-1">
-                <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
-                  Forgot Password?
-                </Link>
-              </div>
             </div>
 
             <Button type="submit" disabled={loading} className="w-full">
@@ -119,7 +81,7 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center text-sm">
             <p className="text-slate-600">
-              Don&apos;t have an account?{" "}
+              Don't have an account?{" "}
               <Link href="/auth/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
                 Sign up
               </Link>
@@ -129,21 +91,6 @@ export default function LoginPage() {
           <Link href="/" className="block text-center mt-4 text-sm text-blue-600 hover:text-blue-700">
             Back to Home
           </Link>
-
-          <div className="mt-6 text-center text-sm">
-            <p className="text-slate-600">
-              Are you a system admin?{" "}
-              <Link href="/system_admin/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Sign in here
-              </Link>
-            </p>
-            <p className="text-slate-600 mt-2">
-              Are you a vendor admin?{" "}
-              <Link href="/vendor_admin/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Sign in here
-              </Link>
-            </p>
-          </div>
         </CardContent>
       </Card>
     </main>

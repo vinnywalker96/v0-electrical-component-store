@@ -1,8 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const params = await context.params;
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const supabase = await createClient()
     const {

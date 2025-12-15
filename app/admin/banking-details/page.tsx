@@ -2,69 +2,94 @@
 
 import type React from "react"
 
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-// import { createClient } from "@/lib/supabase/client" // Removed as not directly used for state management here
+import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchBankingDetails, saveBankingDetails, selectAdminBankingDetails, selectAdminBankingDetailsLoading, selectAdminBankingDetailsSaving, selectAdminBankingDetailsError } from '@/lib/store/adminBankingDetailsSlice';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { BankingDetailsSchema, BankingDetails } from "@/lib/schemas";
-import { useToast } from "@/components/ui/use-toast"; // Assuming a toast component exists
 
 export default function BankingDetailsPage() {
   const router = useRouter()
-  const dispatch = useDispatch();
-  const { toast } = useToast();
+  const supabase = createClient()
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
 
-  const bankingDetails = useSelector(selectAdminBankingDetails);
-  const loading = useSelector(selectAdminBankingDetailsLoading);
-  const saving = useSelector(selectAdminBankingDetailsSaving);
-  const error = useSelector(selectAdminBankingDetailsError);
-
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<BankingDetails>({
-    resolver: zodResolver(BankingDetailsSchema),
-    defaultValues: {
-      account_holder: "",
-      bank_name: "",
-      account_number: "",
-      branch_code: "",
-      swift_code: "",
-      reference_note: "",
-    }
-  });
+  const [formData, setFormData] = useState({
+    account_holder: "",
+    bank_name: "",
+    account_number: "",
+    branch_code: "",
+    swift_code: "",
+    reference_note: "",
+  })
 
   useEffect(() => {
-    dispatch(fetchBankingDetails() as any);
-  }, [dispatch]);
+    fetchBankingDetails()
+  }, [])
 
-  useEffect(() => {
-    // Reset form with fetched data once it's available
-    if (bankingDetails) {
-      reset(bankingDetails);
-    }
-  }, [bankingDetails, reset]);
-
-  const onSubmit = async (data: BankingDetails) => {
+  async function fetchBankingDetails() {
     try {
-      await dispatch(saveBankingDetails(data) as any).unwrap(); // .unwrap() to catch errors
-      toast({
-        title: "Success",
-        description: "Banking details updated successfully!",
-        variant: "default",
-      });
+      const response = await fetch("/api/admin/banking-details")
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          router.push("/admin/dashboard")
+        }
+        throw new Error("Failed to fetch banking details")
+      }
+
+      const { banking_details } = await response.json()
+
+      if (banking_details && banking_details.length > 0) {
+        const details = banking_details[0]
+        setFormData({
+          account_holder: details.account_holder || "",
+          bank_name: details.bank_name || "",
+          account_number: details.account_number || "",
+          branch_code: details.branch_code || "",
+          swift_code: details.swift_code || "",
+          reference_note: details.reference_note || "",
+        })
+      }
     } catch (err: any) {
-      toast({
-        title: "Error",
-        description: err.message || "Failed to save banking details",
-        variant: "destructive",
-      });
+      console.error("Error:", err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-  };
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError("")
+    setSuccess("")
+    setSaving(true)
+
+    try {
+      const response = await fetch("/api/admin/banking-details", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to save banking details")
+      }
+
+      setSuccess("Banking details updated successfully!")
+      setTimeout(() => setSuccess(""), 3000)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   if (loading) {
     return <div className="text-center py-12">Loading...</div>
@@ -80,28 +105,32 @@ export default function BankingDetailsPage() {
             <CardTitle>Configure Bank Transfer Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{error}</div>}
-              {/* No success state needed here, handled by toast */}
+              {success && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">{success}</div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">Account Holder Name</label>
                   <Input
                     placeholder="e.g., KG Compponents Ltd"
-                    {...register("account_holder")}
+                    value={formData.account_holder}
+                    onChange={(e) => setFormData({ ...formData, account_holder: e.target.value })}
+                    required
                     disabled={saving}
                   />
-                  {errors.account_holder && <p className="text-red-500 text-sm">{errors.account_holder.message}</p>}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">Bank Name</label>
                   <Input
                     placeholder="e.g., First National Bank"
-                    {...register("bank_name")}
+                    value={formData.bank_name}
+                    onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                    required
                     disabled={saving}
                   />
-                  {errors.bank_name && <p className="text-red-500 text-sm">{errors.bank_name.message}</p>}
                 </div>
               </div>
 
@@ -110,19 +139,20 @@ export default function BankingDetailsPage() {
                   <label className="text-sm font-medium text-foreground mb-2 block">Account Number</label>
                   <Input
                     placeholder="e.g., 123456789"
-                    {...register("account_number")}
+                    value={formData.account_number}
+                    onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+                    required
                     disabled={saving}
                   />
-                  {errors.account_number && <p className="text-red-500 text-sm">{errors.account_number.message}</p>}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">Branch Code</label>
                   <Input
                     placeholder="e.g., 250655"
-                    {...register("branch_code")}
+                    value={formData.branch_code}
+                    onChange={(e) => setFormData({ ...formData, branch_code: e.target.value })}
                     disabled={saving}
                   />
-                  {errors.branch_code && <p className="text-red-500 text-sm">{errors.branch_code.message}</p>}
                 </div>
               </div>
 
@@ -130,20 +160,20 @@ export default function BankingDetailsPage() {
                 <label className="text-sm font-medium text-foreground mb-2 block">SWIFT Code</label>
                 <Input
                   placeholder="e.g., FIRNZAJJ"
-                  {...register("swift_code")}
+                  value={formData.swift_code}
+                  onChange={(e) => setFormData({ ...formData, swift_code: e.target.value })}
                   disabled={saving}
                 />
-                {errors.swift_code && <p className="text-red-500 text-sm">{errors.swift_code.message}</p>}
               </div>
 
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">Reference Note (optional)</label>
                 <Textarea
                   placeholder="e.g., Please include your order number as reference"
-                  {...register("reference_note")}
+                  value={formData.reference_note}
+                  onChange={(e) => setFormData({ ...formData, reference_note: e.target.value })}
                   disabled={saving}
                 />
-                {errors.reference_note && <p className="text-red-500 text-sm">{errors.reference_note.message}</p>}
               </div>
 
               <Button type="submit" disabled={saving} className="w-full">

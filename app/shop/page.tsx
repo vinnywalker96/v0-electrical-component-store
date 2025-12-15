@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { Product } from "@/lib/types"
 import { ProductCard } from "@/components/product-card"
@@ -11,7 +11,6 @@ import { Slider } from "@/components/ui/slider"
 
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([])
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]) // New state for featured products
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
@@ -21,14 +20,13 @@ export default function ShopPage() {
 
   const supabase = createClient()
 
-  const fetchProducts = useCallback(async () => {
+  useEffect(() => {
+    fetchProducts()
+  }, [])
+
+  async function fetchProducts() {
     try {
-      // Modify query to include status filter
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("status", "approved") // Filter for approved products
-        .order("created_at", { ascending: false })
+      const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false })
 
       if (error) throw error
       setProducts(data || [])
@@ -44,30 +42,7 @@ export default function ShopPage() {
     } finally {
       setLoading(false)
     }
-  }, [supabase])
-
-  // New function to fetch featured products
-  const fetchFeaturedProducts = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("status", "approved")
-        .eq("is_featured", true) // Filter for featured products
-        .order("created_at", { ascending: false })
-        .limit(4); // Limit to a reasonable number of featured products
-
-      if (error) throw error;
-      setFeaturedProducts(data || []);
-    } catch (error) {
-      console.error("Error fetching featured products:", error);
-    }
-  }, [supabase])
-
-  useEffect(() => {
-    fetchProducts()
-    fetchFeaturedProducts() // Call new function for featured products
-  }, [fetchProducts, fetchFeaturedProducts])
+  }
 
   const categories = useMemo(() => [...new Set(products.map((p) => p.category))], [products])
   const brands = useMemo(() => [...new Set(products.map((p) => p.brand))], [products])
@@ -92,24 +67,6 @@ export default function ShopPage() {
           <h1 className="text-4xl font-bold text-foreground mb-2">Shop Electrical Components</h1>
           <p className="text-muted-foreground">Browse our complete selection of electronic components</p>
         </div>
-
-        {/* Featured Products Section (New) */}
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Loading products...</p>
-          </div>
-        ) : (
-          featuredProducts.length > 0 && (
-            <div className="mb-12">
-              <h2 className="text-3xl font-bold text-foreground mb-6">Featured Products</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {featuredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </div>
-          )
-        )}
 
         {/* Filters */}
         <div className="bg-card rounded-lg border border-border p-6 mb-8">

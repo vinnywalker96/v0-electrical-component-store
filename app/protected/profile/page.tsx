@@ -1,17 +1,16 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import type { UserProfile } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowLeft } from "lucide-react"
 
 export default function ProfilePage() {
   const supabase = createClient()
-  const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -22,35 +21,34 @@ export default function ProfilePage() {
     phone: "",
   })
 
-  const fetchProfile = useCallback(async () => {
-    try {
-      setLoading(true)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (user) {
-        const { data: profileData } = await supabase.from("profiles").select("*").eq("id", user.id).single()
-
-        if (profileData) {
-          setProfile(profileData)
-          setFormData({
-            firstName: profileData.first_name || "",
-            lastName: profileData.last_name || "",
-            phone: profileData.phone || "",
-          })
-        }
-      }
-    } catch (error) {
-      console.error("[v0] Error fetching profile:", error)
-    } finally {
-      setLoading(false)
-    }
-  }, [supabase])
-
   useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+
+        if (user) {
+          const { data: profileData } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+
+          if (profileData) {
+            setProfile(profileData)
+            setFormData({
+              firstName: profileData.first_name || "",
+              lastName: profileData.last_name || "",
+              phone: profileData.phone || "",
+            })
+          }
+        }
+      } catch (error) {
+        console.error("[v0] Error fetching profile:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchProfile()
-  }, [fetchProfile])
+  }, [])
 
   async function handleSave() {
     try {
@@ -75,7 +73,6 @@ export default function ProfilePage() {
       if (error) throw error
 
       setSuccess(true)
-      await fetchProfile() // Re-fetch profile to show updated data
       setTimeout(() => setSuccess(false), 3000)
     } catch (error) {
       console.error("[v0] Error saving profile:", error)
@@ -91,9 +88,12 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground">My Profile</h1>
-        </div>
+        <Link href="/protected/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
+          <ArrowLeft size={20} />
+          Back to Dashboard
+        </Link>
+
+        <h1 className="text-4xl font-bold text-foreground mb-8">My Profile</h1>
 
         <Card>
           <CardHeader>
@@ -144,9 +144,9 @@ export default function ProfilePage() {
               <Button onClick={handleSave} disabled={saving}>
                 {saving ? "Saving..." : "Save Changes"}
               </Button>
-              <Button variant="outline" onClick={() => router.back()}>
-                Cancel
-              </Button>
+              <Link href="/protected/dashboard">
+                <Button variant="outline">Cancel</Button>
+              </Link>
             </div>
           </CardContent>
         </Card>

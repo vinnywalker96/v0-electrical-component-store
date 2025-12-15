@@ -80,7 +80,7 @@ export default function AdminDashboardPage() {
     }
 
     fetchStats()
-  }, [supabase])
+  }, [])
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -193,14 +193,6 @@ export default function AdminDashboardPage() {
               <Button className="w-full h-16 text-lg justify-start gap-4 bg-transparent" variant="outline">
                 <UserCog size={24} />
                 Manage Admins
-              </Button>
-            </Link>
-          )}
-          {isSuperAdmin && (
-            <Link href="/admin/users/pending">
-              <Button className="w-full h-16 text-lg justify-start gap-4 bg-transparent" variant="outline">
-                <Users size={24} />
-                Pending User Accounts
               </Button>
             </Link>
           )}

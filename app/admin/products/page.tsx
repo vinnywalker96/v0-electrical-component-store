@@ -1,63 +1,50 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/client" // Keep createClient for auth check if needed
+import { createClient } from "@/lib/supabase/client"
 import type { Product } from "@/lib/types"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Trash2, Edit, Plus, ArrowLeft } from "lucide-react"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchAdminProducts, updateProduct, deleteProduct, selectAdminProducts, selectAdminProductsLoading, selectAdminProductsError } from '@/lib/store/adminProductsSlice';
 
 export default function AdminProductsPage() {
-  const dispatch = useDispatch();
-  const products = useSelector(selectAdminProducts);
-  const loading = useSelector(selectAdminProductsLoading);
-  const error = useSelector(selectAdminProductsError);
+  const supabase = createClient()
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    dispatch(fetchAdminProducts() as any);
-  }, [dispatch]);
+    const fetchProducts = async () => {
+      try {
+        const { data } = await supabase.from("products").select("*").order("created_at", { ascending: false })
+
+        setProducts(data || [])
+      } catch (error) {
+        console.error("[v0] Error fetching products:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this product?")) return
-    try {
-      await dispatch(deleteProduct(id) as any);
-    } catch (err: any) {
-      alert(err.message || "Failed to delete product");
-    }
-  }
 
-  async function handleStatusChange(productId: string, newStatus: Product['status']) {
     try {
-      await dispatch(updateProduct({ id: productId, status: newStatus }) as any);
-    } catch (err: any) {
-      alert(err.message || "Failed to update product status");
-    }
-  }
+      const { error } = await supabase.from("products").delete().eq("id", id)
 
-  async function handleToggleFeatured(productId: string, currentFeatured: boolean) {
-    try {
-      await dispatch(updateProduct({ id: productId, is_featured: !currentFeatured }) as any);
-    } catch (err: any) {
-      alert(err.message || "Failed to toggle featured status");
+      if (error) throw error
+
+      setProducts(products.filter((p) => p.id !== id))
+    } catch (error) {
+      console.error("[v0] Error deleting product:", error)
     }
   }
 
   if (loading) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-xl text-foreground">Loading products...</p>
-      </main>
-    )
+    return <div className="text-center py-12">Loading products...</div>
   }
 
   return (
@@ -70,12 +57,16 @@ export default function AdminProductsPage() {
 
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-foreground">Manage Products</h1>
+          <Link href="/admin/products/new">
+            <Button className="flex gap-2">
+              <Plus size={20} />
+              Add Product
+            </Button>
+          </Link>
         </div>
 
         <Card>
           <CardContent className="pt-6">
-            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
-
             {products.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-slate-600 mb-4">No products yet</p>
@@ -89,10 +80,8 @@ export default function AdminProductsPage() {
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-3 px-4 font-semibold">Name</th>
-                      <th className="text-left py-3 px-4 font-semibold">Seller</th>
                       <th className="text-left py-3 px-4 font-semibold">Category</th>
-                      <th className="text-left py-3 px-4 font-semibold">Status</th>
-                      <th className="text-left py-3 px-4 font-semibold">Featured</th>
+                      <th className="text-left py-3 px-4 font-semibold">Brand</th>
                       <th className="text-right py-3 px-4 font-semibold">Price</th>
                       <th className="text-right py-3 px-4 font-semibold">Stock</th>
                       <th className="text-center py-3 px-4 font-semibold">Actions</th>
@@ -102,35 +91,8 @@ export default function AdminProductsPage() {
                     {products.map((product) => (
                       <tr key={product.id} className="border-b hover:bg-slate-50">
                         <td className="py-3 px-4 font-semibold">{product.name}</td>
-                        <td className="py-3 px-4">
-                          {product.profiles?.first_name} {product.profiles?.last_name}
-                        </td>
                         <td className="py-3 px-4">{product.category}</td>
-                        <td className="py-3 px-4">
-                          <Select
-                            value={product.status}
-                            onValueChange={(newStatus: Product['status']) => handleStatusChange(product.id, newStatus)}
-                          >
-                            <SelectTrigger className="w-[120px]">
-                              <SelectValue placeholder="Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="approved">Approved</SelectItem>
-                              <SelectItem value="rejected">Rejected</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </td>
-                        <td className="py-3 px-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleToggleFeatured(product.id, product.is_featured)}
-                            className={product.is_featured ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
-                          >
-                            {product.is_featured ? "Yes" : "No"}
-                          </Button>
-                        </td>
+                        <td className="py-3 px-4">{product.brand}</td>
                         <td className="py-3 px-4 text-right">${product.price.toFixed(2)}</td>
                         <td className="py-3 px-4 text-right">
                           <span

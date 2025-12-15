@@ -9,13 +9,10 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/components/ui/use-toast"
 
 export default function SignUpPage() {
   const router = useRouter()
   const supabase = createClient()
-  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -66,28 +63,17 @@ export default function SignUpPage() {
             first_name: formData.firstName,
             last_name: formData.lastName,
             role: "customer",
-            account_status: "approved",
           })
 
           if (profileError && !profileError.message.includes("duplicate")) {
             console.error("[v0] Profile error:", profileError)
-            setError(profileError.message)
-            setLoading(false)
-            return
           }
         } catch (err) {
           console.error("[v0] Error creating profile:", err)
-          setError("Failed to create user profile.")
-          setLoading(false)
-          return
         }
       }
 
       setSuccess(true)
-      toast({
-        title: "Account Created!",
-        description: "You will be redirected to sign in shortly.",
-      })
       setTimeout(() => {
         router.push("/auth/login?message=signup-success")
       }, 2000)
@@ -107,7 +93,7 @@ export default function SignUpPage() {
             <div className="text-green-600 text-5xl mb-4">✓</div>
             <h2 className="text-2xl font-bold mb-2">Account Created!</h2>
             <p className="text-slate-600">
-              A confirmation email has been sent. You&apos;ll be redirected to sign in shortly.
+              A confirmation email has been sent. You'll be redirected to sign in shortly.
             </p>
           </CardContent>
         </Card>
@@ -201,18 +187,6 @@ export default function SignUpPage() {
           <Link href="/" className="block text-center mt-4 text-sm text-blue-600 hover:text-blue-700">
             Back to Home
           </Link>
-
-          <div className="mt-6 text-center text-sm">
-            <p className="text-slate-600">
-              Want to sell on our platform?{" "}
-              <Link href="/vendor_admin/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Register as a Vendor
-              </Link>
-            </p>
-            <p className="text-xs text-slate-500 mt-1">
-              Vendor accounts require approval from a Super Administrator.
-            </p>
-          </div>
         </CardContent>
       </Card>
     </main>

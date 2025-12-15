@@ -1,112 +1,52 @@
-import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
-
-export async function GET(request: Request) {
-  const supabase = createClient()
-  const { searchParams } = new URL(request.url)
-  const status = searchParams.get("status")
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-
-  if (profileError || !profile || profile.role !== "super_admin") {
-    return NextResponse.json({ error: "Forbidden: Only Super Admins can view pending users" }, { status: 403 })
-  }
-
-  let query = supabase.from("profiles").select("id, email, first_name, last_name, role, account_status, role_requested, created_at", { count: 'exact' })
-
-  if (status) {
-    query = query.eq("account_status", status)
-  }
-
-  const { data: users, error } = await query.order("created_at", { ascending: false })
-
-  if (error) {
-    console.error("Error fetching users:", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  return NextResponse.json(users)
-}
+import { createServerClient } from "@/lib/supabase/server"
 
 export async function POST(request: Request) {
-  const supabase = createClient()
-  const { id, action } = await request.json()
+  try {
+    const supabase = await createServerClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser()
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!currentUser) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check if user is super_admin
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", currentUser.id).single()
+
+    if (profile?.role !== "super_admin") {
+      return Response.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    const { email } = await request.json()
+
+    // Get the user by email
+    const {
+      data: { users },
+      error: userError,
+    } = await supabase.auth.admin.listUsers()
+
+    if (userError) {
+      return Response.json({ error: userError.message }, { status: 400 })
+    }
+
+    const targetUser = users.find((u) => u.email === email)
+
+    if (!targetUser) {
+      return Response.json({ error: "User not found" }, { status: 404 })
+    }
+
+    // Update profile role to admin
+    const { error: updateError } = await supabase.from("profiles").update({ role: "admin" }).eq("id", targetUser.id)
+
+    if (updateError) {
+      return Response.json({ error: updateError.message }, { status: 400 })
+    }
+
+    return Response.json({ success: true, message: "Admin role assigned successfully" })
+  } catch (error) {
+    console.error("[v0] Error:", error)
+    return Response.json({ error: "Internal server error" }, { status: 500 })
   }
-
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-
-  if (profileError || !profile || profile.role !== "super_admin") {
-    return NextResponse.json({ error: "Forbidden: Only Super Admins can manage user accounts" }, { status: 403 })
-  }
-
-  if (action === "approve") {
-    // Check for super_admin limit if the requested role is super_admin
-    const { data: userToApprove, error: fetchError } = await supabase
-      .from("profiles")
-      .select("role_requested")
-      .eq("id", id)
-      .single();
-
-    if (fetchError || !userToApprove) {
-      console.error("Error fetching user to approve:", fetchError);
-      return NextResponse.json({ error: fetchError?.message || "User not found." }, { status: 500 });
-    }
-
-    if (userToApprove.role_requested === "super_admin") {
-      const { count, error: countError } = await supabase
-        .from("profiles")
-        .select("id", { count: "exact" })
-        .eq("role", "super_admin")
-        .neq("id", id); // Exclude the user being approved from the count
-
-
-      if (countError) {
-        console.error("Error counting super_admins:", countError);
-        return NextResponse.json({ error: countError.message }, { status: 500 });
-      }
-
-      if (count && count >= 2) {
-        return NextResponse.json({ error: "Cannot approve, maximum of 2 super_admin users already exist." }, { status: 400 });
-      }
-    }
-
-    const { error } = await supabase
-      .from("profiles")
-      .update({ account_status: "approved", role: userToApprove.role_requested }) // Set actual role upon approval
-      .eq("id", id)
-
-    if (error) {
-      console.error("Error approving user:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-  } else if (action === "reject") {
-    const { error } = await supabase
-      .from("profiles")
-      .update({ account_status: "rejected", role_requested: null }) // Clear requested role on rejection
-      .eq("id", id)
-
-    if (error) {
-      console.error("Error rejecting user:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-  } else {
-    return NextResponse.json({ error: "Invalid action" }, { status: 400 })
-  }
-
-  return NextResponse.json({ message: `User ${action}ed successfully` })
 }

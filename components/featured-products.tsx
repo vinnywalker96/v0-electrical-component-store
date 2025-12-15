@@ -19,8 +19,6 @@ export default function FeaturedProducts() {
         const { data, error } = await supabase
           .from("products")
           .select("*")
-          .eq("is_featured", true) // Add filter for featured products
-          .eq("status", "approved") // Add filter for approved status
           .gt("stock_quantity", 0)
           .order("created_at", { ascending: false })
           .limit(4)

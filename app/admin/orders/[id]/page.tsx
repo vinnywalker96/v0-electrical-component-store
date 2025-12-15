@@ -38,7 +38,7 @@ export default function AdminOrderDetailPage() {
     }
 
     fetchOrder()
-  }, [orderId, supabase])
+  }, [orderId])
 
   async function handleStatusUpdate(newStatus: string) {
     if (!order) return

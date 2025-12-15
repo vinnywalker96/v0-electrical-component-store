@@ -46,7 +46,7 @@ export default function DashboardPage() {
     }
 
     fetchData()
-  }, [supabase])
+  }, [])
 
   async function handleLogout() {
     await supabase.auth.signOut()

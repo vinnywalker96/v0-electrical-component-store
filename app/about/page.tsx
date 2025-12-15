@@ -19,7 +19,7 @@ export default function About() {
               <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
               <p className="text-muted-foreground mb-4">
                 At KG Compponents, we believe that access to quality electrical components should be simple, affordable,
-                We&apos;re committed to serving engineers, makers, hobbyists, and businesses with the finest
+                and reliable. We're committed to serving engineers, makers, hobbyists, and businesses with the finest
                 selection of components available.
               </p>
               <p className="text-muted-foreground">
