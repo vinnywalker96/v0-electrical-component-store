@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, DollarSign, ShoppingCart, Star } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Package, DollarSign, ShoppingCart, Star, Plus, Store } from "lucide-react"
 import Link from "next/link"
-import DashboardLayout from "@/components/dashboard-layout"
 
 export default async function SellerDashboardPage() {
   const supabase = await createClient()
@@ -27,15 +27,13 @@ export default async function SellerDashboardPage() {
   // Get seller's orders
   const { data: orders } = await supabase
     .from("orders")
-    .select(
-      `
+    .select(`
       *,
       order_items!inner(
         *,
         product:products!inner(seller_id)
       )
-    `
-    )
+    `)
     .eq("order_items.product.seller_id", seller.id)
 
   // Calculate stats
@@ -49,7 +47,20 @@ export default async function SellerDashboardPage() {
   const avgRating = seller.rating || 0
 
   return (
-    <DashboardLayout role="vendor">
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Seller Dashboard</h1>
+          <p className="text-muted-foreground">{seller.store_name}</p>
+        </div>
+        <Link href="/seller/products/new">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Product
+          </Button>
+        </Link>
+      </div>
+
       {seller.verification_status === "pending" && (
         <Card className="mb-6 border-orange-500 bg-orange-50">
           <CardContent className="pt-6">
@@ -103,32 +114,60 @@ export default async function SellerDashboardPage() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {orders && orders.length > 0 ? (
-            <div className="space-y-4">
-              {orders.slice(0, 5).map((order) => (
-                <div key={order.id} className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium">Order #{order.id.slice(0, 8)}</p>
-                    <p className="text-sm text-muted-foreground">{order.status}</p>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Link href="/seller/products">
+              <Button variant="outline" className="w-full justify-start bg-transparent">
+                <Package className="h-4 w-4 mr-2" />
+                Manage Products
+              </Button>
+            </Link>
+            <Link href="/seller/orders">
+              <Button variant="outline" className="w-full justify-start bg-transparent">
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                View Orders
+              </Button>
+            </Link>
+            <Link href="/seller/profile">
+              <Button variant="outline" className="w-full justify-start bg-transparent">
+                <Store className="h-4 w-4 mr-2" />
+                Store Settings
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Orders</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {orders && orders.length > 0 ? (
+              <div className="space-y-4">
+                {orders.slice(0, 5).map((order) => (
+                  <div key={order.id} className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium">Order #{order.id.slice(0, 8)}</p>
+                      <p className="text-sm text-muted-foreground">{order.status}</p>
+                    </div>
+                    <Link href={`/seller/orders/${order.id}`}>
+                      <Button variant="ghost" size="sm">
+                        View
+                      </Button>
+                    </Link>
                   </div>
-                  <Link href={`/seller/orders/${order.id}`}>
-                    <Button variant="ghost" size="sm">
-                      View
-                    </Button>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground">No orders yet</p>
-          )}
-        </CardContent>
-      </Card>
-    </DashboardLayout>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No orders yet</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }

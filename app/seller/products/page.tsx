@@ -3,9 +3,8 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Edit } from "lucide-react"
+import { Plus, Edit } from "lucide-react"
 import { DeleteProductButton } from "@/components/delete-product-button"
-import DashboardLayout from "@/components/dashboard-layout"
 
 export default async function SellerProductsPage() {
   const supabase = await createClient()
@@ -28,7 +27,20 @@ export default async function SellerProductsPage() {
     .order("created_at", { ascending: false })
 
   return (
-    <DashboardLayout role="vendor">
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">My Products</h1>
+          <p className="text-muted-foreground">Manage your product listings</p>
+        </div>
+        <Link href="/seller/products/new">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Product
+          </Button>
+        </Link>
+      </div>
+
       <Card>
         <CardContent className="pt-6">
           {!products || products.length === 0 ? (
@@ -64,20 +76,14 @@ export default async function SellerProductsPage() {
                       </td>
                       <td className="py-3 px-4 text-right">
                         <span
-                          className={`px-2 py-1 rounded text-sm ${
-                            product.stock_quantity > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                          }`}
+                          className={`px-2 py-1 rounded text-sm ${product.stock_quantity > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
                         >
                           {product.stock_quantity}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-center">
                         <span
-                          className={`px-2 py-1 rounded text-xs ${
-                            seller.verification_status === "approved"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-orange-100 text-orange-800"
-                          }`}
+                          className={`px-2 py-1 rounded text-xs ${seller.verification_status === "approved" ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}`}
                         >
                           {seller.verification_status === "approved" ? "Live" : "Pending"}
                         </span>
@@ -100,6 +106,6 @@ export default async function SellerProductsPage() {
           )}
         </CardContent>
       </Card>
-    </DashboardLayout>
+    </div>
   )
 }

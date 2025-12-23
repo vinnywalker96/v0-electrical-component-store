@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Package,
+  UserIcon,
+  Settings,
+  MapPin,
+  MessageSquare,
+  Store,
+  ShoppingCart,
+  LayoutDashboard,
   Clock,
   CheckCircle2,
   XCircle,
@@ -20,6 +27,7 @@ export default function DashboardPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
+  const [isSeller, setIsSeller] = useState(false)
   const [stats, setStats] = useState({
     completed: 0,
     inProgress: 0,
@@ -41,6 +49,8 @@ export default function DashboardPage() {
             setProfile(profileData)
           }
 
+          const { data: sellerData } = await supabase.from("sellers").select("id").eq("user_id", user.id).single()
+          setIsSeller(!!sellerData)
 
           const { data: ordersData } = await supabase
             .from("orders")
@@ -68,24 +78,98 @@ export default function DashboardPage() {
   }, [])
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center min-h-[400px]">Loading dashboard...</div>
-    )
+    return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>
   }
 
   const totalOrders = stats.completed + stats.inProgress + stats.onHold
 
   return (
-    <>
-      {/* Header with user greeting */}
-      <div className="flex items-center justify-end mb-8">
-        <Avatar className="w-12 h-12">
-          <AvatarImage src={profile?.profile_image_url || ""} />
-          <AvatarFallback className="bg-primary text-white">
-            {(profile?.first_name?.[0] || user?.email?.[0] || "U").toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      </div>
+    <div className="flex min-h-screen bg-slate-50">
+      <aside className="w-64 bg-white border-r border-slate-200 fixed h-screen">
+        <div className="p-6">
+          <Link href="/" className="flex items-center gap-2 font-bold text-xl mb-8">
+            <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-white">⚡</div>
+            <span>KG Compponents</span>
+          </Link>
+
+          <nav className="space-y-1">
+            <Link
+              href="/protected/dashboard"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium"
+            >
+              <LayoutDashboard className="w-5 h-5" />
+              Dashboard
+            </Link>
+            <Link
+              href="/protected/profile"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700"
+            >
+              <UserIcon className="w-5 h-5" />
+              My Profile
+            </Link>
+            <Link
+              href="/shop"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              Shop
+            </Link>
+            <Link
+              href="/protected/addresses"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700"
+            >
+              <MapPin className="w-5 h-5" />
+              Addresses
+            </Link>
+            <Link
+              href="/chat"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700"
+            >
+              <MessageSquare className="w-5 h-5" />
+              Messages
+            </Link>
+            <Link
+              href="/protected/settings"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700"
+            >
+              <Settings className="w-5 h-5" />
+              Settings
+            </Link>
+            {isSeller ? (
+              <Link
+                href="/seller/dashboard"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700"
+              >
+                <Store className="w-5 h-5" />
+                Seller Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/seller/register"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700"
+              >
+                <Store className="w-5 h-5" />
+                Become a Seller
+              </Link>
+            )}
+          </nav>
+        </div>
+      </aside>
+
+      <main className="flex-1 ml-64 p-8">
+        {/* Header with user greeting */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Hello, {profile?.first_name || "User"}!</h1>
+            <p className="text-slate-600 mt-1">Welcome back to your dashboard</p>
+          </div>
+          <Avatar className="w-12 h-12">
+            <AvatarImage src={profile?.avatar_url || ""} />
+            <AvatarFallback className="bg-primary text-white">
+              {(profile?.first_name?.[0] || user?.email?.[0] || "U").toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <Card className="col-span-2">
@@ -264,6 +348,7 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
-    </>
+      </main>
+    </div>
   )
 }
