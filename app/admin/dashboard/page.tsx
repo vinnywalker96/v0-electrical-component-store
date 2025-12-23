@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import type { Order } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Package, ShoppingCart, Users, TrendingUp, LogOut, Settings, CreditCard, UserCog } from "lucide-react"
+import { Package, ShoppingCart, Users, TrendingUp, Settings, CreditCard, UserCog } from "lucide-react"
 
 interface DashboardStats {
   totalProducts: number
@@ -82,29 +82,12 @@ export default function AdminDashboardPage() {
     fetchStats()
   }, [])
 
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    window.location.href = "/"
-  }
-
   if (loading) {
     return <div className="text-center py-12">Loading admin dashboard...</div>
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-slate-600 mt-1">Manage products, orders, and inventory</p>
-          </div>
-          <Button variant="outline" onClick={handleLogout} className="flex gap-2 bg-transparent">
-            <LogOut size={20} />
-            Logout
-          </Button>
-        </div>
-
+    <>
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           <Card>
@@ -256,7 +239,6 @@ export default function AdminDashboardPage() {
             )}
           </CardContent>
         </Card>
-      </div>
-    </main>
+    </>
   )
 }

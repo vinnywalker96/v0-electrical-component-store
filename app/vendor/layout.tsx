@@ -1,9 +1,8 @@
 import type React from "react"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { DashboardLayout } from "@/components/dashboard-layout"
 
-export default async function AdminLayout({
+export default async function VendorLayout({
   children,
 }: {
   children: React.ReactNode
@@ -14,18 +13,16 @@ export default async function AdminLayout({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/auth/admin/login")
+    redirect("/auth/vendor/login")
   }
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-  if (profile?.role !== "admin" && profile?.role !== "super_admin") {
+  if (profile?.role !== "vendor") {
     redirect("/")
   }
 
-  return (
-    <DashboardLayout role={profile.role || "admin"}>
-      {children}
-    </DashboardLayout>
-  )
+  // Exclude navbar and footer for dashboard pages
+  return <div className="dashboard-layout">{children}</div>
 }
+

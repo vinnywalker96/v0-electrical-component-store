@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Package } from "lucide-react"
+import DashboardLayout from "@/components/dashboard-layout"
 
 export default async function SellerOrdersPage() {
   const supabase = await createClient()
@@ -34,10 +35,7 @@ export default async function SellerOrdersPage() {
     .order("created_at", { ascending: false })
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-2">My Orders</h1>
-      <p className="text-muted-foreground mb-8">Manage and track customer orders</p>
-
+    <DashboardLayout role="vendor">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -111,6 +109,6 @@ export default async function SellerOrdersPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </DashboardLayout>
   )
 }
