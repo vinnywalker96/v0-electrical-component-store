@@ -1,13 +1,15 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, memo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { useCart } from "@/lib/context/cart-context"
 import { createClient } from "@/lib/supabase/client"
 import { Store } from "lucide-react"
 import type { Product } from "@/lib/types"
+import { useCurrency } from "@/lib/context/currency-context"
+import { useLanguage } from "@/lib/context/language-context"
 
 interface ProductCardProps {
   product: Product & { seller?: any }
@@ -18,6 +20,8 @@ export function ProductCard({ product }: ProductCardProps) {
   const [added, setAdded] = useState(false)
   const { addToCart } = useCart()
   const supabase = createClient()
+  const { formatPrice } = useCurrency()
+  const { t } = useLanguage()
 
   async function handleAddToCart() {
     setLoading(true)
@@ -41,7 +45,7 @@ export function ProductCard({ product }: ProductCardProps) {
     }
   }
 
-  const displayPrice = product.price > 0 ? `R${product.price.toFixed(2)}` : "Coming Soon"
+  const displayPrice = product.price > 0 ? formatPrice(product.price) : t("product_card.coming_soon")
   const isPriceAvailable = product.price > 0
 
   return (
@@ -87,14 +91,14 @@ export function ProductCard({ product }: ProductCardProps) {
             {displayPrice}
           </span>
           <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded">
-            {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : "Out of stock"}
+            {product.stock_quantity > 0 ? t("product_card.in_stock", { quantity: product.stock_quantity }) : t("product_card.out_of_stock")}
           </span>
         </div>
       </CardContent>
       <CardFooter className="flex gap-2">
         <Link href={`/shop/${product.id}`} className="flex-1">
           <Button variant="outline" size="sm" className="w-full text-xs bg-transparent">
-            Details
+            {t("product_card.details")}
           </Button>
         </Link>
         <Button
@@ -103,9 +107,11 @@ export function ProductCard({ product }: ProductCardProps) {
           className="flex-1 text-xs"
           onClick={handleAddToCart}
         >
-          {loading ? "Adding..." : added ? "Added!" : isPriceAvailable ? "Add to Cart" : "Coming Soon"}
+          {loading ? t("product_card.adding") : added ? t("product_card.added") : isPriceAvailable ? t("product_card.add_to_cart") : t("product_card.coming_soon")}
         </Button>
       </CardFooter>
     </Card>
   )
 }
+
+export default memo(ProductCard)

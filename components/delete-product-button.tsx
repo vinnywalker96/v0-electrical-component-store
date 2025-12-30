@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
+import { toast } from "@/hooks/use-toast"
 
 export function DeleteProductButton({ productId }: { productId: string }) {
   const router = useRouter()
@@ -20,10 +21,19 @@ export function DeleteProductButton({ productId }: { productId: string }) {
 
       if (error) throw error
 
+      toast({
+        title: "Success",
+        description: "Product deleted successfully!",
+      });
+
       router.refresh()
     } catch (error) {
       console.error("Error deleting product:", error)
-      alert("Failed to delete product")
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
+        variant: "destructive"
+      });
     } finally {
       setDeleting(false)
     }

@@ -152,8 +152,11 @@ export default function NewProductPage() {
                   <Input
                     type="number"
                     step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: Number.parseFloat(e.target.value) })}
+                    value={formData.price || ""}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setFormData({ ...formData, price: value === "" ? 0 : Number.parseFloat(value) || 0 })
+                    }}
                     placeholder="0.00"
                     required
                   />
@@ -163,8 +166,11 @@ export default function NewProductPage() {
                   <label className="text-sm font-medium text-foreground mb-2 block">Stock Quantity</label>
                   <Input
                     type="number"
-                    value={formData.stock_quantity}
-                    onChange={(e) => setFormData({ ...formData, stock_quantity: Number.parseInt(e.target.value) })}
+                    value={formData.stock_quantity || ""}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setFormData({ ...formData, stock_quantity: value === "" ? 0 : Number.parseInt(value) || 0 })
+                    }}
                     placeholder="0"
                   />
                 </div>

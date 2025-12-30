@@ -3,7 +3,7 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Edit } from "lucide-react"
+import { Plus, Edit, Eye } from "lucide-react"
 import { DeleteProductButton } from "@/components/delete-product-button"
 
 export default async function SellerProductsPage() {
@@ -45,7 +45,7 @@ export default async function SellerProductsPage() {
         <CardContent className="pt-6">
           {!products || products.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">You haven't added any products yet</p>
+              <p className="text-muted-foreground mb-4">You haven&apos;t added any products yet</p>
               <Link href="/seller/products/new">
                 <Button>Create First Product</Button>
               </Link>
@@ -90,6 +90,11 @@ export default async function SellerProductsPage() {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex justify-center gap-2">
+                          <Link href={`/seller/products/${product.id}`}>
+                            <Button variant="outline" size="sm" className="bg-transparent">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
                           <Link href={`/seller/products/${product.id}/edit`}>
                             <Button variant="outline" size="sm" className="bg-transparent">
                               <Edit className="h-4 w-4" />

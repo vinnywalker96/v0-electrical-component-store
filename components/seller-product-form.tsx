@@ -13,6 +13,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AlertCircle } from "lucide-react"
 import type { Product } from "@/lib/types"
+import { toast } from "@/hooks/use-toast"
+import { ImageUploadField } from "@/components/image-upload-field"
+import { DocumentUploadField } from "@/components/document-upload-field"
 
 const CATEGORIES = [
   "Resistors",
@@ -38,29 +41,33 @@ const CATEGORIES = [
 
 interface SellerProductFormProps {
   sellerId: string
+  storeName: string
   product?: Product
+  onSuccess?: () => void
 }
 
-export function SellerProductForm({ sellerId, product }: SellerProductFormProps) {
+export function SellerProductForm({ sellerId, storeName, product }: SellerProductFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+
 
   const [formData, setFormData] = useState({
     name: product?.name || "",
     description: product?.description || "",
+    sku: product?.sku || "", // Added SKU field
     category: product?.category || "Resistors",
     brand: product?.brand || "",
     price: product?.price || 0,
     stock_quantity: product?.stock_quantity || 0,
     image_url: product?.image_url || "",
     specifications: product?.specifications ? JSON.stringify(product.specifications, null, 2) : "",
+    technical_documents: product?.technical_documents || [], // Updated to array
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError("")
+    // setError("") // No longer needed, toast handles errors
 
     try {
       const supabase = createClient()
@@ -78,12 +85,14 @@ export function SellerProductForm({ sellerId, product }: SellerProductFormProps)
       const productData = {
         name: formData.name,
         description: formData.description,
+        sku: formData.sku, // Added SKU to productData
         category: formData.category,
         brand: formData.brand,
         price: Number.parseFloat(formData.price.toString()) || 0,
         stock_quantity: Number.parseInt(formData.stock_quantity.toString()) || 0,
         image_url: formData.image_url || null,
         specifications: specs,
+        technical_documents: formData.technical_documents, // Already an array
         seller_id: sellerId,
       }
 
@@ -92,16 +101,29 @@ export function SellerProductForm({ sellerId, product }: SellerProductFormProps)
         const { error: updateError } = await supabase.from("products").update(productData).eq("id", product.id)
 
         if (updateError) throw updateError
+        toast({
+          title: "Success",
+          description: "Product updated successfully!",
+        });
       } else {
         // Create new product
         const { error: insertError } = await supabase.from("products").insert(productData)
 
         if (insertError) throw insertError
+        toast({
+          title: "Success",
+          description: "Product added successfully!",
+        });
       }
 
-      router.push("/seller/products")
+      onSuccess?.() // Call onSuccess after successful operation
+      // router.push("/seller/products") // No longer push, parent handles closing modal and potentially refreshing
     } catch (err: any) {
-      setError(err.message || "Failed to save product")
+      toast({
+        title: "Error",
+        description: err.message || "Failed to save product",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false)
     }
@@ -110,12 +132,6 @@ export function SellerProductForm({ sellerId, product }: SellerProductFormProps)
   return (
     <Card>
       <CardContent className="pt-6">
-        {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
@@ -126,6 +142,27 @@ export function SellerProductForm({ sellerId, product }: SellerProductFormProps)
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g., 1K Ohm Resistor Pack"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="sku">SKU *</Label>
+            <Input
+              id="sku"
+              required
+              value={formData.sku}
+              onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+              placeholder="e.g., RES1000K-01"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="vendor">Vendor</Label>
+            <Input
+              id="vendor"
+              readOnly
+              value={storeName}
+              className="bg-gray-100 cursor-not-allowed"
             />
           </div>
 
@@ -198,14 +235,22 @@ export function SellerProductForm({ sellerId, product }: SellerProductFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image_url">Image URL</Label>
-            <Input
-              id="image_url"
-              type="url"
-              value={formData.image_url}
-              onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-              placeholder="https://example.com/image.jpg"
+            <Label>Product Image</Label>
+            <ImageUploadField
+              label="Upload Product Image"
+              bucket="products"
+              folder={`seller-${sellerId}`}
+              currentImageUrl={formData.image_url}
+              onUploadComplete={(result) => {
+                setFormData({ ...formData, image_url: result.url })
+              }}
+              onRemove={() => {
+                setFormData({ ...formData, image_url: "" })
+              }}
             />
+            {formData.image_url && (
+              <p className="text-xs text-muted-foreground">Current image: {formData.image_url}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -218,6 +263,18 @@ export function SellerProductForm({ sellerId, product }: SellerProductFormProps)
               rows={4}
             />
             <p className="text-xs text-muted-foreground">Optional: Enter product specifications as valid JSON</p>
+          </div>
+
+          <div className="space-y-2">
+            <DocumentUploadField
+              label="Technical Documents"
+              bucket="products" // Assuming technical documents also go into the 'products' bucket
+              folder={`seller-${sellerId}/documents`} // Specific folder for documents
+              currentDocumentUrls={formData.technical_documents}
+              onUploadComplete={(urls) => {
+                setFormData({ ...formData, technical_documents: urls })
+              }}
+            />
           </div>
 
           <div className="flex gap-4">

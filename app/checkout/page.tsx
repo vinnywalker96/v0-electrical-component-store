@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Store } from "lucide-react"
+import { useCurrency } from "@/lib/context/currency-context"
+import { toast } from "@/hooks/use-toast"
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -22,6 +24,7 @@ export default function CheckoutPage() {
   const [user, setUser] = useState<any>(null)
   const [savedAddresses, setSavedAddresses] = useState<any[]>([])
   const [selectedAddress, setSelectedAddress] = useState<string>("")
+  const { formatPrice } = useCurrency()
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -74,7 +77,7 @@ export default function CheckoutPage() {
     }
 
     fetchUser()
-  }, [])
+  }, [supabase, router, setFormData])
 
   const itemsBySeller = items.reduce(
     (acc, item) => {
@@ -133,9 +136,40 @@ export default function CheckoutPage() {
       return
     }
 
+    // "Please confirm order" pop-up
+    if (!window.confirm("Please confirm your order details before proceeding.")) {
+      return
+    }
+
     setIsProcessing(true)
 
     try {
+      // 1. Fetch current product stock for all items in the cart
+      const productIds = items.map(item => item.product_id);
+      const { data: productsInDb, error: productsError } = await supabase
+        .from("products")
+        .select("id, stock_quantity, name")
+        .in("id", productIds);
+
+      if (productsError) throw productsError;
+
+      // Map products by ID for easy lookup
+      const productStockMap = new Map(productsInDb.map(p => [p.id, p]));
+
+      // 2. Check stock availability
+      for (const item of items) {
+        const product = productStockMap.get(item.product_id);
+        if (!product || product.stock_quantity < item.quantity) {
+          toast({
+            title: "Stock Error",
+            description: `Insufficient stock for ${product?.name || "a product"}. Available: ${product?.stock_quantity || 0}, Requested: ${item.quantity}`,
+            variant: "destructive"
+          });
+          setIsProcessing(false);
+          return;
+        }
+      }
+
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
@@ -149,9 +183,9 @@ export default function CheckoutPage() {
           payment_method: formData.paymentMethod,
         })
         .select()
-        .single()
+        .single();
 
-      if (orderError) throw orderError
+      if (orderError) throw orderError;
 
       // Create order items
       const orderItems = items.map((item) => ({
@@ -159,11 +193,31 @@ export default function CheckoutPage() {
         product_id: item.product_id,
         quantity: item.quantity,
         unit_price: item.product?.price || 0,
-      }))
+      }));
 
-      const { error: itemsError } = await supabase.from("order_items").insert(orderItems)
+      const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
 
-      if (itemsError) throw itemsError
+      if (itemsError) throw itemsError;
+
+      // 3. Decrement stock for each ordered product
+      const stockUpdatePromises = items.map(item => {
+        const product = productStockMap.get(item.product_id);
+        if (product) {
+          return supabase
+            .from("products")
+            .update({ stock_quantity: product.stock_quantity - item.quantity })
+            .eq("id", item.product_id);
+        }
+        return Promise.resolve(null); // Should not happen due to prior stock check
+      });
+
+      const stockUpdateResults = await Promise.all(stockUpdatePromises);
+      stockUpdateResults.forEach(result => {
+        if (result?.error) {
+          console.error("Error decrementing stock:", result.error);
+          // Potentially revert order creation or flag for manual review
+        }
+      });
 
       try {
         await fetch("/api/emails/order-confirmation", {
@@ -181,17 +235,48 @@ export default function CheckoutPage() {
               price: item.product?.price || 0,
             })),
             paymentMethod: formData.paymentMethod,
+            reference: order.id,
           }),
-        })
+        });
       } catch (error) {
-        console.error("[v0] Error sending confirmation email:", error)
+        console.error("[v0] Error sending confirmation email:", error);
+      }
+
+      // Notify admins about the new order
+      try {
+        await fetch("/api/admin/notify-new-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: order.id,
+            totalAmount: order.total_amount,
+            customerName: `${formData.firstName} ${formData.lastName}`,
+            customerEmail: formData.email,
+            items: items.map((item) => ({
+              name: item.product?.name || "Product",
+              quantity: item.quantity,
+              unitPrice: item.product?.price || 0,
+            })),
+          }),
+        });
+      } catch (notificationError) {
+        console.warn("[v0] Failed to send new order notification to admins:", notificationError);
+        // Do not block order completion if notification fails
       }
 
       await clearCart()
+      toast({
+        title: "Order Successful",
+        description: `Your order #${order.id.slice(0, 8)} has been placed!`,
+      });
       router.push(`/order-confirmation/${order.id}`)
     } catch (error) {
       console.error("[v0] Checkout error:", error)
-      alert("An error occurred during checkout. Please try again.")
+      toast({
+        title: "Checkout Error",
+        description: "An error occurred during checkout. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsProcessing(false)
     }
@@ -378,7 +463,7 @@ export default function CheckoutPage() {
                             {item.product?.name} x{item.quantity}
                           </span>
                           <span className="font-medium">
-                            R{((item.product?.price || 0) * item.quantity).toFixed(2)}
+                            {formatPrice((item.product?.price || 0) * item.quantity)}
                           </span>
                         </div>
                       ))}
@@ -389,15 +474,15 @@ export default function CheckoutPage() {
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">{t("checkout.subtotal")}</span>
-                    <span>R{(total - tax).toFixed(2)}</span>
+                    <span>{formatPrice(total - tax)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">{t("checkout.tax")}</span>
-                    <span>R{tax.toFixed(2)}</span>
+                    <span>{formatPrice(tax)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg pt-2 border-t">
                     <span>{t("checkout.total")}</span>
-                    <span className="text-blue-600">R{total.toFixed(2)}</span>
+                    <span className="text-blue-600">{formatPrice(total)}</span>
                   </div>
                 </div>
 

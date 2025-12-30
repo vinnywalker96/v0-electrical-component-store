@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { Product } from "@/lib/types"
 import { ProductCard } from "@/components/product-card"
@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
+import cache from "@/lib/redis" // Import Cache
+
+const CACHE_EXPIRY_SECONDS = 300; // Cache for 5 minutes (reduced from 60 for better freshness)
 
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -19,48 +22,95 @@ export default function ShopPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
   const [maxPrice, setMaxPrice] = useState(10000)
   const [sellers, setSellers] = useState<any[]>([])
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const supabase = createClient()
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      const CACHE_KEY_PRODUCTS = "shop:all_products";
+      let cachedProducts = null;
+      try {
+        cachedProducts = await cache.get(CACHE_KEY_PRODUCTS);
+      } catch (cacheError) {
+        console.warn("Cache GET error for products:", cacheError);
+      }
+
+      if (cachedProducts) {
+        setProducts(JSON.parse(cachedProducts));
+        console.log("Products loaded from cache.");
+        // We still need to set loading to false, even with cache
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, seller:sellers(id, store_name, rating)")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+
+      if (data && data.length > 0) {
+        const highestPrice = Math.max(...data.map((p) => p.price || 0));
+        const roundedMax = Math.ceil(highestPrice / 100) * 100 || 10000;
+        setMaxPrice(roundedMax);
+        setPriceRange([0, roundedMax]);
+      }
+
+      try {
+        await cache.set(CACHE_KEY_PRODUCTS, JSON.stringify(data), { ex: CACHE_EXPIRY_SECONDS });
+      } catch (cacheError) {
+        console.warn("Cache SET error for products:", cacheError);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase, setProducts, setMaxPrice, setPriceRange]);
+
+  const fetchSellers = useCallback(async () => {
+    try {
+      const CACHE_KEY_SELLERS = "shop:approved_sellers";
+      let cachedSellers = null;
+      try {
+        cachedSellers = await cache.get(CACHE_KEY_SELLERS);
+      } catch (cacheError) {
+        console.warn("Cache GET error for sellers:", cacheError);
+      }
+
+      if (cachedSellers) {
+        setSellers(JSON.parse(cachedSellers));
+        console.log("Sellers loaded from cache.");
+        return;
+      }
+
+      const { data } = await supabase.from("sellers").select("id, store_name").eq("verification_status", "approved");
+      setSellers(data || []);
+
+      try {
+        await cache.set(CACHE_KEY_SELLERS, JSON.stringify(data), { ex: CACHE_EXPIRY_SECONDS });
+      } catch (cacheError) {
+        console.warn("Cache SET error for sellers:", cacheError);
+      }
+    } catch (error) {
+      console.error("Error fetching sellers:", error);
+    }
+  }, [supabase, setSellers]);
 
   useEffect(() => {
     fetchProducts()
     fetchSellers()
-  }, [])
+  }, [fetchProducts, fetchSellers])
 
-  async function fetchProducts() {
-    try {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, seller:sellers(id, store_name, rating)")
-        .order("created_at", { ascending: false })
-
-      if (error) throw error
-      setProducts(data || [])
-
-      if (data && data.length > 0) {
-        const highestPrice = Math.max(...data.map((p) => p.price || 0))
-        const roundedMax = Math.ceil(highestPrice / 100) * 100 || 10000
-        setMaxPrice(roundedMax)
-        setPriceRange([0, roundedMax])
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function fetchSellers() {
-    try {
-      const { data } = await supabase.from("sellers").select("id, store_name").eq("verification_status", "approved")
-      setSellers(data || [])
-    } catch (error) {
-      console.error("Error fetching sellers:", error)
-    }
-  }
-
-  const categories = useMemo(() => [...new Set(products.map((p) => p.category))], [products])
-  const brands = useMemo(() => [...new Set(products.map((p) => p.brand))], [products])
+  const categories = useMemo(() => [...new Set(products.map((p) => p.category).filter(Boolean))], [products])
+  const brands = useMemo(() => [...new Set(products.map((p) => p.brand).filter(Boolean))], [products])
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -69,7 +119,7 @@ export default function ShopPage() {
         product.description?.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
       const matchesBrand = selectedBrand === "all" || product.brand === selectedBrand
-      const matchesSeller = selectedSeller === "all" || product.seller_id === selectedSeller
+      const matchesSeller = selectedSeller === "all" || !product.seller_id || product.seller_id === selectedSeller
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
 
       return matchesSearch && matchesCategory && matchesBrand && matchesSeller && matchesPrice
@@ -85,6 +135,7 @@ export default function ShopPage() {
         </div>
 
         {/* Filters */}
+        {isMounted && (
         <div className="bg-card rounded-lg border border-border p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <div>
@@ -179,6 +230,7 @@ export default function ShopPage() {
             </div>
           </div>
         </div>
+        )}
 
         {/* Products Grid */}
         {loading ? (

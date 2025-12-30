@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { CartItem, Product } from "@/lib/types"
 
@@ -24,21 +24,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchCart()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      fetchCart()
-    })
-
-    return () => {
-      subscription?.unsubscribe()
-    }
-  }, [])
-
-  async function fetchCart() {
+  const fetchCart = useCallback(async () => {
     try {
       const {
         data: { user },
@@ -59,7 +45,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    fetchCart()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      fetchCart()
+    })
+
+    return () => {
+      subscription?.unsubscribe()
+    }
+  }, [fetchCart, supabase.auth])
 
   async function addToCart(productId: string, quantity: number) {
     try {

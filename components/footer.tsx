@@ -60,6 +60,11 @@ export default function Footer() {
                   Privacy Policy
                 </Link>
               </li>
+              <li>
+                <Link href="/sales-policy" className="text-white/80 hover:text-white transition">
+                  Sales Policy Agreement
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

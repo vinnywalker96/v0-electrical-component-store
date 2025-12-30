@@ -1,6 +1,6 @@
 import { redirect, notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { SellerProductForm } from "@/components/seller-product-form"
+import { EditProductButtonModal } from "@/components/edit-product-button-modal" // New import
 
 export default async function EditSellerProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -26,7 +26,7 @@ export default async function EditSellerProductPage({ params }: { params: Promis
       <h1 className="text-3xl font-bold mb-2">Edit Product</h1>
       <p className="text-muted-foreground mb-8">Update your product information</p>
 
-      <SellerProductForm sellerId={seller.id} product={product} />
+      <EditProductButtonModal sellerId={seller.id} storeName={seller.store_name} product={product} />
     </div>
   )
 }

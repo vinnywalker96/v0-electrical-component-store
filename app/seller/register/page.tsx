@@ -12,11 +12,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { createClient } from "@/lib/supabase/client"
 import { Store, AlertCircle } from "lucide-react"
+import { toast } from "@/hooks/use-toast" // Import toast
 
 export default function SellerRegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  // const [error, setError] = useState("") // Removed setError state
   const [formData, setFormData] = useState({
     storeName: "",
     storeDescription: "",
@@ -30,7 +31,7 @@ export default function SellerRegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError("")
+    // setError("") // Removed setError call
 
     try {
       const supabase = createClient()
@@ -40,32 +41,67 @@ export default function SellerRegisterPage() {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) {
-        setError("Please login first")
+        toast({
+          title: "Error",
+          description: "Please login first to register as a seller.",
+          variant: "destructive"
+        });
         router.push("/auth/login")
         return
       }
 
       // Create seller profile
-      const { error: sellerError } = await supabase.from("sellers").insert({
+      const { data: sellerData, error: sellerError } = await supabase.from("sellers").insert({
         user_id: user.id,
         store_name: formData.storeName,
         store_description: formData.storeDescription,
         business_address: formData.businessAddress,
-        phone_number: formData.phoneNumber,
-        bank_account_name: formData.bankAccountName,
-        bank_account_number: formData.bankAccountNumber,
+        contact_phone: formData.phoneNumber,
+        account_holder: formData.bankAccountName,
+        account_number: formData.bankAccountNumber,
         bank_name: formData.bankName,
         verification_status: "pending",
-      })
+      }).select().single()
 
       if (sellerError) throw sellerError
 
       // Update user profile role to seller
-      await supabase.from("user_profiles").update({ role: "seller" }).eq("user_id", user.id)
+      // Assuming 'profiles' is the correct table for user roles, as seen in other parts of the app.
+      const { error: profileUpdateError } = await supabase.from("profiles").update({ role: "seller" }).eq("id", user.id)
+
+      if (profileUpdateError) {
+        console.error("Error updating user profile role:", JSON.stringify(profileUpdateError, null, 2));
+        throw profileUpdateError;
+      }
+
+      // Notify admins about new vendor registration
+      try {
+        await fetch("/api/admin/notify-new-vendor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sellerId: sellerData.id,
+            storeName: formData.storeName,
+            sellerEmail: user.email,
+          }),
+        });
+      } catch (notificationError) {
+        console.warn("[v0] Failed to send new vendor notification to admins:", notificationError);
+        // Do not block registration if notification fails
+      }
+
+      toast({
+        title: "Registration Successful",
+        description: "Your seller application has been submitted and is pending approval.",
+      });
 
       router.push("/seller/dashboard")
     } catch (err: any) {
-      setError(err.message || "Failed to register as seller")
+      toast({
+        title: "Registration Error",
+        description: err.message || "Failed to register as seller. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false)
     }
@@ -82,12 +118,12 @@ export default function SellerRegisterPage() {
           <CardDescription>Start selling your products on KG Compponents marketplace</CardDescription>
         </CardHeader>
         <CardContent>
-          {error && (
+          {/* {error && ( // Removed Alert component
             <Alert variant="destructive" className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-          )}
+          )} */}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">

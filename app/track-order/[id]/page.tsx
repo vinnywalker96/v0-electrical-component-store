@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
@@ -21,6 +21,24 @@ export default function TrackOrderPage() {
   const [orderItems, setOrderItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+
+  const fetchOrder = useCallback(async () => {
+    try {
+      const { data: orderData } = await supabase.from("orders").select("*").eq("id", orderId).single()
+
+      const { data: itemsData } = await supabase
+        .from("order_items")
+        .select("*, product:products(*, seller:sellers(store_name))")
+        .eq("order_id", orderId)
+
+      setOrder(orderData)
+      setOrderItems(itemsData || [])
+    } catch (error) {
+      console.error("Error fetching order:", error)
+    } finally {
+      setLoading(false)
+    }
+  }, [orderId, supabase])
 
   useEffect(() => {
     fetchOrder()
@@ -45,25 +63,7 @@ export default function TrackOrderPage() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [orderId])
-
-  async function fetchOrder() {
-    try {
-      const { data: orderData } = await supabase.from("orders").select("*").eq("id", orderId).single()
-
-      const { data: itemsData } = await supabase
-        .from("order_items")
-        .select("*, product:products(*, seller:sellers(store_name))")
-        .eq("order_id", orderId)
-
-      setOrder(orderData)
-      setOrderItems(itemsData || [])
-    } catch (error) {
-      console.error("Error fetching order:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [orderId, fetchOrder, supabase])
 
   if (loading) {
     return <div className="text-center py-12">Loading tracking information...</div>

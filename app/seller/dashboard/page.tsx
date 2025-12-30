@@ -65,7 +65,7 @@ export default async function SellerDashboardPage() {
         <Card className="mb-6 border-orange-500 bg-orange-50">
           <CardContent className="pt-6">
             <p className="text-orange-900">
-              Your seller account is pending verification. You can add products but they won't be visible to customers
+              Your seller account is pending verification. You can add products but they won&apos;t be visible to customers
               until approved.
             </p>
           </CardContent>

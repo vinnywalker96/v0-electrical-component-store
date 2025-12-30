@@ -38,10 +38,40 @@ export async function POST(request: NextRequest) {
     // For now, we'll simulate successful payment for cash/bank transfer methods
 
     if (order.payment_method === "cash_on_delivery" || order.payment_method === "bank_transfer") {
-      // Update order status to processing
-      const { error: updateError } = await supabase.from("orders").update({ status: "processing" }).eq("id", orderId)
+      // Update order status to processing and payment_status to pending
+      const { error: updateError } = await supabase.from("orders").update({ status: "processing", payment_status: "pending" }).eq("id", orderId)
 
       if (updateError) throw updateError
+
+      // Fetch user details for the email
+      const { data: userProfile } = await supabase.from("profiles").select("first_name, last_name").eq("id", user.id).single()
+
+      // Fetch order items with product details
+      const { data: orderItems } = await supabase.from("order_items").select("quantity, unit_price, product:products(name)").eq("order_id", orderId)
+
+      // Format items for the email
+      const itemsForEmail = orderItems?.map(item => ({
+        name: item.product?.name || "Unknown Product",
+        quantity: item.quantity,
+        price: item.unit_price,
+      })) || []
+
+      // Send order confirmation email
+      await fetch(`${request.nextUrl.origin}/api/emails/order-confirmation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: order.id,
+          firstName: userProfile?.first_name || "",
+          lastName: userProfile?.last_name || "",
+          email: user.email,
+          total: order.total_amount,
+          items: itemsForEmail,
+          paymentMethod: order.payment_method,
+          reference: order.id,
+        }),
+      })
+
 
       return NextResponse.json({
         success: true,

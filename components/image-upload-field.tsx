@@ -6,7 +6,7 @@ import { useState } from "react"
 import { Upload, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { uploadImage, type UploadResult } from "@/lib/utils/image-upload"
+import { uploadFile, type UploadResult } from "@/lib/utils/file-upload"
 import Image from "next/image"
 
 interface ImageUploadFieldProps {

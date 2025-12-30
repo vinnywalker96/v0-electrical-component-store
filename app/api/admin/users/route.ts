@@ -38,13 +38,32 @@ export async function POST(request: Request) {
     }
 
     // Update profile role to admin
-    const { error: updateError } = await supabase.from("profiles").update({ role: "admin" }).eq("id", targetUser.id)
+    const { error: updateProfileError } = await supabase.from("profiles").update({ role: "admin" }).eq("id", targetUser.id)
 
-    if (updateError) {
-      return Response.json({ error: updateError.message }, { status: 400 })
+    if (updateProfileError) {
+      return Response.json({ error: updateProfileError.message }, { status: 400 })
     }
 
-    return Response.json({ success: true, message: "Admin role assigned successfully" })
+    // Ensure a seller entry exists for the new admin
+    const { data: existingSeller } = await supabase.from("sellers").select("id").eq("user_id", targetUser.id).single()
+
+    if (existingSeller) {
+      // Update existing seller entry to approved
+      await supabase
+        .from("sellers")
+        .update({ verification_status: "approved" })
+        .eq("user_id", targetUser.id)
+    } else {
+      // Create a new seller entry for the admin
+      await supabase.from("sellers").insert({
+        user_id: targetUser.id,
+        store_name: `${targetUser.email?.split("@")[0]}'s Admin Store`,
+        store_description: "Default store for admin user",
+        verification_status: "approved",
+      })
+    }
+
+    return Response.json({ success: true, message: "Admin role assigned successfully and seller profile ensured" })
   } catch (error) {
     console.error("[v0] Error:", error)
     return Response.json({ error: "Internal server error" }, { status: 500 })

@@ -66,7 +66,7 @@ export default function SignUpPage() {
           })
 
           if (profileError && !profileError.message.includes("duplicate")) {
-            console.error("[v0] Profile error:", profileError)
+            console.error("[v0] Profile error:", JSON.stringify(profileError, null, 2))
           }
         } catch (err) {
           console.error("[v0] Error creating profile:", err)
@@ -93,7 +93,7 @@ export default function SignUpPage() {
             <div className="text-green-600 text-5xl mb-4">✓</div>
             <h2 className="text-2xl font-bold mb-2">Account Created!</h2>
             <p className="text-slate-600">
-              A confirmation email has been sent. You'll be redirected to sign in shortly.
+              A confirmation email has been sent. You&apos;ll be redirected to sign in shortly.
             </p>
           </CardContent>
         </Card>

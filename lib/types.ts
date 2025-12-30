@@ -10,6 +10,7 @@ export interface Product {
   primary_image_url?: string // Added for primary product image
   images?: string[] // Added for multiple product images
   specifications?: Record<string, unknown>
+  technical_documents?: string[] // Added for technical documentation URLs
   seller_id?: string
   created_at: string
   updated_at: string
@@ -67,6 +68,9 @@ export interface UserProfile {
   profile_image_url?: string // Added for profile image URL
   monthly_fee: number // Added for monthly fee
   account_tier_expires_at?: string // Added for account tier expires at
+  is_blocked?: boolean // Added for block functionality
+  blocked_at?: string // Added for block timestamp
+  block_reason?: string // Added for block reason
   created_at: string
   updated_at: string
 }
@@ -97,6 +101,9 @@ export interface Seller {
   total_sales: number
   is_verified: boolean
   is_active: boolean
+  is_blocked?: boolean // Added for block functionality
+  blocked_at?: string // Added for block timestamp
+  block_reason?: string // Added for block reason
   rating: number
   created_at: string
   updated_at: string

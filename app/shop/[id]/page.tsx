@@ -9,6 +9,8 @@ import { useCart } from "@/lib/context/cart-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import type { Product } from "@/lib/types"
+import { useCurrency } from "@/lib/context/currency-context"
+import { useLanguage } from "@/lib/context/language-context"
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -21,6 +23,8 @@ export default function ProductDetailPage() {
   const [added, setAdded] = useState(false)
   const { addToCart } = useCart()
   const supabase = createClient()
+  const { formatPrice } = useCurrency()
+  const { t } = useLanguage()
 
   useEffect(() => {
     async function fetchProduct() {
@@ -44,7 +48,7 @@ export default function ProductDetailPage() {
     if (params.id) {
       fetchProduct()
     }
-  }, [params.id])
+  }, [params.id, supabase, setProduct, setSeller])
 
   async function handleAddToCart() {
     if (!product) return
@@ -89,7 +93,7 @@ export default function ProductDetailPage() {
     return (
       <main className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <p className="text-center text-muted-foreground">Loading product...</p>
+          <p className="text-center text-muted-foreground">{t("product_detail.loading_product")}</p>
         </div>
       </main>
     )
@@ -99,16 +103,16 @@ export default function ProductDetailPage() {
     return (
       <main className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+          <h1 className="text-2xl font-bold mb-4">{t("product_detail.product_not_found")}</h1>
           <Link href="/shop" className="text-primary hover:underline">
-            Back to Shop
+            {t("product_detail.back_to_shop")}
           </Link>
         </div>
       </main>
     )
   }
 
-  const displayPrice = product.price > 0 ? `R${product.price.toFixed(2)}` : "Price TBD"
+  const displayPrice = product.price > 0 ? formatPrice(product.price) : t("product_detail.price_tbd")
   const canAddToCart = product.stock_quantity > 0 && product.price > 0
 
   return (
@@ -116,7 +120,7 @@ export default function ProductDetailPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Link href="/shop" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8">
           <ArrowLeft className="w-4 h-4" />
-          Back to Shop
+          {t("product_detail.back_to_shop")}
         </Link>
 
         <div className="grid md:grid-cols-2 gap-12">
@@ -153,13 +157,13 @@ export default function ProductDetailPage() {
                 <CardContent className="pt-6">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-sm text-muted-foreground">Sold by</p>
+                      <p className="text-sm text-muted-foreground">{t("product_detail.sold_by")}</p>
                       <p className="font-semibold">{seller.store_name}</p>
                       <p className="text-xs text-muted-foreground">⭐ {seller.rating?.toFixed(1) || "New"}</p>
                     </div>
                     <Button variant="outline" size="sm" onClick={handleContactSeller}>
                       <MessageSquare className="h-4 w-4 mr-2" />
-                      Contact Seller
+                      {t("product_detail.contact_seller")}
                     </Button>
                   </div>
                 </CardContent>
@@ -173,29 +177,29 @@ export default function ProductDetailPage() {
                   product.stock_quantity > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                 }`}
               >
-                {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : "Out of stock"}
+                {product.stock_quantity > 0 ? t("product_detail.in_stock", { quantity: product.stock_quantity }) : t("product_detail.out_of_stock")}
               </span>
             </div>
 
             {/* Specifications */}
             <Card className="mb-6">
               <CardContent className="pt-6">
-                <h3 className="font-semibold mb-4">Specifications</h3>
+                <h3 className="font-semibold mb-4">{t("product_detail.specifications")}</h3>
                 <dl className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <dt className="text-muted-foreground">Brand</dt>
+                    <dt className="text-muted-foreground">{t("product_detail.brand")}</dt>
                     <dd className="font-medium">{product.brand}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">Category</dt>
+                    <dt className="text-muted-foreground">{t("product_detail.category")}</dt>
                     <dd className="font-medium">{product.category}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">SKU</dt>
+                    <dt className="text-muted-foreground">{t("product_detail.sku")}</dt>
                     <dd className="font-medium">{product.sku || "N/A"}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">Stock</dt>
+                    <dt className="text-muted-foreground">{t("product_detail.stock")}</dt>
                     <dd className="font-medium">{product.stock_quantity} units</dd>
                   </div>
                 </dl>
@@ -224,15 +228,15 @@ export default function ProductDetailPage() {
 
               <Button onClick={handleAddToCart} disabled={!canAddToCart || adding} size="lg" className="flex-1">
                 <ShoppingCart className="w-5 h-5 mr-2" />
-                {adding ? "Adding..." : added ? "Added to Cart!" : "Add to Cart"}
+                {adding ? t("product_detail.adding") : added ? t("product_detail.added_to_cart") : t("product_detail.add_to_cart")}
               </Button>
             </div>
 
             {!canAddToCart && (
               <p className="text-sm text-muted-foreground mt-4">
                 {product.stock_quantity === 0
-                  ? "This product is currently out of stock."
-                  : "Price not yet available. Please check back later."}
+                  ? t("product_detail.product_out_of_stock")
+                  : t("product_detail.price_not_available")}
               </p>
             )}
           </div>

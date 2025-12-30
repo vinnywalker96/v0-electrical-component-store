@@ -8,7 +8,7 @@ import type { Language } from "@/lib/i18n/translations"
 interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void
-  t: (path: string) => string
+  t: (path: string, replacements?: { [key: string]: string }) => string
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
@@ -18,11 +18,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem("language") as Language | null
-    if (saved && (saved === "en" || saved === "pt")) {
-      setLanguageState(saved)
-    }
-    setMounted(true)
+    requestAnimationFrame(() => {
+      const saved = localStorage.getItem("language") as Language | null
+      if (saved && (saved === "en" || saved === "pt")) {
+        setLanguageState(saved)
+      }
+      setMounted(true)
+    })
   }, [])
 
   const setLanguage = useCallback((lang: Language) => {
@@ -31,8 +33,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const t = useCallback(
-    (path: string): string => {
-      return getTranslation(language, path, path)
+    (path: string, replacements?: { [key: string]: string }): string => {
+      return getTranslation(language, path, path, replacements)
     },
     [language],
   )

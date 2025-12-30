@@ -33,7 +33,6 @@ export default function LoginPage() {
 
       router.push("/protected/dashboard")
     } catch (err: any) {
-      console.error("[v0] Login error:", err)
       setError(err.message || "Failed to sign in")
     } finally {
       setLoading(false)
@@ -81,7 +80,7 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center text-sm">
             <p className="text-slate-600">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/auth/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
                 Sign up
               </Link>

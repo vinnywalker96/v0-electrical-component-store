@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -24,48 +24,48 @@ export default function VendorCommissionsPage() {
   const [totalEarned, setTotalEarned] = useState(0)
   const [pendingAmount, setPendingAmount] = useState(0)
 
-  useEffect(() => {
-    const fetchCommissions = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
-        if (!user) {
-          router.push("/auth/vendor/login")
-          return
-        }
-
-        // Get seller profile
-        const { data: seller } = await supabase.from("sellers").select("*").eq("user_id", user.id).single()
-
-        if (!seller) {
-          router.push("/seller/register")
-          return
-        }
-
-        // Get commissions
-        const { data: commissionsData } = await supabase
-          .from("commissions")
-          .select("*")
-          .eq("seller_id", seller.id)
-          .order("created_at", { ascending: false })
-
-        setCommissions(commissionsData || [])
-
-        const total = commissionsData?.reduce((sum, c) => (c.status === "paid" ? sum + c.amount : sum), 0) || 0
-        const pending = commissionsData?.reduce((sum, c) => (c.status === "pending" ? sum + c.amount : sum), 0) || 0
-
-        setTotalEarned(total)
-        setPendingAmount(pending)
-      } catch (error) {
-        console.error("[v0] Error fetching commissions:", error)
-      } finally {
-        setLoading(false)
+  const fetchCommissions = useCallback(async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        router.push("/auth/vendor/login")
+        return
       }
-    }
 
+      // Get seller profile
+      const { data: seller } = await supabase.from("sellers").select("*").eq("user_id", user.id).single()
+
+      if (!seller) {
+        router.push("/seller/register")
+        return
+      }
+
+      // Get commissions
+      const { data: commissionsData } = await supabase
+        .from("commissions")
+        .select("*")
+        .eq("seller_id", seller.id)
+        .order("created_at", { ascending: false })
+
+      setCommissions(commissionsData || [])
+
+      const total = commissionsData?.reduce((sum, c) => (c.status === "paid" ? sum + c.amount : sum), 0) || 0
+      const pending = commissionsData?.reduce((sum, c) => (c.status === "pending" ? sum + c.amount : sum), 0) || 0
+
+      setTotalEarned(total)
+      setPendingAmount(pending)
+    } catch (error) {
+      console.error("[v0] Error fetching commissions:", error)
+    } finally {
+      setLoading(false)
+    }
+  }, [router, supabase, setCommissions, setTotalEarned, setPendingAmount])
+
+  useEffect(() => {
     fetchCommissions()
-  }, [])
+  }, [fetchCommissions])
 
   if (loading) {
     return <div className="text-center py-12">Loading commissions...</div>

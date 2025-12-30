@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { SellerProductForm } from "@/components/seller-product-form"
+import { AddProductButtonModal } from "@/components/add-product-button-modal" // New import
 
 export default async function NewSellerProductPage() {
   const supabase = await createClient()
@@ -20,7 +20,8 @@ export default async function NewSellerProductPage() {
       <h1 className="text-3xl font-bold mb-2">Add New Product</h1>
       <p className="text-muted-foreground mb-8">List a new product for sale on the marketplace</p>
 
-      <SellerProductForm sellerId={seller.id} />
+      {/* Render the new modal button */}
+      <AddProductButtonModal sellerId={seller.id} storeName={seller.store_name} />
     </div>
   )
 }

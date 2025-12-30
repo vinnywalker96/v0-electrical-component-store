@@ -25,13 +25,7 @@ export default async function AddressesPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Link
-        href="/protected/dashboard"
-        className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Dashboard
-      </Link>
+ 
 
       <div className="flex justify-between items-center mb-8">
         <div>

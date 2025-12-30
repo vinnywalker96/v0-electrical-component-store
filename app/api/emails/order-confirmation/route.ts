@@ -8,12 +8,12 @@ function generateSimpleEmailHtml(data: {
   total: number
   items: Array<{ name: string; quantity: number; price: number }>
   paymentMethod: string
+  reference: string
   bankingDetails?: {
     bank_name: string
     account_name: string
     account_number: string
     branch_code: string
-    reference: string
   } | null
 }): string {
   const itemsHtml = data.items
@@ -28,21 +28,34 @@ function generateSimpleEmailHtml(data: {
     )
     .join("")
 
-  const bankingHtml = data.bankingDetails
-    ? `
-    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-      <h3 style="margin: 0 0 15px 0; color: #333;">Banking Details for Payment</h3>
-      <p style="margin: 5px 0;"><strong>Bank:</strong> ${data.bankingDetails.bank_name}</p>
-      <p style="margin: 5px 0;"><strong>Account Name:</strong> ${data.bankingDetails.account_name}</p>
-      <p style="margin: 5px 0;"><strong>Account Number:</strong> ${data.bankingDetails.account_number}</p>
-      <p style="margin: 5px 0;"><strong>Branch Code:</strong> ${data.bankingDetails.branch_code}</p>
-      <p style="margin: 5px 0;"><strong>Reference:</strong> ${data.orderId}</p>
-      <p style="margin: 15px 0 0 0; color: #666; font-size: 14px;">
-        Please use your order number as the payment reference.
-      </p>
-    </div>
-  `
-    : ""
+  let paymentInstructionsHtml = ""
+
+  if (data.paymentMethod === "bank_transfer" && data.bankingDetails) {
+    paymentInstructionsHtml = `
+      <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3 style="margin: 0 0 15px 0; color: #333;">Banking Details for Payment (EFT)</h3>
+        <p style="margin: 5px 0;"><strong>Bank:</strong> ${data.bankingDetails.bank_name}</p>
+        <p style="margin: 5px 0;"><strong>Account Name:</strong> ${data.bankingDetails.account_name}</p>
+        <p style="margin: 5px 0;"><strong>Account Number:</strong> ${data.bankingDetails.account_number}</p>
+        <p style="margin: 5px 0;"><strong>Branch Code:</strong> ${data.bankingDetails.branch_code}</p>
+        <p style="margin: 15px 0 0 0; color: #666; font-size: 14px;">
+          <strong>IMPORTANT:</strong> Please use <strong>${data.reference}</strong> as your payment reference.
+          Your order will be processed once payment is confirmed.
+        </p>
+      </div>
+    `
+  } else if (data.paymentMethod === "cash_on_delivery") {
+    paymentInstructionsHtml = `
+      <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3 style="margin: 0 0 15px 0; color: #333;">Cash on Delivery Instructions</h3>
+        <p style="margin: 5px 0;">Please have the exact amount of <strong>R ${data.total.toFixed(2)}</strong> ready for payment upon delivery.</p>
+        <p style="margin: 5px 0;">Your order reference is <strong>${data.reference}</strong>.</p>
+        <p style="margin: 15px 0 0 0; color: #666; font-size: 14px;">
+          Your order will be processed for delivery shortly.
+        </p>
+      </div>
+    `
+  }
 
   return `
     <!DOCTYPE html>
@@ -63,7 +76,7 @@ function generateSimpleEmailHtml(data: {
         <p><strong>Order Number:</strong> ${data.orderId}</p>
         <p><strong>Payment Method:</strong> ${data.paymentMethod === "bank_transfer" ? "Bank Transfer (EFT)" : "Cash on Delivery"}</p>
         
-        ${bankingHtml}
+        ${paymentInstructionsHtml}
         
         <h3 style="border-bottom: 2px solid #0066cc; padding-bottom: 10px;">Order Summary</h3>
         
@@ -111,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { orderId, firstName, lastName, email, total, items, paymentMethod } = body
+    const { orderId, firstName, lastName, email, total, items, paymentMethod, reference } = body
 
     if (!email || !orderId) {
       return NextResponse.json({ error: "Email and orderId are required" }, { status: 400 })
@@ -131,6 +144,7 @@ export async function POST(request: NextRequest) {
       total,
       items,
       paymentMethod,
+      reference,
       bankingDetails,
     })
 

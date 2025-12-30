@@ -6,7 +6,7 @@ export interface UploadResult {
   error?: string
 }
 
-export async function uploadImage(
+export async function uploadFile(
   file: File,
   bucket: "products" | "profiles" | "documents" | "payments",
   folder?: string,
@@ -52,7 +52,7 @@ export async function uploadImage(
   }
 }
 
-export async function deleteImage(bucket: string, path: string): Promise<boolean> {
+export async function deleteFile(bucket: string, path: string): Promise<boolean> {
   try {
     const supabase = createClient()
     const { error } = await supabase.storage.from(bucket).remove([path])
@@ -69,7 +69,7 @@ export async function deleteImage(bucket: string, path: string): Promise<boolean
   }
 }
 
-export function getImageUrl(bucket: string, path: string): string {
+export function getFileUrl(bucket: string, path: string): string {
   const supabase = createClient()
   const { data } = supabase.storage.from(bucket).getPublicUrl(path)
   return data.publicUrl

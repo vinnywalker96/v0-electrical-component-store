@@ -14,7 +14,13 @@ BEGIN
     RETURN QUERY SELECT false::boolean, 'User not found'::varchar;
   ELSE
     UPDATE profiles SET role = 'super_admin' WHERE id = admin_user_id;
-    RETURN QUERY SELECT true::boolean, 'Super admin role assigned'::varchar;
+
+    -- Ensure a seller entry exists for the new super_admin
+    INSERT INTO sellers (user_id, store_name, store_description, verification_status)
+    VALUES (admin_user_id, admin_email || '''s Super Admin Store', 'Default store for super admin user', 'approved')
+    ON CONFLICT (user_id) DO UPDATE SET verification_status = 'approved';
+
+    RETURN QUERY SELECT true::boolean, 'Super admin role assigned and seller profile ensured'::varchar;
   END IF;
 END;
 $$ LANGUAGE plpgsql;

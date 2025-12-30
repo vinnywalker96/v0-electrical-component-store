@@ -3,21 +3,16 @@ import type { Metadata } from "next"
 
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
-import Navbar from "@/components/navbar"
-import Footer from "@/components/footer"
 import { CartProvider } from "@/lib/context/cart-context"
 import { LanguageProvider } from "@/lib/context/language-context"
 import StoreProvider from "@/lib/store/StoreProvider"
-import { Roboto_Mono as V0_Font_Roboto_Mono } from "next/font/google"
-
-const _robotoMono = V0_Font_Roboto_Mono({
-  subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700"],
-})
+import { MainLayout } from "@/components/main-layout"
+import { CurrencyProvider } from "@/lib/context/currency-context"
 
 export const metadata: Metadata = {
   title: "KG Compponents - Electrical Components Store",
-  description: "Professional quality electrical and electronic components for professionals and makers",
+  description:
+    "Professional quality electrical and electronic components for professionals and makers",
   generator: "v0.app",
 }
 
@@ -32,9 +27,9 @@ export default function RootLayout({
         <StoreProvider>
           <LanguageProvider>
             <CartProvider>
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
+              <CurrencyProvider>
+                <MainLayout>{children}</MainLayout>
+              </CurrencyProvider>
             </CartProvider>
           </LanguageProvider>
         </StoreProvider>

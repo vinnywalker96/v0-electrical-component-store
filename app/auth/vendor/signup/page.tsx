@@ -96,7 +96,7 @@ export default function VendorSignupPage() {
             <div className="text-green-600 text-5xl mb-4">✓</div>
             <h2 className="text-2xl font-bold mb-2">Vendor Account Created!</h2>
             <p className="text-slate-600">
-              Your vendor account is pending verification. You'll be redirected to sign in.
+              Your vendor account is pending verification. You&apos;ll be redirected to sign in.
             </p>
           </CardContent>
         </Card>

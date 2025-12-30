@@ -74,7 +74,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <>
       <div className="max-w-2xl mx-auto px-4 py-8">
         <Link href="/protected/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
           <ArrowLeft size={20} />
@@ -138,6 +138,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
-    </main>
+    </>
   )
 }

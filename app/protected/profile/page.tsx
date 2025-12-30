@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
+import { ImageUploadField } from "@/components/image-upload-field"
+import type { UploadResult } from "@/lib/utils/file-upload"
 
 export default function ProfilePage() {
   const supabase = createClient()
@@ -15,6 +17,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -29,7 +32,11 @@ export default function ProfilePage() {
         } = await supabase.auth.getUser()
 
         if (user) {
-          const { data: profileData } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single()
 
           if (profileData) {
             setProfile(profileData)
@@ -38,6 +45,7 @@ export default function ProfilePage() {
               lastName: profileData.last_name || "",
               phone: profileData.phone || "",
             })
+            setAvatarUrl(profileData.avatar_url)
           }
         }
       } catch (error) {
@@ -48,7 +56,7 @@ export default function ProfilePage() {
     }
 
     fetchProfile()
-  }, [])
+  }, [supabase, setFormData, setAvatarUrl, setProfile])
 
   async function handleSave() {
     try {
@@ -67,6 +75,7 @@ export default function ProfilePage() {
           first_name: formData.firstName,
           last_name: formData.lastName,
           phone: formData.phone,
+          avatar_url: avatarUrl,
         })
         .eq("id", user.id)
 
@@ -75,9 +84,15 @@ export default function ProfilePage() {
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (error) {
-      console.error("[v0] Error saving profile:", error)
+      console.error("[v0] Error saving profile:", JSON.stringify(error, null, 2))
     } finally {
       setSaving(false)
+    }
+  }
+
+  function handleAvatarUpload(result: UploadResult) {
+    if (result.url) {
+      setAvatarUrl(result.url)
     }
   }
 
@@ -86,13 +101,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <Link href="/protected/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
-          <ArrowLeft size={20} />
-          Back to Dashboard
-        </Link>
-
+    <>
         <h1 className="text-4xl font-bold text-foreground mb-8">My Profile</h1>
 
         <Card>
@@ -106,36 +115,65 @@ export default function ProfilePage() {
               </div>
             )}
 
+            <ImageUploadField
+              label="Profile Picture"
+              bucket="profiles"
+              currentImageUrl={avatarUrl || undefined}
+              onUploadComplete={handleAvatarUpload}
+              onRemove={() => setAvatarUrl(null)}
+            />
+
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Email</label>
-              <Input type="email" value={profile?.email || ""} disabled className="bg-slate-100" />
-              <p className="text-xs text-slate-600 mt-1">Email cannot be changed</p>
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Email
+              </label>
+              <Input
+                type="email"
+                value={profile?.email || ""}
+                disabled
+                className="bg-slate-100"
+              />
+              <p className="text-xs text-slate-600 mt-1">
+                Email cannot be changed
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">First Name</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">
+                  First Name
+                </label>
                 <Input
                   value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, firstName: e.target.value })
+                  }
                   placeholder="First name"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Last Name</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">
+                  Last Name
+                </label>
                 <Input
                   value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lastName: e.target.value })
+                  }
                   placeholder="Last name"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Phone</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Phone
+              </label>
               <Input
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
                 placeholder="+1 (555) 000-0000"
               />
             </div>
@@ -160,16 +198,44 @@ export default function ProfilePage() {
             <div>
               <p className="text-sm text-slate-600">Member Since</p>
               <p className="font-semibold">
-                {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : "N/A"}
+                {profile?.created_at
+                  ? new Date(profile.created_at).toLocaleDateString()
+                  : "N/A"}
               </p>
             </div>
             <div>
               <p className="text-sm text-slate-600">Account Type</p>
-              <p className="font-semibold capitalize">{profile?.role || "Customer"}</p>
+              <p className="font-semibold capitalize">
+                {profile?.role || "Customer"}
+              </p>
             </div>
           </CardContent>
         </Card>
-      </div>
-    </main>
+
+        {/* Dashboards */}
+        {(profile?.role === "admin" || profile?.role === "super_admin" || profile?.role === "vendor") && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Dashboards</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(profile?.role === "admin" || profile?.role === "super_admin") && (
+                <div>
+                  <Link href="/admin/dashboard">
+                    <Button variant="outline">Admin Dashboard</Button>
+                  </Link>
+                </div>
+              )}
+              {profile?.role === "vendor" && (
+                <div>
+                  <Link href="/seller/dashboard">
+                    <Button variant="outline">Vendor Dashboard</Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+    </>
   )
 }

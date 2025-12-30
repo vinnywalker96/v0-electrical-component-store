@@ -1,26 +1,9 @@
+"use client"
+
 import type React from "react"
-import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+import { DashboardLayout } from "@/components/dashboard-layout"
+import { adminNavItems } from "@/lib/nav-items.tsx"
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect("/auth/login")
-  }
-
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-
-  if (profile?.role !== "admin" && profile?.role !== "super_admin") {
-    redirect("/")
-  }
-
-  return <>{children}</>
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return <DashboardLayout navItems={adminNavItems}>{children}</DashboardLayout>
 }

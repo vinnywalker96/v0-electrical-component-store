@@ -1,9 +1,9 @@
-import { redirect, notFound } from "next/navigation"
+import { ArrowLeft, MapPin, User, Phone, Mail } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { OrderStatusUpdater } from "@/components/order-status-updater"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { ArrowLeft, MapPin, User, Phone, Mail } from "lucide-react"
+import { SetOrderPaidButton } from "@/components/set-order-paid-button" // Import SetOrderPaidButton
 
 export default async function SellerOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -43,7 +43,7 @@ export default async function SellerOrderDetailPage({ params }: { params: Promis
   if (sellerItems.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <p>You don't have any items in this order</p>
+        <p>You don&apos;t have any items in this order</p>
       </div>
     )
   }
@@ -70,6 +70,9 @@ export default async function SellerOrderDetailPage({ params }: { params: Promis
         </CardHeader>
         <CardContent>
           <OrderStatusUpdater orderId={id} currentStatus={order.status} currentPaymentStatus={order.payment_status} />
+          <div className="mt-4">
+            <SetOrderPaidButton orderId={order.id} currentPaymentStatus={order.payment_status} />
+          </div>
         </CardContent>
       </Card>
 
