@@ -81,12 +81,7 @@ export default function VendorLoginPage() {
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <p className="text-slate-600">
-              Don&apos;t have an account?{" "}
-              <Link href="/auth/vendor/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Sign up
-              </Link>
-            </p>
+            
           </div>
 
           <Link href="/" className="block text-center mt-4 text-sm text-blue-600 hover:text-blue-700">

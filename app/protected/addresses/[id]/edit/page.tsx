@@ -14,7 +14,7 @@ export default async function EditAddressPage({ params }: { params: Promise<{ id
   if (!user) redirect("/auth/login")
 
   // Get address (ensure it belongs to this user)
-  const { data: address } = await supabase.from("addresses").select("*").eq("id", id).eq("user_id", user.id).single()
+  const { data: address } = await supabase.from("user_addresses").select("*").eq("id", id).eq("user_id", user.id).single()
 
   if (!address) notFound()
 

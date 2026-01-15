@@ -57,16 +57,18 @@ export default function SignUpPage() {
 
       if (authData.user) {
         try {
-          const { error: profileError } = await supabase.from("profiles").insert({
-            id: authData.user.id,
-            email: formData.email,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            role: "customer",
-          })
+          // Update the existing profile created by the Supabase trigger
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .update({
+              email: formData.email,
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+            })
+            .eq("id", authData.user.id)
 
-          if (profileError && !profileError.message.includes("duplicate")) {
-            console.error("[v0] Profile error:", JSON.stringify(profileError, null, 2))
+          if (profileError) {
+            console.error("[v0] Profile update error:", JSON.stringify(profileError, null, 2))
           }
         } catch (err) {
           console.error("[v0] Error creating profile:", err)

@@ -17,7 +17,7 @@ export default async function AddressesPage() {
 
   // Get user's addresses
   const { data: addresses } = await supabase
-    .from("addresses")
+    .from("user_addresses")
     .select("*")
     .eq("user_id", user.id)
     .order("is_default", { ascending: false })

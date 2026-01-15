@@ -117,39 +117,49 @@ ALTER TABLE order_tracking ENABLE ROW LEVEL SECURITY;
 ALTER TABLE seller_reviews ENABLE ROW LEVEL SECURITY;
 
 -- Sellers policies
+DROP POLICY IF EXISTS "Public can view active sellers" ON sellers;
 CREATE POLICY "Public can view active sellers" ON sellers
   FOR SELECT USING (is_active = true);
 
+DROP POLICY IF EXISTS "Users can create their own seller profile" ON sellers;
 CREATE POLICY "Users can create their own seller profile" ON sellers
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Sellers can update their own profile" ON sellers;
 CREATE POLICY "Sellers can update their own profile" ON sellers
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- User addresses policies
+DROP POLICY IF EXISTS "Users can view own addresses" ON user_addresses;
 CREATE POLICY "Users can view own addresses" ON user_addresses
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own addresses" ON user_addresses;
 CREATE POLICY "Users can insert own addresses" ON user_addresses
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own addresses" ON user_addresses;
 CREATE POLICY "Users can update own addresses" ON user_addresses
   FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own addresses" ON user_addresses;
 CREATE POLICY "Users can delete own addresses" ON user_addresses
   FOR DELETE USING (auth.uid() = user_id);
 
 -- Conversations policies
+DROP POLICY IF EXISTS "Users can view own conversations" ON conversations;
 CREATE POLICY "Users can view own conversations" ON conversations
   FOR SELECT USING (
     auth.uid() = buyer_id OR 
     auth.uid() IN (SELECT user_id FROM sellers WHERE id = seller_id)
   );
 
+DROP POLICY IF EXISTS "Users can create conversations" ON conversations;
 CREATE POLICY "Users can create conversations" ON conversations
   FOR INSERT WITH CHECK (auth.uid() = buyer_id);
 
 -- Messages policies
+DROP POLICY IF EXISTS "Users can view messages in their conversations" ON messages;
 CREATE POLICY "Users can view messages in their conversations" ON messages
   FOR SELECT USING (
     conversation_id IN (
@@ -159,9 +169,11 @@ CREATE POLICY "Users can view messages in their conversations" ON messages
     )
   );
 
+DROP POLICY IF EXISTS "Users can send messages" ON messages;
 CREATE POLICY "Users can send messages" ON messages
   FOR INSERT WITH CHECK (auth.uid() = sender_id);
 
+DROP POLICY IF EXISTS "Users can mark messages as read" ON messages;
 CREATE POLICY "Users can mark messages as read" ON messages
   FOR UPDATE USING (
     conversation_id IN (
@@ -172,21 +184,25 @@ CREATE POLICY "Users can mark messages as read" ON messages
   );
 
 -- Order tracking policies
+DROP POLICY IF EXISTS "Users can view tracking for own orders" ON order_tracking;
 CREATE POLICY "Users can view tracking for own orders" ON order_tracking
   FOR SELECT USING (
     order_id IN (SELECT id FROM orders WHERE user_id = auth.uid()) OR
     order_id IN (SELECT id FROM orders WHERE seller_id IN (SELECT id FROM sellers WHERE user_id = auth.uid()))
   );
 
+DROP POLICY IF EXISTS "Sellers can add tracking updates" ON order_tracking;
 CREATE POLICY "Sellers can add tracking updates" ON order_tracking
   FOR INSERT WITH CHECK (
     order_id IN (SELECT id FROM orders WHERE seller_id IN (SELECT id FROM sellers WHERE user_id = auth.uid()))
   );
 
 -- Seller reviews policies
+DROP POLICY IF EXISTS "Public can view seller reviews" ON seller_reviews;
 CREATE POLICY "Public can view seller reviews" ON seller_reviews
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Users can create reviews for their orders" ON seller_reviews;
 CREATE POLICY "Users can create reviews for their orders" ON seller_reviews
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
@@ -195,18 +211,21 @@ DROP POLICY IF EXISTS "Allow admin insert products" ON products;
 DROP POLICY IF EXISTS "Allow admin update products" ON products;
 DROP POLICY IF EXISTS "Allow admin delete products" ON products;
 
+DROP POLICY IF EXISTS "Sellers can insert their products" ON products;
 CREATE POLICY "Sellers can insert their products" ON products
   FOR INSERT WITH CHECK (
     seller_id IN (SELECT id FROM sellers WHERE user_id = auth.uid()) OR
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
   );
 
+DROP POLICY IF EXISTS "Sellers can update their products" ON products;
 CREATE POLICY "Sellers can update their products" ON products
   FOR UPDATE USING (
     seller_id IN (SELECT id FROM sellers WHERE user_id = auth.uid()) OR
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
   );
 
+DROP POLICY IF EXISTS "Sellers can delete their products" ON products;
 CREATE POLICY "Sellers can delete their products" ON products
   FOR DELETE USING (
     seller_id IN (SELECT id FROM sellers WHERE user_id = auth.uid()) OR

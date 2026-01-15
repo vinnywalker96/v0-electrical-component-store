@@ -82,6 +82,7 @@ ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
 
 -- Policies for inventory_transactions
+DROP POLICY IF EXISTS "Admins can manage inventory transactions" ON inventory_transactions;
 CREATE POLICY "Admins can manage inventory transactions" ON inventory_transactions
     FOR ALL USING (
         EXISTS (
@@ -92,6 +93,7 @@ CREATE POLICY "Admins can manage inventory transactions" ON inventory_transactio
     );
 
 -- Policies for inventory_alerts
+DROP POLICY IF EXISTS "Admins can manage inventory alerts" ON inventory_alerts;
 CREATE POLICY "Admins can manage inventory alerts" ON inventory_alerts
     FOR ALL USING (
         EXISTS (
@@ -102,9 +104,11 @@ CREATE POLICY "Admins can manage inventory alerts" ON inventory_alerts
     );
 
 -- Policies for purchase_orders
+DROP POLICY IF EXISTS "Vendors can view their own purchase orders" ON purchase_orders;
 CREATE POLICY "Vendors can view their own purchase orders" ON purchase_orders
     FOR SELECT USING (vendor_id = auth.uid());
 
+DROP POLICY IF EXISTS "Admins can manage all purchase orders" ON purchase_orders;
 CREATE POLICY "Admins can manage all purchase orders" ON purchase_orders
     FOR ALL USING (
         EXISTS (
@@ -115,6 +119,7 @@ CREATE POLICY "Admins can manage all purchase orders" ON purchase_orders
     );
 
 -- Policies for purchase_order_items
+DROP POLICY IF EXISTS "Vendors can view their own purchase order items" ON purchase_order_items;
 CREATE POLICY "Vendors can view their own purchase order items" ON purchase_order_items
     FOR SELECT USING (
         EXISTS (
@@ -124,6 +129,7 @@ CREATE POLICY "Vendors can view their own purchase order items" ON purchase_orde
         )
     );
 
+DROP POLICY IF EXISTS "Admins can manage all purchase order items" ON purchase_order_items;
 CREATE POLICY "Admins can manage all purchase order items" ON purchase_order_items
     FOR ALL USING (
         EXISTS (

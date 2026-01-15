@@ -52,12 +52,12 @@ export function AddressForm({ userId, address }: AddressFormProps) {
 
       if (address) {
         // Update existing address
-        const { error: updateError } = await supabase.from("addresses").update(addressData).eq("id", address.id)
+        const { error: updateError } = await supabase.from("user_addresses").update(addressData).eq("id", address.id)
 
         if (updateError) throw updateError
       } else {
         // Create new address
-        const { error: insertError } = await supabase.from("addresses").insert(addressData)
+        const { error: insertError } = await supabase.from("user_addresses").insert(addressData)
 
         if (insertError) throw insertError
       }
@@ -65,7 +65,7 @@ export function AddressForm({ userId, address }: AddressFormProps) {
       // If set as default, unset other defaults
       if (formData.isDefault) {
         await supabase
-          .from("addresses")
+          .from("user_addresses")
           .update({ is_default: false })
           .eq("user_id", userId)
           .neq("id", address?.id || "")

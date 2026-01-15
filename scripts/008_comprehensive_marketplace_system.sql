@@ -129,22 +129,29 @@ ALTER TABLE courier_services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vendor_documents ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
+DROP POLICY IF EXISTS "Public can view currencies" ON currency_rates;
 CREATE POLICY "Public can view currencies" ON currency_rates FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public can view account tiers" ON account_tier_features;
 CREATE POLICY "Public can view account tiers" ON account_tier_features FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public can view active couriers" ON courier_services;
 CREATE POLICY "Public can view active couriers" ON courier_services FOR SELECT USING (is_active = true);
 
+DROP POLICY IF EXISTS "Vendors can upload own documents" ON vendor_documents;
 CREATE POLICY "Vendors can upload own documents" ON vendor_documents FOR INSERT WITH CHECK (
   seller_id IN (SELECT id FROM sellers WHERE user_id = auth.uid())
 );
 
+DROP POLICY IF EXISTS "Vendors can view own documents" ON vendor_documents;
 CREATE POLICY "Vendors can view own documents" ON vendor_documents FOR SELECT USING (
   seller_id IN (SELECT id FROM sellers WHERE user_id = auth.uid())
 );
 
+DROP POLICY IF EXISTS "Admins can view all documents" ON vendor_documents;
 CREATE POLICY "Admins can view all documents" ON vendor_documents FOR SELECT USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
 );
 
+DROP POLICY IF EXISTS "Admins can update documents" ON vendor_documents;
 CREATE POLICY "Admins can update documents" ON vendor_documents FOR UPDATE USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
 );

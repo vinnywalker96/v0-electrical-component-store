@@ -39,16 +39,19 @@ CREATE POLICY "Sellers can view own commissions" ON commissions
   );
 
 -- Super admin can view all commissions
+DROP POLICY IF EXISTS "Super admin can view all commissions" ON commissions;
 CREATE POLICY "Super admin can view all commissions" ON commissions
   FOR SELECT USING (
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'super_admin')
   );
 
 -- System creates commission records
-CREATE POLICY "System can insert commissions" ON commissions
+DROP POLICY IF EXISTS "System creates commission records" ON commissions;
+CREATE POLICY "System creates commission records" ON commissions
   FOR INSERT WITH CHECK (true);
 
 -- Super admin can update commission status (mark as paid)
+DROP POLICY IF EXISTS "Super admin can update commissions" ON commissions;
 CREATE POLICY "Super admin can update commissions" ON commissions
   FOR UPDATE USING (
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'super_admin')
@@ -175,6 +178,7 @@ CREATE POLICY "Vendors can delete own products" ON products
   );
 
 -- Orders: Vendors can view their own orders
+DROP POLICY IF EXISTS "Vendors can view own orders" ON orders;
 CREATE POLICY "Vendors can view own orders" ON orders
   FOR SELECT USING (
     seller_id IN (SELECT id FROM sellers WHERE user_id = auth.uid()) AND

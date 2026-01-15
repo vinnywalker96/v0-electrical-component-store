@@ -20,10 +20,10 @@ export function SetDefaultAddressButton({ addressId }: { addressId: string }) {
       if (!user) return
 
       // Unset all defaults for this user
-      await supabase.from("addresses").update({ is_default: false }).eq("user_id", user.id)
+      await supabase.from("user_addresses").update({ is_default: false }).eq("user_id", user.id)
 
       // Set this address as default
-      const { error } = await supabase.from("addresses").update({ is_default: true }).eq("id", addressId)
+      const { error } = await supabase.from("user_addresses").update({ is_default: true }).eq("id", addressId)
 
       if (error) throw error
 

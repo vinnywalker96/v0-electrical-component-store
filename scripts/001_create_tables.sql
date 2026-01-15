@@ -68,32 +68,50 @@ ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cart_items ENABLE ROW LEVEL SECURITY;
 
 -- Products: Allow public read access
+DROP POLICY IF EXISTS "Allow public read on products" ON public.products;
 CREATE POLICY "Allow public read on products" ON public.products FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Allow admin insert products" ON public.products;
 CREATE POLICY "Allow admin insert products" ON public.products FOR INSERT WITH CHECK ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+DROP POLICY IF EXISTS "Allow admin update products" ON public.products;
+DROP POLICY IF EXISTS "Allow admin update products" ON public.products;
 CREATE POLICY "Allow admin update products" ON public.products FOR UPDATE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
+DROP POLICY IF EXISTS "Allow admin delete products" ON public.products;
 CREATE POLICY "Allow admin delete products" ON public.products FOR DELETE USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
 
 -- Profiles: Allow users to view and update their own profile
+DROP POLICY IF EXISTS "Allow users read own profile" ON public.profiles;
 CREATE POLICY "Allow users read own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+DROP POLICY IF EXISTS "Allow users update own profile" ON public.profiles;
 CREATE POLICY "Allow users update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+DROP POLICY IF EXISTS "Allow users insert own profile" ON public.profiles;
 CREATE POLICY "Allow users insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Orders: Allow users to view their own orders
+DROP POLICY IF EXISTS "Allow users read own orders" ON public.orders;
 CREATE POLICY "Allow users read own orders" ON public.orders FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow users create orders" ON public.orders;
 CREATE POLICY "Allow users create orders" ON public.orders FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow users update own orders" ON public.orders;
 CREATE POLICY "Allow users update own orders" ON public.orders FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow admin read all orders" ON public.orders;
 CREATE POLICY "Allow admin read all orders" ON public.orders FOR SELECT USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin');
 
 -- Order items: Allow users to read items from their orders
+DROP POLICY IF EXISTS "Allow users read own order items" ON public.order_items;
 CREATE POLICY "Allow users read own order items" ON public.order_items FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.orders WHERE id = order_id AND user_id = auth.uid())
 );
+DROP POLICY IF EXISTS "Allow users insert own order items" ON public.order_items;
 CREATE POLICY "Allow users insert own order items" ON public.order_items FOR INSERT WITH CHECK (
   EXISTS (SELECT 1 FROM public.orders WHERE id = order_id AND user_id = auth.uid())
 );
 
 -- Cart items: Allow users to manage their own cart
+DROP POLICY IF EXISTS "Allow users read own cart" ON public.cart_items;
 CREATE POLICY "Allow users read own cart" ON public.cart_items FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow users insert own cart items" ON public.cart_items;
 CREATE POLICY "Allow users insert own cart items" ON public.cart_items FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow users update own cart items" ON public.cart_items;
 CREATE POLICY "Allow users update own cart items" ON public.cart_items FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Allow users delete own cart items" ON public.cart_items;
 CREATE POLICY "Allow users delete own cart items" ON public.cart_items FOR DELETE USING (auth.uid() = user_id);

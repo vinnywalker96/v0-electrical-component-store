@@ -98,11 +98,7 @@ export const customerNavItems = [
     label: "Addresses",
     icon: <Home className="w-5 h-5" />,
   },
-  {
-    href: "/seller/register",
-    label: "Apply to be a Vendor",
-    icon: <Store className="w-5 h-5" />,
-  },
+  
   {
     href: "/protected/settings",
     label: "Settings",

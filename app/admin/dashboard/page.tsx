@@ -10,6 +10,8 @@ import { Package, ShoppingCart, Users, TrendingUp, LogOut, Settings, CreditCard,
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Import Select components
 import { AdminSalesTable } from "@/components/admin-sales-table" // Import AdminSalesTable
 
+import { UserManagementButton } from "@/components/user-management-button";
+
 interface DashboardStats {
   totalProducts: number
   totalOrders: number
@@ -125,7 +127,7 @@ export default function AdminDashboardPage() {
     }
 
     fetchStats()
-  }, [filterPeriod]) // Remove supabase from dependencies
+  }, [filterPeriod, supabase])
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -265,12 +267,7 @@ export default function AdminDashboardPage() {
                 </Button>
               </Link>
               {isSuperAdmin && (
-                <Link href="/admin/users">
-                  <Button className="w-full h-16 text-lg justify-start gap-4 bg-transparent" variant="outline">
-                    <UserCog size={24} />
-                    Manage Users
-                  </Button>
-                </Link>
+                <UserManagementButton />
               )}
             </div>
 

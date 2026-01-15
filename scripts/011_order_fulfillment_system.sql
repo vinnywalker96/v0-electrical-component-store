@@ -82,6 +82,7 @@ ALTER TABLE return_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE return_items ENABLE ROW LEVEL SECURITY;
 
 -- Policies for order_status_history
+DROP POLICY IF EXISTS "Users can view their own order status history" ON order_status_history;
 CREATE POLICY "Users can view their own order status history" ON order_status_history
     FOR SELECT USING (
         EXISTS (
@@ -91,6 +92,7 @@ CREATE POLICY "Users can view their own order status history" ON order_status_hi
         )
     );
 
+DROP POLICY IF EXISTS "Admins can manage all order status history" ON order_status_history;
 CREATE POLICY "Admins can manage all order status history" ON order_status_history
     FOR ALL USING (
         EXISTS (
@@ -101,6 +103,7 @@ CREATE POLICY "Admins can manage all order status history" ON order_status_histo
     );
 
 -- Policies for shipment_tracking
+DROP POLICY IF EXISTS "Users can view their own shipment tracking" ON shipment_tracking;
 CREATE POLICY "Users can view their own shipment tracking" ON shipment_tracking
     FOR SELECT USING (
         EXISTS (
@@ -110,6 +113,7 @@ CREATE POLICY "Users can view their own shipment tracking" ON shipment_tracking
         )
     );
 
+DROP POLICY IF EXISTS "Admins can manage all shipment tracking" ON shipment_tracking;
 CREATE POLICY "Admins can manage all shipment tracking" ON shipment_tracking
     FOR ALL USING (
         EXISTS (
@@ -120,12 +124,15 @@ CREATE POLICY "Admins can manage all shipment tracking" ON shipment_tracking
     );
 
 -- Policies for return_requests
+DROP POLICY IF EXISTS "Users can view and create their own return requests" ON return_requests;
 CREATE POLICY "Users can view and create their own return requests" ON return_requests
     FOR SELECT USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Users can create return requests" ON return_requests;
 CREATE POLICY "Users can create return requests" ON return_requests
     FOR INSERT WITH CHECK (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Admins can manage all return requests" ON return_requests;
 CREATE POLICY "Admins can manage all return requests" ON return_requests
     FOR ALL USING (
         EXISTS (
@@ -136,6 +143,7 @@ CREATE POLICY "Admins can manage all return requests" ON return_requests
     );
 
 -- Policies for return_items
+DROP POLICY IF EXISTS "Users can view their own return items" ON return_items;
 CREATE POLICY "Users can view their own return items" ON return_items
     FOR SELECT USING (
         EXISTS (
@@ -145,6 +153,7 @@ CREATE POLICY "Users can view their own return items" ON return_items
         )
     );
 
+DROP POLICY IF EXISTS "Admins can manage all return items" ON return_items;
 CREATE POLICY "Admins can manage all return items" ON return_items
     FOR ALL USING (
         EXISTS (

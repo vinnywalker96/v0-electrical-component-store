@@ -72,10 +72,11 @@ export default function AdminUsersPage() {
     if (!confirm(`Are you sure you want to delete ${selectedUsers.length} users? This action is irreversible.`)) return;
 
     try {
-        // Note: Supabase RLS must allow admins to delete users.
-        // This may require a custom RPC function to delete from `auth.users` as well.
-      const { error } = await supabase.from("profiles").delete().in("id", selectedUsers);
-      if (error) throw error;
+      const deletePromises = selectedUsers.map(userId => supabase.rpc('delete_user', { user_id: userId }));
+      const results = await Promise.all(deletePromises);
+      const error = results.find(res => res.error);
+
+      if (error) throw error.error;
       
       setUsers(users.filter(u => !selectedUsers.includes(u.id)));
       setSelectedUsers([]);
@@ -127,6 +128,53 @@ export default function AdminUsersPage() {
         description: `Failed to ${action} user.`,
         variant: "destructive"
       });
+    }
+  };
+
+  const handleMakeAdmin = async (userId: string) => {
+    if (confirm("Are you sure you want to make this user an admin? They will have elevated privileges.")) {
+      try {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ role: "admin" })
+          .eq("id", userId);
+
+        if (error) throw error;
+
+        setUsers(users.map(u => u.id === userId ? { ...u, role: "admin" } : u));
+        toast({
+          title: "Success",
+          description: "User promoted to admin.",
+        });
+      } catch (error) {
+        console.error("Error making user admin:", error);
+        toast({
+          title: "Error",
+          description: "Failed to promote user.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (confirm("Are you sure you want to permanently delete this user? This action is irreversible.")) {
+      try {
+        const { error } = await supabase.rpc('delete_user', { user_id: userId });
+        if (error) throw error;
+        setUsers(users.filter(u => u.id !== userId));
+        toast({
+          title: "Success",
+          description: "User deleted successfully.",
+        });
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete user.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -243,6 +291,13 @@ export default function AdminUsersPage() {
                             onClick={() => handleBlockUser(user.id)}
                           >
                             {user.is_blocked ? "Unblock" : "Block"}
+                          </Button>
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
+                            <Trash2 size={16}/>
                           </Button>
                         </td>
                       </tr>
