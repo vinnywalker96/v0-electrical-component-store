@@ -1,4 +1,3 @@
-
 import type React from "react"
 import {
   LayoutDashboard,
@@ -110,4 +109,3 @@ export const customerNavItems = [
     icon: <MessageSquare className="w-5 h-5" />,
   },
 ]
-
