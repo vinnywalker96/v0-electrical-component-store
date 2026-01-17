@@ -25,10 +25,10 @@ export function SidebarNav({ navItems, userProfile, onLogout }: SidebarNavProps)
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200 fixed h-screen flex flex-col">
-      <div className="p-6 flex-1">
+      <div className="p-6 flex-1 overflow-y-auto">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl mb-8">
           <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-white">⚡</div>
-          <span>KG Compponents</span>
+          <span>KG Components</span>
         </Link>
 
         {userProfile && (
@@ -63,7 +63,7 @@ export function SidebarNav({ navItems, userProfile, onLogout }: SidebarNavProps)
         </nav>
       </div>
 
-      {onLogout && (
+      {/* {onLogout && (
         <div className="p-4 border-t border-slate-200">
           <Button
             onClick={onLogout}
@@ -74,7 +74,7 @@ export function SidebarNav({ navItems, userProfile, onLogout }: SidebarNavProps)
             Logout
           </Button>
         </div>
-      )}
+      )} */}
     </aside>
   )
 }
