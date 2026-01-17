@@ -64,10 +64,10 @@ export interface UserProfile {
   last_name?: string
   phone?: string
   role: "customer" | "vendor" | "admin" | "super_admin"
-  account_tier: "basic" | "professional" | "business" // Added for account tier
-  profile_image_url?: string // Added for profile image URL
-  monthly_fee: number // Added for monthly fee
-  account_tier_expires_at?: string // Added for account tier expires at
+  account_tier?: "basic" | "professional" | "business"
+  profile_image_url?: string
+  monthly_fee?: number
+  account_tier_expires_at?: string
   is_blocked?: boolean // Added for block functionality
   blocked_at?: string // Added for block timestamp
   block_reason?: string // Added for block reason

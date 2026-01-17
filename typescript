@@ -1,0 +1,597 @@
+Script started on Thu Jan 15 20:40:55 2026
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004h[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hccd scc ripts[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004h../run-super-admin-setup.sh[1m [0m[0m [?2004l
+🔧 Setting up Super Admin for KG Components...
+
+🚀 Running super admin setup script...
+❌ Missing required environment variables:
+   - KG_COMP_SUPABASE_URL (or NEXT_PUBLIC_KG_COMP_SUPABASE_URL)
+   - KG_COMP_SUPABASE_SERVICE_ROLE_KEY
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004h./run-super-admin-setup.sh[?2004l
+🔧 Setting up Super Admin for KG Components...
+
+🚀 Running super admin setup script...
+❌ Missing required environment variables:
+   - KG_COMP_SUPABASE_URL (or NEXT_PUBLIC_KG_COMP_SUPABASE_URL)
+   - KG_COMP_SUPABASE_SERVICE_ROLE_KEY
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004h./run-super-admin-setup.sh[?2004l
+🔧 Setting up Super Admin for KG Components...
+
+🚀 Running super admin setup script...
+❌ Missing required environment variables:
+   - KG_COMP_SUPABASE_URL (or NEXT_PUBLIC_KG_COMP_SUPABASE_URL)
+   - KG_COMP_SUPABASE_SERVICE_ROLE_KEY
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004h./run-super-admin-setup.sh[26Dcd scripts                [16D[10Dpnpm dev  [8Dcd scripts[10D./run-super-admin-setup.sh                        .  lls[?2004l
+001_create_tables.sql				019_create_delete_user_function.sql
+002_seed_products.sql				019_test_connection.sql
+003_add_payment_status_and_banking.sql		create-super-admin-profile.ts
+004_add_super_admin_user.sql			create-super-admin.ts
+005_enable_banking_and_payment_features.sql	get_user_id.ts
+006_marketplace_schema.sql			lib
+007_commission_and_rbac_system.sql		migrate-remote.ts
+008_comprehensive_marketplace_system.sql	run-migration.ts
+009_add_aoa_currency.sql			run-super-admin-setup.sh
+010_add_block_functionality.sql			scrape-mantech-complete.py
+010_add_product_select_policy.sql		scrape-mantech-comprehensive.py
+010_inventory_management_system.sql		scrape-mantech-enhanced.py
+011_add_technical_documents_to_products.sql	scrape-mantech-enhanced.ts
+011_order_fulfillment_system.sql		scrape-mantech-products.ts
+012_add_technical_documents_to_products.sql	scrape-mantech-python.py
+013_add_avatar_url_to_profiles.sql		scrape-mantech-sample.py
+014_fix_rls_policy.sql				scrape-mantech.ts
+016_create_auth_user_trigger.sql		scripts
+017_allow_admin_read_all_profiles.sql		setup-super-admin.ts
+017_ensure_super_admin.sql			test-db-connection.ts
+018_add_address_type_to_user_addresses.sql	web-scraper-mantech.ts
+018_setup_super_admin_final.sql
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004hppnpm tsx r test-db-connection.ts[1m [0m[0m [?2004l
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/vinny/v0-electrical-component-store/test-db-connection.ts' imported from /Users/vinny/v0-electrical-component-store/
+[90m    at finalizeResolution (node:internal/modules/esm/resolve:274:11)[39m
+[90m    at moduleResolve (node:internal/modules/esm/resolve:864:10)[39m
+[90m    at defaultResolve (node:internal/modules/esm/resolve:990:11)[39m
+[90m    at nextResolve (node:internal/modules/esm/hooks:769:28)[39m
+    at resolveBase [90m(file:///Users/vinny/v0-electrical-component-store/[39mnode_modules/[4mtsx[24m/dist/esm/index.mjs?1768510242490:2:3744[90m)[39m
+    at async resolveDirectory [90m(file:///Users/vinny/v0-electrical-component-store/[39mnode_modules/[4mtsx[24m/dist/esm/index.mjs?1768510242490:2:4237[90m)[39m
+    at async resolve [90m(file:///Users/vinny/v0-electrical-component-store/[39mnode_modules/[4mtsx[24m/dist/esm/index.mjs?1768510242490:2:5355[90m)[39m
+[90m    at async nextResolve (node:internal/modules/esm/hooks:769:22)[39m
+[90m    at async AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:265:24)[39m
+[90m    at async handleMessage (node:internal/modules/esm/worker:251:18)[39m {
+  code: [32m'ERR_MODULE_NOT_FOUND'[39m,
+  url: [32m'file:///Users/vinny/v0-electrical-component-store/test-db-connection.ts'[39m
+}
+
+Node.js v25.2.1
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004hccd [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air ~ % [K[?2004hcccc cd v0-electrical-component-store[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hcd v0-electrical-component-store                             c  cd pnpm tsx test-db-connection.ts[30Dls                            [28D./run-super-admin-setup.sh[26Dcd scripts                [16D[10Dpnpm dev  [8Dgemini  pnpm devi  cd v0-electrical-component-store[32Dls                              [30Dbrew install node[12Dupgrade     [12Dcd          [9Dwimlib-imagex split \
+/Volumes/CCCOMA_X64FRE_EN-GB_DV9/sources/install.wim /Volumes/WIN11/sources/install.swm 3800[K[A[41D[1B[A[51Ccd                   [1B[K[A[54Cbrew upgradeinstall node[17Dls               [15Dcd v0-electrical-component-store[32Dpnpm i                          [26D   p  ppnpm tsx scripts[1m/[0m[0m/test-db-connection.ts[1m [0m[0m [1B[J__tests__/            hooks/                next-env.d.ts         postcss.config.mjs    run-scraper.sh        tsconfig.json
+app/                  jest.config.js        next.config.mjs       proxy.ts              scripts/              typescript
+components/           jest.setup.js         node_modules/         public/               styles/               
+components.json       lib/                  package.json          README.md             SUPER_ADMIN_SETUP.md  
+eslint.config.mts     logs/                 pnpm-lock.yaml        requirements.txt      test_page.py          [5A[0m[27m[24m[51Cpnpm tsx scripts/test-db-connection.ts[K[1C[?2004l
+[J[v0] Testing database connection...
+
+❌ Missing environment variables!
+Required: KG_COMP_SUPABASE_URL, NEXT_PUBLIC_KG_COMP_SUPABASE_ANON_KEY
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hpnpm tsx scripts/test-db-connection.ts [?2004l
+[v0] Testing database connection...
+
+❌ Missing environment variables!
+Required: KG_COMP_SUPABASE_URL, NEXT_PUBLIC_KG_COMP_SUPABASE_ANON_KEY
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hppnpm dot e env[?2004l
+[41m[30m ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL [39m[49m [31mCommand "dotenv" not found[39m
+
+Did you mean "pnpm dev"?
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hpnpm dotenv      install dotenev[?2004l
+[43m[30m WARN [39m[49m Moving @tailwindcss/postcss that was installed by a different package manager to "node_modules/.ignored"
+[43m[30m WARN [39m[49m Moving @testing-library/jest-dom that was installed by a different package manager to "node_modules/.ignored"
+[43m[30m WARN [39m[49m Moving @testing-library/react that was installed by a different package manager to "node_modules/.ignored"
+[43m[30m WARN [39m[49m Moving @testing-library/user-event that was installed by a different package manager to "node_modules/.ignored"
+[43m[30m WARN [39m[49m Moving @types/node that was installed by a different package manager to "node_modules/.ignored"
+[43m[30m WARN [39m[49m 1 other warnings
+[1A[43m[30m WARN [39m[49m 2 other warnings
+[1A[43m[30m WARN [39m[49m 3 other warnings
+[1A[43m[30m WARN [39m[49m 4 other warnings
+[1A[43m[30m WARN [39m[49m 5 other warnings
+[1A[43m[30m WARN [39m[49m 6 other warnings
+[1A[43m[30m WARN [39m[49m 7 other warnings
+[1A[43m[30m WARN [39m[49m 8 other warnings
+[1A[43m[30m WARN [39m[49m 9 other warnings
+[1A[43m[30m WARN [39m[49m 10 other warnings
+[1A[43m[30m WARN [39m[49m 11 other warnings
+[1A[43m[30m WARN [39m[49m 12 other warnings
+[1A[43m[30m WARN [39m[49m 13 other warnings
+[1A[43m[30m WARN [39m[49m 14 other warnings
+[1A[43m[30m WARN [39m[49m 15 other warnings
+[1A[43m[30m WARN [39m[49m 16 other warnings
+[1A[43m[30m WARN [39m[49m 17 other warnings
+[1A[43m[30m WARN [39m[49m 18 other warnings
+[1A[43m[30m WARN [39m[49m 19 other warnings
+[1A[43m[30m WARN [39m[49m 20 other warnings
+[1A[43m[30m WARN [39m[49m 21 other warnings
+[1A[43m[30m WARN [39m[49m 22 other warnings
+[1A[43m[30m WARN [39m[49m 23 other warnings
+[1A[43m[30m WARN [39m[49m 24 other warnings
+[1A[43m[30m WARN [39m[49m 25 other warnings
+[1A[43m[30m WARN [39m[49m 26 other warnings
+[1A[43m[30m WARN [39m[49m 27 other warnings
+[1A[43m[30m WARN [39m[49m 28 other warnings
+[1A[43m[30m WARN [39m[49m 29 other warnings
+[1A[43m[30m WARN [39m[49m 30 other warnings
+[1A[43m[30m WARN [39m[49m 31 other warnings
+[1A[43m[30m WARN [39m[49m 32 other warnings
+[1A[43m[30m WARN [39m[49m 33 other warnings
+[1A[43m[30m WARN [39m[49m 34 other warnings
+[1A[43m[30m WARN [39m[49m 35 other warnings
+[1A[43m[30m WARN [39m[49m 36 other warnings
+[1A[43m[30m WARN [39m[49m 37 other warnings
+[1A[43m[30m WARN [39m[49m 38 other warnings
+[1A[43m[30m WARN [39m[49m 39 other warnings
+[1A[43m[30m WARN [39m[49m 40 other warnings
+[1A[43m[30m WARN [39m[49m 41 other warnings
+[1A[43m[30m WARN [39m[49m 42 other warnings
+[1A[43m[30m WARN [39m[49m 43 other warnings
+[1A[43m[30m WARN [39m[49m 44 other warnings
+[1A[43m[30m WARN [39m[49m 45 other warnings
+[1A[43m[30m WARN [39m[49m 46 other warnings
+[1A[43m[30m WARN [39m[49m 47 other warnings
+[1A[43m[30m WARN [39m[49m 48 other warnings
+[1A[43m[30m WARN [39m[49m 49 other warnings
+[1A[43m[30m WARN [39m[49m 50 other warnings
+[1A[43m[30m WARN [39m[49m 51 other warnings
+[1A[43m[30m WARN [39m[49m 52 other warnings
+[1A[43m[30m WARN [39m[49m 53 other warnings
+[1A[43m[30m WARN [39m[49m 54 other warnings
+[1A[43m[30m WARN [39m[49m 55 other warnings
+[1A[43m[30m WARN [39m[49m 56 other warnings
+[1A[43m[30m WARN [39m[49m 57 other warnings
+[1A[43m[30m WARN [39m[49m 58 other warnings
+[1A[43m[30m WARN [39m[49m 59 other warnings
+[1A[43m[30m WARN [39m[49m 60 other warnings
+[1A[43m[30m WARN [39m[49m 61 other warnings
+[1A[43m[30m WARN [39m[49m 62 other warnings
+[1A[43m[30m WARN [39m[49m 63 other warnings
+[1A[43m[30m WARN [39m[49m 64 other warnings
+[1A[43m[30m WARN [39m[49m 65 other warnings
+[1A[43m[30m WARN [39m[49m 66 other warnings
+[1A[43m[30m WARN [39m[49m 67 other warnings
+[1A[43m[30m WARN [39m[49m 68 other warnings
+[1A[43m[30m WARN [39m[49m 69 other warnings
+[1A[43m[30m WARN [39m[49m 70 other warnings
+[1A[43m[30m WARN [39m[49m 71 other warnings
+[1A[43m[30m WARN [39m[49m 72 other warnings
+[1A[43m[30m WARN [39m[49m 73 other warnings
+[1A[43m[30m WARN [39m[49m 74 other warnings
+[1A[43m[30m WARN [39m[49m 75 other warnings
+[1A[43m[30m WARN [39m[49m 76 other warnings
+[1A[43m[30m WARN [39m[49m 77 other warnings
+[1A[43m[30m WARN [39m[49m 78 other warnings
+[1A[43m[30m WARN [39m[49m 79 other warnings
+[1A[43m[30m WARN [39m[49m 80 other warnings
+[1A[43m[30m WARN [39m[49m 81 other warnings
+[1A[43m[30m WARN [39m[49m 82 other warnings
+[1A[43m[30m WARN [39m[49m 83 other warnings
+[1A[43m[30m WARN [39m[49m 84 other warnings
+[1A[43m[30m WARN [39m[49m 85 other warnings
+[1A[43m[30m WARN [39m[49m 86 other warnings
+[1A[43m[30m WARN [39m[49m 87 other warnings
+[1A[43m[30m WARN [39m[49m 88 other warnings
+[1A[43m[30m WARN [39m[49m 89 other warnings
+[1A[43m[30m WARN [39m[49m 90 other warnings
+[1A[43m[30m WARN [39m[49m 91 other warnings
+Progress: resolved [96m0[39m, reused [96m1[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m4[39m, reused [96m4[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m7[39m, reused [96m7[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m14[39m, reused [96m14[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m21[39m, reused [96m21[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m37[39m, reused [96m37[39m, downloaded [96m0[39m, added [96m0[39m
+[1A[43m[30m WARN [39m[49m [31mdeprecated[39m @types/redis@4.0.11: This is a stub types definition. redis provides its own type definitions, so you do not need this installed.
+Progress: resolved [96m37[39m, reused [96m37[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m47[39m, reused [96m47[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m57[39m, reused [96m57[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m61[39m, reused [96m61[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m61[39m, reused [96m62[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m70[39m, reused [96m70[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m72[39m, reused [96m72[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m93[39m, reused [96m92[39m, downloaded [96m1[39m, added [96m0[39m
+[1AProgress: resolved [96m94[39m, reused [96m93[39m, downloaded [96m1[39m, added [96m0[39m
+^C
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hnnpn  ppnpm i[?2004l
+Lockfile is up to date, resolution step is skipped
+Progress: resolved [96m1[39m, reused [96m0[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m51[39m, reused [96m0[39m, downloaded [96m0[39m, added [96m0[39m
+[1APackages: [32m+51[39m [31m-4[39m[0K
+[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[32m+[39m[31m-[39m[31m-[39m[31m-[39m[31m-[39m
+Progress: resolved [96m51[39m, reused [96m0[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m51[39m, reused [96m6[39m, downloaded [96m0[39m, added [96m0[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m0[39m, added [96m2[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m0[39m, added [96m6[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m8[39m, added [96m8[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m11[39m, added [96m9[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m19[39m, added [96m12[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m23[39m, added [96m17[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m28[39m, added [96m19[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m29[39m, added [96m20[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m31[39m, added [96m21[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m32[39m, added [96m21[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m32[39m, added [96m22[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m38[39m, added [96m23[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m42[39m, added [96m37[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m42[39m, added [96m39[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m42[39m, added [96m40[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m43[39m, added [96m47[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m43[39m, added [96m49[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m43[39m, added [96m50[39m
+[1AProgress: resolved [96m51[39m, reused [96m8[39m, downloaded [96m43[39m, added [96m51[39m, done
+
+[96mdependencies:[39m
+[32m+[39m @hookform/resolvers [90m3.10.0[39m
+[32m+[39m @radix-ui/react-accordion [90m1.2.2[39m
+[32m+[39m @radix-ui/react-alert-dialog [90m1.1.4[39m
+[32m+[39m @radix-ui/react-aspect-ratio [90m1.1.1[39m
+[32m+[39m @radix-ui/react-avatar [90m1.1.2[39m
+[32m+[39m @radix-ui/react-checkbox [90m1.1.3[39m
+[32m+[39m @radix-ui/react-collapsible [90m1.1.2[39m
+[32m+[39m @radix-ui/react-context-menu [90m2.2.4[39m
+[32m+[39m @radix-ui/react-dialog [90m1.1.4[39m
+[32m+[39m @radix-ui/react-dropdown-menu [90m2.1.4[39m
+[32m+[39m @radix-ui/react-hover-card [90m1.1.4[39m
+[32m+[39m @radix-ui/react-label [90m2.1.1[39m
+[32m+[39m @radix-ui/react-menubar [90m1.1.4[39m
+[32m+[39m @radix-ui/react-navigation-menu [90m1.2.3[39m
+[32m+[39m @radix-ui/react-popover [90m1.1.4[39m
+[32m+[39m @radix-ui/react-progress [90m1.1.1[39m
+[32m+[39m @radix-ui/react-radio-group [90m1.2.2[39m
+[32m+[39m @radix-ui/react-scroll-area [90m1.2.2[39m
+[32m+[39m @radix-ui/react-select [90m2.1.4[39m
+[32m+[39m @radix-ui/react-separator [90m1.1.1[39m
+[32m+[39m @radix-ui/react-slider [90m1.2.2[39m
+[32m+[39m @radix-ui/react-slot [90m1.1.1[39m
+[32m+[39m @radix-ui/react-switch [90m1.1.2[39m
+[32m+[39m @radix-ui/react-tabs [90m1.1.2[39m
+[32m+[39m @radix-ui/react-toast [90m1.2.4[39m
+[32m+[39m @radix-ui/react-toggle [90m1.1.1[39m
+[32m+[39m @radix-ui/react-toggle-group [90m1.1.1[39m
+[32m+[39m @radix-ui/react-tooltip [90m1.1.6[39m
+[32m+[39m @react-email/render [90m2.0.0[39m
+[32m+[39m @reduxjs/toolkit [90m2.5.0[39m
+[32m+[39m @sentry/nextjs [90m10.32.1[39m
+[32m+[39m @supabase/ssr [90m0.8.0[39m
+[32m+[39m @supabase/supabase-js [90m2.89.0[39m
+[32m+[39m @testing-library/dom [90m10.4.1[39m
+[32m+[39m @types/bcryptjs [90m2.4.6[39m
+[32m+[39m @types/cors [90m2.8.19[39m
+[32m+[39m @types/express-rate-limit [90m5.1.3[39m
+[32m+[39m @types/redis [90m4.0.11[39m
+[31m-[39m @vercel/analytics
+[32m+[39m @vercel/analytics [90m1.6.1[39m
+[31m-[39m @vercel/speed-insights
+[32m+[39m @vercel/speed-insights [90m1.3.1[39m
+[32m+[39m autoprefixer [90m10.4.22[39m
+[32m+[39m axios [90m1.13.2[39m
+[32m+[39m bcryptjs [90m3.0.3[39m
+[32m+[39m cheerio [90m1.1.2[39m
+[32m+[39m class-variance-authority [90m0.7.1[39m
+[32m+[39m clsx [90m2.1.1[39m
+[32m+[39m cmdk [90m1.0.4[39m
+[32m+[39m cors [90m2.8.5[39m
+[32m+[39m critters [90m0.0.23[39m
+[32m+[39m date-fns [90m4.1.0[39m
+[32m+[39m embla-carousel-react [90m8.5.1[39m
+[32m+[39m express [90m5.2.1[39m
+[32m+[39m express-rate-limit [90m8.2.1[39m
+[32m+[39m helmet [90m8.1.0[39m
+[32m+[39m input-otp [90m1.4.1[39m
+[32m+[39m lucide-react [90m0.454.0[39m
+[32m+[39m next [90m16.0.10[39m
+[32m+[39m next-sitemap [90m4.2.3[39m
+[32m+[39m next-themes [90m0.4.6[39m
+[31m-[39m pg
+[32m+[39m pg [90m8.16.3[39m
+[32m+[39m pg-native [90m3.5.2[39m
+[32m+[39m react [90m19.2.0[39m
+[32m+[39m react-day-picker [90m9.8.0[39m
+[32m+[39m react-dom [90m19.2.0[39m
+[32m+[39m react-hook-form [90m7.68.0[39m
+[32m+[39m react-redux [90m9.2.0[39m
+[32m+[39m react-resizable-panels [90m2.1.7[39m
+[32m+[39m recharts [90m2.15.4[39m
+[32m+[39m redis [90m5.10.0[39m
+[32m+[39m redux [90m5.0.1[39m
+[32m+[39m resend [90m6.5.2[39m
+[32m+[39m sonner [90m1.7.4[39m
+[32m+[39m tailwind-merge [90m2.5.5[39m
+[32m+[39m tailwindcss-animate [90m1.0.7[39m
+[32m+[39m vaul [90m1.1.2[39m
+[32m+[39m vue-router [90m4.6.4[39m
+[32m+[39m winston [90m3.19.0[39m
+[32m+[39m winston-daily-rotate-file [90m5.0.0[39m
+[32m+[39m zod [90m3.25.76[39m
+
+[96mdevDependencies:[39m
+[32m+[39m @tailwindcss/postcss [90m4.1.18[39m
+[32m+[39m @testing-library/jest-dom [90m6.9.1[39m
+[32m+[39m @testing-library/react [90m16.3.1[39m
+[32m+[39m @testing-library/user-event [90m14.6.1[39m
+[32m+[39m @types/node [90m22.19.2[39m
+[32m+[39m @types/react [90m19.2.7[39m
+[32m+[39m @types/react-dom [90m19.2.3[39m
+[32m+[39m dotenv [90m17.2.3[39m
+[32m+[39m eslint-config-next [90m16.1.1[39m
+[32m+[39m eslint-config-prettier [90m10.1.8[39m
+[32m+[39m jest [90m30.2.0[39m
+[32m+[39m jest-environment-jsdom [90m30.2.0[39m
+[32m+[39m msw [90m2.12.7[39m
+[32m+[39m postcss [90m8.5.6[39m
+[32m+[39m tailwindcss [90m4.1.18[39m
+[32m+[39m tsx [90m4.21.0[39m
+[32m+[39m tw-animate-css [90m1.3.3[39m
+[32m+[39m typescript [90m5.9.3[39m
+[32m+[39m whatwg-fetch [90m3.6.20[39m
+
+[33m╭ Warning ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮[39m
+[33m│[39m                                                                                                                              [33m│[39m
+[33m│[39m   Ignored build scripts: @sentry/cli@2.58.4, esbuild@0.27.2, libpq@1.8.15, msw@2.12.7, sharp@0.34.5, unrs-resolver@1.11.1.   [33m│[39m
+[33m│[39m   Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.                                     [33m│[39m
+[33m│[39m                                                                                                                              [33m│[39m
+[33m╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯[39m
+Done in 9.7s using pnpm v10.28.0
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hpnpm install dotenev[15Ddotenv         [9Dtsx scripts/test-db-connection.ts [?2004l
+[v0] Testing database connection...
+
+❌ Missing environment variables!
+Required: KG_COMP_SUPABASE_URL, NEXT_PUBLIC_KG_COMP_SUPABASE_ANON_KEY
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hpnpm tsx scripts/test-db-connection.ts [34Di                                [32Dnstall dotenev[15Ddotenv         [9Dtsx scripts/test-db-connection.ts [?2004l
+[v0] Testing database connection...
+
+❌ Missing environment variables!
+Required: KG_COMP_SUPABASE_URL, NEXT_PUBLIC_KG_COMP_SUPABASE_ANON_KEY
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hpnpm tsx scripts/test-db-connection.ts [34Di                                [32Dnstall dotenev[15Ddotenv         [9Dtsx scripts/test-db-connection.ts [39Dcd v0-elect[2Ccal-component-store      [29D                             [29Dpnpm tsx test-db-connection.ts[30Dls                            [28D./run-super-admin-setup.sh[26Dcd scripts                [16D[10Dpnpm dev  [8Dgemini  pnpm devi  cd v0-electrical-component-store[32Dls                              [30Dbrew install node[12Dupgrade     [12Dcd          [9Dwimlib-imagex split \
+/Volumes/CCCOMA_X64FRE_EN-GB_DV9/sources/install.wim /Volumes/WIN11/sources/install.swm 3800[K[A[41D[1B[25DUS[25C\                                      
+/Volumes/WIN11/sources/install.swm 3800[K
+[K[K[A[A[A[51Cbrew install wim[2Cb  [1B[K[1B[K[1B[K[A[A[A[51Crsync -avh --exclude=sources/install.wim /Volumes/CCCOMA_X64FRE_EN-GB_DV9/ /Volumes/WIN11 [A[51Cbrew install wimlib[K[1B[A[51Cwimlib-imagex sp[2Ct \[1B/Volumes/CCCOMA_X64FRE_EN-US_DV9/sources/install.wim \[1B/Volumes/WIN11/sources/install.swm 3800[K[1B[K[A[A[26CGB[25C/Volumes/WIN11/sources/install.swm 3800[1B[K[1B[K[A[A[92C                    [A[20Dcd                   [1B[K[A[54Cbrew upgradeinstall node[17Dls               [15Dl  cclear[?2004l[1B[3J[H[2J[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hssupabase db link[?2004l
+]11;?\[6nManage Postgres databases
+
+Usage:
+  supabase db [command]
+
+Available Commands:
+  diff        Diffs the local database for schema changes
+  dump        Dumps data or schemas from the remote database
+  lint        Checks local database for typing error
+  pull        Pull schema from the remote database
+  push        Push new migrations to the remote database
+  reset       Resets the local database to current migrations
+  start       Starts local Postgres database
+
+Flags:
+  -h, --help   help for db
+
+Global Flags:
+      --create-ticket                                  create a support ticket for any CLI error
+      --debug                                          output debug logs to stderr
+      --dns-resolver [ native | https ]                lookup domain names using the specified resolver (default native)
+      --experimental                                   enable experimental features
+      --network-id string                              use the specified docker network instead of a generated one
+  -o, --output [ env | pretty | json | toml | yaml ]   output format of status variables (default pretty)
+      --profile string                                 use a specific profile for connecting to Supabase API (default "supabase")
+      --workdir string                                 path to a Supabase project directory
+      --yes                                            answer yes to all prompts
+
+Use "supabase db [command] --help" for more information about a command.
+A new version of Supabase CLI is available: [93mv2.72.7[0m (currently installed v2.67.1)
+We recommend updating regularly for new features and bug fixes: [1mhttps://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli[0m
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004h[7msupabase login[27m
+[K[A[51C[27ms[27mu[27mp[27ma[27mb[27ma[27ms[27me[27m [27ml[27mo[27mg[27mi[27mn[1B[K[?2004l
+]11;?\[6nUsing workdir [1m/Users/vinny[0m
+Hello from [96mSupabase[0m! Press [96mEnter[0m to open browser and login automatically.
+
+Here is your login link in case browser did not open [1mhttps://supabase.com/dashboard/cli/login?session_id=760d7051-6a3b-46fa-9114-887711c797c7&token_name=cli_vinny@Marlvins-Air.home_1768555793&public_key=04183da466fbc78e98572a703d6ead5b5c34b1999cd2ae3915f046e29e0e4bed652d07b1a94b5a9ced035dc73484f4a6af99eb1d4c16dfc16a909b9cbfa6e2a50b[0m
+
+Enter your verification code: 9c0874e8
+Token [1mcli_vinny@Marlvins-Air.home_1768555793[0m created successfully.
+
+You are now logged in. [96mHappy coding![0m
+A new version of Supabase CLI is available: [93mv2.72.7[0m (currently installed v2.67.1)
+We recommend updating regularly for new features and bug fixes: [1mhttps://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli[0m
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hsupabase login
+[K[K[A[51C[9Cdb link[1B[K[A[67C[16Dclear           [11Dsupabase db link[?2004l[1B]11;?\[6nManage Postgres databases
+
+Usage:
+  supabase db [command]
+
+Available Commands:
+  diff        Diffs the local database for schema changes
+  dump        Dumps data or schemas from the remote database
+  lint        Checks local database for typing error
+  pull        Pull schema from the remote database
+  push        Push new migrations to the remote database
+  reset       Resets the local database to current migrations
+  start       Starts local Postgres database
+
+Flags:
+  -h, --help   help for db
+
+Global Flags:
+      --create-ticket                                  create a support ticket for any CLI error
+      --debug                                          output debug logs to stderr
+      --dns-resolver [ native | https ]                lookup domain names using the specified resolver (default native)
+      --experimental                                   enable experimental features
+      --network-id string                              use the specified docker network instead of a generated one
+  -o, --output [ env | pretty | json | toml | yaml ]   output format of status variables (default pretty)
+      --profile string                                 use a specific profile for connecting to Supabase API (default "supabase")
+      --workdir string                                 path to a Supabase project directory
+      --yes                                            answer yes to all prompts
+
+Use "supabase db [command] --help" for more information about a command.
+A new version of Supabase CLI is available: [93mv2.72.7[0m (currently installed v2.67.1)
+We recommend updating regularly for new features and bug fixes: [1mhttps://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli[0m
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hsupabase db link    psuh   ish   ush[?2004l
+]11;?\[6nUsing workdir [1m/Users/vinny[0m
+Initialising login role...
+[91munexpected login role status 404: {"message":"Project not found"}[0m
+Connect to your database by setting the env var: SUPABASE_DB_PASSWORD
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hccd scripts[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004hcd scripts[10Dsupabase db push[?2004l
+]11;?\[6nUsing workdir [1m/Users/vinny[0m
+Initialising login role...
+[91munexpected login role status 404: {"message":"Project not found"}[0m
+Connect to your database by setting the env var: SUPABASE_DB_PASSWORD
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004hssupabase init[?2004l
+]11;?\[6nFinished [96msupabase init[0m.
+A new version of Supabase CLI is available: [93mv2.72.7[0m (currently installed v2.67.1)
+We recommend updating regularly for new features and bug fixes: [1mhttps://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli[0m
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004h[7msupabase link --project-ref[27m[27D[27ms[27mu[27mp[27ma[27mb[27ma[27ms[27me[27m [27ml[27mi[27mn[27mk[27m [27m-[27m-[27mp[27mr[27mo[27mj[27me[27mc[27mt[27m-[27mr[27me[27mf[7mudgslmkmcpewscgestap[27m[20D[27mu[27md[27mg[27ms[27ml[27mm[27mk[27mm[27mc[27mp[27me[27mw[27ms[27mc[27mg[27me[27ms[27mt[27ma[27mp[?2004l
+]11;?\[6nUsage:
+  supabase link [flags]
+
+Flags:
+  -h, --help                 help for link
+  -p, --password string      Password to your remote Postgres database.
+      --project-ref string   Project ref of the Supabase project.
+      --skip-pooler          Use direct connection instead of pooler.
+
+Global Flags:
+      --create-ticket                                  create a support ticket for any CLI error
+      --debug                                          output debug logs to stderr
+      --dns-resolver [ native | https ]                lookup domain names using the specified resolver (default native)
+      --experimental                                   enable experimental features
+      --network-id string                              use the specified docker network instead of a generated one
+  -o, --output [ env | pretty | json | toml | yaml ]   output format of status variables (default pretty)
+      --profile string                                 use a specific profile for connecting to Supabase API (default "supabase")
+      --workdir string                                 path to a Supabase project directory
+      --yes                                            answer yes to all prompts
+
+[91munknown flag: --project-refudgslmkmcpewscgestap[0m
+Try rerunning the command with --debug to troubleshoot the error.
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004hsupabase link --project-refudgslmkmcpewscgestap[38Dinit                                  [34Dlink --project-refudgslmkmcpewscgestap                       rf  ef  ref [7mudgslmkmcpewscgestap[27m[20D[27mu[27md[27mg[27ms[27ml[27mm[27mk[27mm[27mc[27mp[27me[27mw[27ms[27mc[27mg[27me[27ms[27mt[27ma[27mp[?2004l
+]11;?\[6nFinished [96msupabase link[0m.
+A new version of Supabase CLI is available: [93mv2.72.7[0m (currently installed v2.67.1)
+We recommend updating regularly for new features and bug fixes: [1mhttps://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli[0m
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004hbbrew upgrade supabase[?2004l
+[34m==>[0m [1mAuto-updating Homebrew...[0m
+Adjust how often this is run with `$HOMEBREW_AUTO_UPDATE_SECS` or disable with
+`$HOMEBREW_NO_AUTO_UPDATE=1`. Hide these hints with `$HOMEBREW_NO_ENV_HINTS=1` (see `man brew`).
+[34m==>[0m [1mAuto-updated Homebrew![0m
+Updated 3 taps (supabase/tap, homebrew/core and homebrew/cask).
+[34m==>[0m [1mNew Formulae[0m
+libthai: Thai language support library
+[34m==>[0m [1mNew Casks[0m
+stremioservice: Companion app for Stremio Web
+
+You have [1m4[0m outdated formulae installed.
+
+[32m==>[0m [1mUpgrading 1 outdated package:[0m
+supabase 2.67.1 -> 2.72.7
+[32m==>[0m [1mFetching downloads for: [32msupabase[39m[0m
+[?25l[K[34m⠋[0m Bottle supabase (2.72.7)[0G[K[34m⠋[0m Bottle supabase (2.72.7)[0G[K[34m⠙[0m Bottle supabase (2.72.7)[0G[K[34m⠙[0m Bottle supabase (2.72.7)[0G[K[34m⠚[0m Bottle supabase (2.72.7)[0G[K[34m⠚[0m Bottle supabase (2.72.7)[0G[K[34m⠞[0m Bottle supabase (2.72.7)[0G[K[34m⠞[0m Bottle supabase (2.72.7)[0G[K[34m⠖[0m Bottle supabase (2.72.7)[0G[K[34m⠖[0m Bottle supabase (2.72.7)[0G[K[34m⠦[0m Bottle supabase (2.72.7)[0G[K[34m⠦[0m Bottle supabase (2.72.7)[0G[K[34m⠴[0m Bottle supabase (2.72.7)[0G[K[34m⠴[0m Bottle supabase (2.72.7)[0G[K[34m⠲[0m Bottle supabase (2.72.7)[0G[K[34m⠲[0m Bottle supabase (2.72.7)[0G[K[34m⠳[0m Bottle supabase (2.72.7)[0G[K[34m⠳[0m Bottle supabase (2.72.7)[0G[K[34m⠓[0m Bottle supabase (2.72.7)[0G[K[34m⠓[0m Bottle supabase (2.72.7)[0G[K[34m⠋[0m Bottle supabase (2.72.7)[0G[K[34m⠋[0m Bottle supabase (2.72.7)[0G[K[34m⠙[0m Bottle supabase (2.72.7)[0G[K[34m⠙[0m Bottle supabase (2.72.7)[0G[K[34m⠚[0m Bottle supabase (2.72.7)[0G[K[34m⠚[0m Bottle supabase (2.72.7)[0G[K[34m⠞[0m Bottle supabase (2.72.7)                                                                                       Downloading  12.3KB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7)                                                                                       Downloading  61.4KB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7)                                                                                       Downloading 143.4KB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) #                                                                                     Downloading 225.3KB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) #                                                                                     Downloading 274.4KB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) #                                                                                     Downloading 340.0KB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) #                                                                                     Downloading 421.9KB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) #                                                                                     Downloading 487.4KB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) ##                                                                                    Downloading 569.3KB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) ##                                                                                    Downloading 716.8KB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ###                                                                                   Downloading 913.4KB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ###                                                                                   Downloading   1.1MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ####                                                                                  Downloading   1.3MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ####                                                                                  Downloading   1.5MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) #####                                                                                 Downloading   1.7MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ######                                                                                Downloading   1.9MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) ######                                                                                Downloading   2.1MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) ######                                                                                Downloading   2.2MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) #######                                                                               Downloading   2.3MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) #######                                                                               Downloading   2.5MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) ########                                                                              Downloading   2.7MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) #########                                                                             Downloading   2.9MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) #########                                                                             Downloading   3.1MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) ##########                                                                            Downloading   3.3MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ##########                                                                            Downloading   3.6MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ###########                                                                           Downloading   3.8MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) ############                                                                          Downloading   4.0MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) ############                                                                          Downloading   4.2MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) #############                                                                         Downloading   4.4MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) #############                                                                         Downloading   4.6MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ##############                                                                        Downloading   4.8MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ###############                                                                       Downloading   5.0MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ###############                                                                       Downloading   5.1MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ###############                                                                       Downloading   5.2MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ################                                                                      Downloading   5.3MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ################                                                                      Downloading   5.5MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) #################                                                                     Downloading   5.7MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) #################                                                                     Downloading   5.9MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) ##################                                                                    Downloading   6.1MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) ###################                                                                   Downloading   6.3MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) ###################                                                                   Downloading   6.5MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) ####################                                                                  Downloading   6.8MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) ####################                                                                  Downloading   7.0MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) #####################                                                                 Downloading   7.2MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ######################                                                                Downloading   7.4MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ######################                                                                Downloading   7.6MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) #######################                                                               Downloading   7.8MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) #######################                                                               Downloading   8.0MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) ########################                                                              Downloading   8.2MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) ########################                                                              Downloading   8.3MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) #########################                                                             Downloading   8.5MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ##########################                                                            Downloading   8.7MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ##########################                                                            Downloading   8.9MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ###########################                                                           Downloading   9.1MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ###########################                                                           Downloading   9.3MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ############################                                                          Downloading   9.5MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) ############################                                                          Downloading   9.7MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) #############################                                                         Downloading   9.8MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) #############################                                                         Downloading  10.1MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) ##############################                                                        Downloading  10.2MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) ##############################                                                        Downloading  10.4MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) ###############################                                                       Downloading  10.5MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) ###############################                                                       Downloading  10.7MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) ################################                                                      Downloading  10.9MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ################################                                                      Downloading  11.1MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) #################################                                                     Downloading  11.2MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) #################################                                                     Downloading  11.4MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) ##################################                                                    Downloading  11.6MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) ###################################                                                   Downloading  11.8MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) ###################################                                                   Downloading  12.0MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ####################################                                                  Downloading  12.2MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ####################################                                                  Downloading  12.4MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) #####################################                                                 Downloading  12.6MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ######################################                                                Downloading  12.8MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ######################################                                                Downloading  13.1MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) #######################################                                               Downloading  13.3MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) #######################################                                               Downloading  13.5MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) ########################################                                              Downloading  13.7MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) #########################################                                             Downloading  13.9MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) #########################################                                             Downloading  14.1MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) ##########################################                                            Downloading  14.3MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) ##########################################                                            Downloading  14.5MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) ###########################################                                           Downloading  14.7MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) ############################################                                          Downloading  14.9MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ############################################                                          Downloading  15.1MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) #############################################                                         Downloading  15.3MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) #############################################                                         Downloading  15.5MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) ##############################################                                        Downloading  15.6MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) ################################################                                      Downloading  16.3MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ################################################                                      Downloading  16.3MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) #################################################                                     Downloading  16.7MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) #################################################                                     Downloading  16.9MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ##################################################                                    Downloading  17.1MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ###################################################                                   Downloading  17.3MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ###################################################                                   Downloading  17.5MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) ####################################################                                  Downloading  17.7MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) ####################################################                                  Downloading  17.9MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) #####################################################                                 Downloading  18.1MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) #####################################################                                 Downloading  18.1MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) #####################################################                                 Downloading  18.1MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) #####################################################                                 Downloading  18.1MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) #####################################################                                 Downloading  18.1MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) #####################################################                                 Downloading  18.2MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ########################################################                              Downloading  19.0MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ########################################################                              Downloading  19.0MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) ########################################################                              Downloading  19.1MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) ##########################################################                            Downloading  19.8MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) ##########################################################                            Downloading  20.0MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) ###########################################################                           Downloading  20.1MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ############################################################                          Downloading  20.3MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ############################################################                          Downloading  20.5MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) #############################################################                         Downloading  20.7MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) #############################################################                         Downloading  20.9MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ##############################################################                        Downloading  21.1MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ##############################################################                        Downloading  21.3MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) ###############################################################                       Downloading  21.4MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) ###############################################################                       Downloading  21.6MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) ################################################################                      Downloading  21.8MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) ################################################################                      Downloading  22.0MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) #################################################################                     Downloading  22.2MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) ##################################################################                    Downloading  22.4MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) ##################################################################                    Downloading  22.6MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) ###################################################################                   Downloading  22.8MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ###################################################################                   Downloading  23.0MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ####################################################################                  Downloading  23.2MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) ####################################################################                  Downloading  23.4MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) #####################################################################                 Downloading  23.5MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) #####################################################################                 Downloading  23.7MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) ######################################################################                Downloading  23.9MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) #######################################################################               Downloading  24.1MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) #######################################################################               Downloading  24.3MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ########################################################################              Downloading  24.5MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ########################################################################              Downloading  24.7MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) #########################################################################             Downloading  24.9MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) #########################################################################             Downloading  25.1MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) ##########################################################################            Downloading  25.3MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7) ###########################################################################           Downloading  25.5MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) ###########################################################################           Downloading  25.7MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7) ############################################################################          Downloading  25.8MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) ############################################################################          Downloading  26.0MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7) #############################################################################         Downloading  26.2MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) #############################################################################         Downloading  26.4MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7) ##############################################################################        Downloading  26.6MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ###############################################################################       Downloading  26.8MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7) ###############################################################################       Downloading  27.0MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) ################################################################################      Downloading  27.2MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7) ################################################################################      Downloading  27.4MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) #################################################################################     Downloading  27.6MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7) #################################################################################     Downloading  27.8MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ##################################################################################    Downloading  28.0MB/ 29.0MB[0G[K[34m⠳[0m Bottle supabase (2.72.7) ###################################################################################   Downloading  28.2MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ###################################################################################   Downloading  28.4MB/ 29.0MB[0G[K[34m⠓[0m Bottle supabase (2.72.7) ####################################################################################  Downloading  28.6MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ####################################################################################  Downloading  28.6MB/ 29.0MB[0G[K[34m⠋[0m Bottle supabase (2.72.7) ####################################################################################  Downloading  28.6MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7)                                                                                       Downloaded   29.0MB/ 29.0MB[0G[K[34m⠙[0m Bottle supabase (2.72.7)                                                                                       Downloaded   29.0MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7)                                                                                       Extracting   29.0MB/ 29.0MB[0G[K[34m⠚[0m Bottle supabase (2.72.7)                                                                                       Extracting   29.0MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7)                                                                                       Extracting   29.0MB/ 29.0MB[0G[K[34m⠞[0m Bottle supabase (2.72.7)                                                                                       Extracting   29.0MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7)                                                                                       Extracting   29.0MB/ 29.0MB[0G[K[34m⠖[0m Bottle supabase (2.72.7)                                                                                       Extracting   29.0MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7)                                                                                       Extracting   29.0MB/ 29.0MB[0G[K[34m⠦[0m Bottle supabase (2.72.7)                                                                                       Extracting   29.0MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7)                                                                                       Extracting   29.0MB/ 29.0MB[0G[K[34m⠴[0m Bottle supabase (2.72.7)                                                                                       Extracting   29.0MB/ 29.0MB[0G[K[34m⠲[0m Bottle supabase (2.72.7)                                                                                       Extracting   29.0MB/ 29.0MB[0G[K[32m✔︎[0m Bottle supabase (2.72.7)                                                                                       Downloaded   29.0MB/ 29.0MB
+[?25h[32m==>[0m [1mUpgrading [32msupabase[39m[0m
+  2.67.1 -> 2.72.7 
+[34m==>[0m [1mPouring supabase--2.72.7.sonoma.bottle.tar.gz[0m
+🍺  /usr/local/Cellar/supabase/2.72.7: 10 files, 92.0MB
+[34m==>[0m [1mRunning `brew cleanup supabase`...[0m
+Disable this behaviour by setting `HOMEBREW_NO_INSTALL_CLEANUP=1`.
+Hide these hints with `HOMEBREW_NO_ENV_HINTS=1` (see `man brew`).
+Removing: /usr/local/Cellar/supabase/2.67.1... (9 files, 93.3MB)
+Removing: /Users/vinny/Library/Caches/Homebrew/supabase--2.67.1.tar.gz... (29.2MB)
+[32m==>[0m [1mCaveats[0m
+zsh completions have been installed to:
+  /usr/local/share/zsh/site-functions
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004hbrew upgrade supabase[21Dsupabase link --project-ref udgslmkmcpewscgestap[?2004l
+]11;?\[6nFinished [96msupabase link[0m.
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004hsupabase link --project-ref udgslmkmcpewscgestap[48Dbrew upgrade supabase                           [27D[21Dsupabase link --project-ref udgslmkmcpewscgestap[21D[P[20C [38Dinit                                  [34Ddb push[?2004l
+]11;?\[6nInitialising login role...
+Connecting to remote database...
+Remote database is up to date.
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air scripts % [K[?2004hsupabase db push  ll            s  ccd ../[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hlls[?2004l
+__tests__		jest.config.js		node_modules		README.md		test_page.py
+app			jest.setup.js		package.json		requirements.txt	tsconfig.json
+components		lib			pnpm-lock.yaml		run-scraper.sh		typescript
+components.json		logs			postcss.config.mjs	scripts
+eslint.config.mts	next-env.d.ts		proxy.ts		styles
+hooks			next.config.mjs		public			SUPER_ADMIN_SETUP.md
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hlscd ../supabase db push  ll[?2004l
+]11;?\[6nUsing workdir [1m/Users/vinny[0m
+Initialising login role...
+[91munexpected login role status 404: {"message":"Project not found"}[0m
+Connect to your database by setting the env var: SUPABASE_DB_PASSWORD
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hlls[?2004l
+__tests__		jest.config.js		node_modules		README.md		tsconfig.json
+app			jest.setup.js		package.json		requirements.txt	typescript
+components		lib			pnpm-lock.yaml		run-scraper.sh
+components.json		logs			postcss.config.mjs	styles
+eslint.config.mts	next-env.d.ts		proxy.ts		SUPER_ADMIN_SETUP.md
+hooks			next.config.mjs		public			test_page.py
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hlls[?2004l
+__tests__		jest.config.js		node_modules		README.md		tsconfig.json
+app			jest.setup.js		package.json		requirements.txt	typescript
+components		lib			pnpm-lock.yaml		run-scraper.sh
+components.json		logs			postcss.config.mjs	styles
+eslint.config.mts	next-env.d.ts		proxy.ts		SUPER_ADMIN_SETUP.md
+hooks			next.config.mjs		public			test_page.py
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hssupabase[1m [0m[0m lof gout[?2004l
+]11;?\[6nUsing workdir [1m/Users/vinny[0m
+Do you want to log out? This will remove the access token from your system. [y/N] y
+Access token deleted successfully. You are now logged out.
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hsupabase logout[15Dls             [13Dsupabase db pull      lgo  ogin[?2004l
+]11;?\[6nUsing workdir [1m/Users/vinny[0m
+Hello from [96mSupabase[0m! Press [96mEnter[0m to open browser and login automatically.
+
+Here is your login link in case browser did not open [1mhttps://supabase.com/dashboard/cli/login?session_id=cb602bbb-623c-43c3-ae23-1732b2e0c4a5&token_name=cli_vinny@Marlvins-Air.home_1768569104&public_key=04b5e39181c880c85eafae0393e8048f628b94c862ffb14ab0ef7efd93c56d8a65c001d3f99bc7126182609974e9fee3a90ec354c739ae86715bd3ac936f0d5a84[0m
+
+Enter your verification code: 8b020137
+Token [1mcli_vinny@Marlvins-Air.home_1768569104[0m created successfully.
+
+You are now logged in. [96mHappy coding![0m
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hsupabase login     db i link[?2004l
+]11;?\[6nManage Postgres databases
+
+Usage:
+  supabase db [command]
+
+Available Commands:
+  diff        Diffs the local database for schema changes
+  dump        Dumps data or schemas from the remote database
+  lint        Checks local database for typing error
+  pull        Pull schema from the remote database
+  push        Push new migrations to the remote database
+  reset       Resets the local database to current migrations
+  start       Starts local Postgres database
+
+Flags:
+  -h, --help   help for db
+
+Global Flags:
+      --create-ticket                                  create a support ticket for any CLI error
+      --debug                                          output debug logs to stderr
+      --dns-resolver [ native | https ]                lookup domain names using the specified resolver (default native)
+      --experimental                                   enable experimental features
+      --network-id string                              use the specified docker network instead of a generated one
+  -o, --output [ env | pretty | json | toml | yaml ]   output format of status variables (default pretty)
+      --profile string                                 use a specific profile for connecting to Supabase API (default "supabase")
+      --workdir string                                 path to a Supabase project directory
+      --yes                                            answer yes to all prompts
+
+Use "supabase db [command] --help" for more information about a command.
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hlls[?2004l
+__tests__		jest.config.js		node_modules		README.md		tsconfig.json
+app			jest.setup.js		package.json		requirements.txt	typescript
+components		lib			pnpm-lock.yaml		run-scraper.sh
+components.json		logs			postcss.config.mjs	styles
+eslint.config.mts	next-env.d.ts		proxy.ts		SUPER_ADMIN_SETUP.md
+hooks			next.config.mjs		public			test_page.py
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hlssupabase db linklogin  out[15Dls             [13Dsupabase db pull[16Dls              [14Dcd ../supabase db pushlink --project-ref udgslmkmcpewscgestap                    [7myaijrydzbzupbamdikaz[27m[20D[27my[27ma[27mi[27mj[27mr[27my[27md[27mz[27mb[27mz[27mu[27mp[27mb[27ma[27mm[27md[27mi[27mk[27ma[27mz[?2004l
+]11;?\[6nUsing workdir [1m/Users/vinny[0m
+Finished [96msupabase link[0m.
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hssupabase db push[?2004l
+]11;?\[6nUsing workdir [1m/Users/vinny[0m
+Initialising login role...
+Connecting to remote database...
+Remote database is up to date.
+[1m[7m%[27m[1m[0m                                                                                                                                            [0m[27m[24m[Jvinny@Marlvins-Air v0-electrical-component-store % [K[?2004hsupabase db pushlink --project-ref yaijrydzbzupbamdikaz

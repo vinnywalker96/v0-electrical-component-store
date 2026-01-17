@@ -161,7 +161,7 @@ export default function Navbar() {
                           <Link href="/protected/dashboard" className="flex items-center gap-2 cursor-pointer"
                                 onClick={() => showDashboardToast("User Portal")}>
                             <LayoutDashboard className="w-4 h-4" />
-                            {t("dropdown.dashboard")}
+                            {t("Dashboard")}
                           </Link>
                         </DropdownMenuItem>
                       )}
@@ -171,7 +171,7 @@ export default function Navbar() {
                             <Link href="/admin/dashboard" className="flex items-center gap-2 cursor-pointer"
                                   onClick={() => showDashboardToast("Admin")}>
                             <LayoutDashboard className="w-4 h-4" />
-                            {t("dropdown.dashboard")}
+                            {t("Dashboard")}
                           </Link>
                           </DropdownMenuItem>
                         )
@@ -182,7 +182,7 @@ export default function Navbar() {
                             <Link href="/seller/dashboard" className="flex items-center gap-2 cursor-pointer"
                                   onClick={() => showDashboardToast("Vendor Admin")}>
                             <LayoutDashboard className="w-4 h-4" />
-                            {t("dropdown.dashboard")}
+                            {t("Dashboard")}
                           </Link>
                           </DropdownMenuItem>
                         )

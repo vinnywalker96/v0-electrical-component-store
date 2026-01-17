@@ -1,9 +1,50 @@
 "use client"
 
 import type React from "react"
+import { useEffect, useState } from "react"
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { sellerNavItems } from "@/lib/nav-items.tsx"
+import { sellerNavItems } from "@/lib/nav-items"
 
 export default function SellerLayout({ children }: { children: React.ReactNode }) {
+  const supabase = createClient()
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        redirect("/auth/vendor/login")
+        return
+      }
+
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+
+      if (!profile || profile.role !== "vendor") {
+        redirect("/")
+        return
+      }
+
+      setIsAuthorized(true)
+    }
+
+    checkAccess()
+  }, [supabase])
+
+  if (isAuthorized === null) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Verifying vendor access...</p>
+        </div>
+      </div>
+    )
+  }
+
   return <DashboardLayout navItems={sellerNavItems}>{children}</DashboardLayout>
 }
