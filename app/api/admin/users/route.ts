@@ -1,71 +1,93 @@
-import { createServerClient } from "@/lib/supabase/server"
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-export async function POST(request: Request) {
-  try {
-    const supabase = await createServerClient()
+export async function GET(request: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser()
-
-    if (!currentUser) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check if user is super_admin
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", currentUser.id).single()
-
-    if (profile?.role !== "super_admin") {
-      return Response.json({ error: "Forbidden" }, { status: 403 })
-    }
-
-    const { email } = await request.json()
-
-    // Get the user by email
-    const {
-      data: { users },
-      error: userError,
-    } = await supabase.auth.admin.listUsers()
-
-    if (userError) {
-      return Response.json({ error: userError.message }, { status: 400 })
-    }
-
-    const targetUser = users.find((u) => u.email === email)
-
-    if (!targetUser) {
-      return Response.json({ error: "User not found" }, { status: 404 })
-    }
-
-    // Update profile role to admin
-    const { error: updateProfileError } = await supabase.from("profiles").update({ role: "admin" }).eq("id", targetUser.id)
-
-    if (updateProfileError) {
-      return Response.json({ error: updateProfileError.message }, { status: 400 })
-    }
-
-    // Ensure a seller entry exists for the new admin
-    const { data: existingSeller } = await supabase.from("sellers").select("id").eq("user_id", targetUser.id).single()
-
-    if (existingSeller) {
-      // Update existing seller entry to approved
-      await supabase
-        .from("sellers")
-        .update({ verification_status: "approved" })
-        .eq("user_id", targetUser.id)
-    } else {
-      // Create a new seller entry for the admin
-      await supabase.from("sellers").insert({
-        user_id: targetUser.id,
-        store_name: `${targetUser.email?.split("@")[0]}'s Admin Store`,
-        store_description: "Default store for admin user",
-        verification_status: "approved",
-      })
-    }
-
-    return Response.json({ success: true, message: "Admin role assigned successfully and seller profile ensured" })
-  } catch (error) {
-    console.error("[v0] Error:", error)
-    return Response.json({ error: "Internal server error" }, { status: 500 })
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // Fetch user's role
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || (profile?.role !== 'admin' && profile?.role !== 'super_admin')) {
+    return NextResponse.json({ error: 'Forbidden - Insufficient role' }, { status: 403 });
+  }
+
+  // Fetch all users and their profiles
+  const { data: users, error: usersError } = await supabase
+    .from('profiles')
+    .select('*'); // Select all columns from profiles, which now includes email and created_at
+
+  if (usersError) {
+    console.error('Error fetching users:', usersError);
+    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+  }
+
+  return NextResponse.json(users);
+}
+
+export async function PUT(request: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Fetch current user's role to check permissions
+  const { data: currentProfile, error: currentProfileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (currentProfileError || currentProfile?.role !== 'super_admin') {
+    return NextResponse.json({ error: 'Forbidden - Only super admins can update roles' }, { status: 403 });
+  }
+
+  const { userId, newRole } = await request.json();
+
+  // Validate newRole
+  if (!['customer', 'vendor', 'admin', 'super_admin'].includes(newRole)) {
+    return NextResponse.json({ error: 'Invalid role provided' }, { status: 400 });
+  }
+
+  // Prevent super_admin from demoting themselves or other super_admins via this endpoint
+  const { data: targetProfile, error: targetProfileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .single();
+
+  if (targetProfileError) {
+    return NextResponse.json({ error: 'Failed to fetch target user profile' }, { status: 500 });
+  }
+
+  if (targetProfile?.role === 'super_admin' && newRole !== 'super_admin') {
+    return NextResponse.json({ error: 'Cannot demote another super admin' }, { status: 403 });
+  }
+  
+  // Ensure a super admin cannot demote themselves
+  if (userId === user.id && newRole !== 'super_admin') {
+    return NextResponse.json({ error: 'Super admin cannot demote themselves' }, { status: 403 });
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ role: newRole })
+    .eq('id', userId);
+
+  if (error) {
+    console.error('Error updating user role:', error);
+    return NextResponse.json({ error: 'Failed to update user role' }, { status: 500 });
+  }
+
+  return NextResponse.json({ message: 'User role updated successfully' });
 }

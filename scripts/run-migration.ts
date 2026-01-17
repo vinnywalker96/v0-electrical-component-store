@@ -51,11 +51,24 @@ async function runMigration() {
       const migrationPath = path.join(migrationsDir, file);
       const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
 
-      // Split the SQL into individual statements
-      const statements = migrationSQL
-        .split(';')
-        .map(stmt => stmt.trim())
-        .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+      let statements: string[];
+
+      // Heuristic: If the file contains CREATE FUNCTION or CREATE TRIGGER,
+      // treat the entire file as a single statement.
+      // This is a common pattern for complex DDL that shouldn't be split by semicolons.
+      if (
+        migrationSQL.includes('CREATE FUNCTION') ||
+        migrationSQL.includes('CREATE TRIGGER') ||
+        migrationSQL.includes('CREATE OR REPLACE FUNCTION')
+      ) {
+        statements = [migrationSQL];
+      } else {
+        // Otherwise, split by semicolon as usual
+        statements = migrationSQL
+          .split(';')
+          .map(stmt => stmt.trim())
+          .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+      }
 
       if (statements.length === 0) {
         console.log(`Skipping empty migration file: ${file}`);

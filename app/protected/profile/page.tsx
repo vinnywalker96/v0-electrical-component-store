@@ -81,6 +81,25 @@ export default function ProfilePage() {
 
       if (error) throw error
 
+      // Re-fetch profile data after successful update
+      const { data: updatedProfileData, error: fetchError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      if (updatedProfileData) {
+        setProfile(updatedProfileData)
+        setFormData({
+          firstName: updatedProfileData.first_name || "",
+          lastName: updatedProfileData.last_name || "",
+          phone: updatedProfileData.phone || "",
+        })
+        setAvatarUrl(updatedProfileData.avatar_url)
+      }
+
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (error) {
