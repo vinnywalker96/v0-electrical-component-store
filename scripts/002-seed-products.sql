@@ -1,3 +1,4 @@
+
 -- Seed sample products
 INSERT INTO public.products (name, description, category, brand, price, stock_quantity, specifications) VALUES
   ('Resistor 1K Ohm 1/4W', 'Standard carbon film resistor with 1% tolerance', 'Resistors', 'Generic', 0.05, 500, '{"tolerance": "1%", "power": "1/4W", "temperature_coefficient": "±100 ppm/°C"}'),

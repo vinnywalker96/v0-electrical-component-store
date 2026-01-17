@@ -12,8 +12,7 @@ import { CurrencyProvider } from "@/lib/context/currency-context"
 export const metadata: Metadata = {
   title: "KG Compponents - Electrical Components Store",
   description:
-    "Professional quality electrical and electronic components for professionals and makers",
-  generator: "v0.app",
+    "Professional quality electrical and electronic components for professionals and makers"
 }
 
 export default function RootLayout({
