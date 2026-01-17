@@ -22,7 +22,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Edit } from "lucide-react"
+import { UserEditModal } from "@/components/user-edit-modal"
 
 interface UserProfile {
   id: string
@@ -46,6 +47,8 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true)
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null)
 
   useEffect(() => {
     async function fetchUsers() {
@@ -120,6 +123,64 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function handleSaveUser(updatedUser: UserProfile) {
+    try {
+      // Create a temporary client for this action to perform the update
+      // This is necessary because handleRoleChange and update of other fields are separate calls and need separate privilege checks
+      // For this modal, we assume the user is authenticated and has permissions, handled by the API route
+      
+      const response = await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: updatedUser.id,
+          newRole: updatedUser.role,
+          // Include other fields for profile update
+          first_name: updatedUser.first_name,
+          last_name: updatedUser.last_name,
+          phone: updatedUser.phone,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to update user profile.")
+      }
+
+      // Update local state with all changes
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+      )
+      
+      toast({
+        title: "Success",
+        description: "User profile updated successfully.",
+      })
+      setIsModalOpen(false) // Close modal on success
+      setEditingUser(null)
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Could not update user profile.",
+        variant: "destructive",
+      })
+      console.error("Failed to update user profile:", error)
+      throw error // Re-throw to be caught by modal's handleSubmit
+    }
+  }
+
+  const openEditModal = (user: UserProfile) => {
+    setEditingUser(user)
+    setIsModalOpen(true)
+  }
+
+  const closeEditModal = () => {
+    setIsModalOpen(false)
+    setEditingUser(null)
+  }
+
   if (loading) {
     return <div className="text-center py-12">Loading users...</div>
   }
@@ -181,8 +242,8 @@ export default function AdminUsersPage() {
                         </TableCell>
                         <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          <Button variant="outline" size="sm" asChild>
-                            <Link href={`/admin/users/${user.id}`}>View/Edit</Link>
+                          <Button variant="outline" size="sm" onClick={() => openEditModal(user)}>
+                            <Edit className="w-4 h-4 mr-2" /> View/Edit
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -194,6 +255,15 @@ export default function AdminUsersPage() {
           </CardContent>
         </Card>
       </div>
+
+      <UserEditModal
+        user={editingUser}
+        isOpen={isModalOpen}
+        onClose={closeEditModal}
+        onSave={handleSaveUser}
+        currentUserRole={currentUserRole}
+        currentUserId={currentUserId}
+      />
     </main>
   )
 }

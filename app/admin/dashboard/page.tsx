@@ -81,8 +81,13 @@ export default function AdminDashboardPage() {
         // Get products count (not affected by time filter)
         const { count: productsCount } = await supabase.from("products").select("*", { count: "exact", head: true })
 
-        // Get users count (not affected by time filter)
-        const { count: usersCount } = await supabase.from("profiles").select("*", { count: "exact", head: true })
+        // Get users count from the API endpoint (which uses createAdminClient and bypasses RLS)
+        const usersApiResponse = await fetch("/api/admin/users");
+        if (!usersApiResponse.ok) {
+          throw new Error("Failed to fetch total users from API.");
+        }
+        const usersFromApi = await usersApiResponse.json();
+        const usersCount = usersFromApi.length;
 
         // Get orders for the filtered period
         const { startDate, endDate } = getDateRange(filterPeriod);
@@ -131,7 +136,7 @@ export default function AdminDashboardPage() {
 
   async function handleLogout() {
     await supabase.auth.signOut()
-    window.location.href = "/"
+    window.location.href = "/auth/login"
   }
 
   if (loading) {

@@ -107,7 +107,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-bold text-xl">
             <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-white">⚡</div>
-            <span className="text-foreground">KG Compponents</span>
+            <span className="text-foreground">KG Components</span>
           </Link>
 
           {/* Desktop Menu */}
