@@ -2,308 +2,193 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import type { UserProfile } from "@/lib/types"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, UserCog, Edit, Trash2 } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
-import { Checkbox } from "@/components/ui/checkbox"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ArrowLeft } from "lucide-react"
+
+interface UserProfile {
+  id: string
+  email: string
+  first_name: string | null
+  last_name: string | null
+  phone: string | null
+  role: string
+  created_at: string
+  // Add other profile fields you want to display
+}
+
+interface UserData extends UserProfile {
+  // email and created_at are now directly on UserProfile, no need for auth_users nesting
+}
 
 export default function AdminUsersPage() {
   const supabase = createClient()
-  const [users, setUsers] = useState<UserProfile[]>([])
+  const router = useRouter()
+  const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [roleFilter, setRoleFilter] = useState("all")
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
+    async function fetchUsers() {
+      setLoading(true)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push("/auth/login")
+        return
+      }
+      setCurrentUserId(user.id)
+
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+      setCurrentUserRole(profile?.role || null)
+
       try {
-        let query = supabase.from("profiles").select("*")
-
-        if (searchQuery) {
-          query = query.or(`email.ilike.%${searchQuery}%,first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%`)
+        const response = await fetch("/api/admin/users")
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || "Failed to fetch users")
         }
-        if (roleFilter !== "all") {
-          query = query.eq("role", roleFilter)
-        }
-
-        const { data, error } = await query.order("created_at", { ascending: false })
-
-        if (error) throw error;
-        setUsers(data || []);
+        const data: UserData[] = await response.json()
+        setUsers(data)
       } catch (error: any) {
-        console.error("Error fetching users:", error.message);
         toast({
           title: "Error",
-          description: "Failed to load users.",
-          variant: "destructive"
-        });
+          description: error.message || "Could not load users.",
+          variant: "destructive",
+        })
+        console.error("Failed to fetch users:", error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchUsers();
-  }, [supabase, searchQuery, roleFilter]);
-
-  const handleSelectUser = (userId: string) => {
-    setSelectedUsers(prev => 
-      prev.includes(userId) 
-        ? prev.filter(id => id !== userId) 
-        : [...prev, userId]
-    );
-  };
-
-  const handleSelectAll = () => {
-    if (selectedUsers.length === users.length) {
-      setSelectedUsers([]);
-    } else {
-      setSelectedUsers(users.map(u => u.id));
     }
-  };
+    fetchUsers()
+  }, [supabase, router])
 
-  const handleBulkDelete = async () => {
-    if (!confirm(`Are you sure you want to delete ${selectedUsers.length} users? This action is irreversible.`)) return;
+  async function handleRoleChange(userId: string, newRole: string) {
+    // Optimistically update UI
+    setUsers((prevUsers) =>
+      prevUsers.map((user) => (user.id === userId ? { ...user, role: newRole } : user))
+    )
 
     try {
-      const deletePromises = selectedUsers.map(userId => supabase.rpc('delete_user', { user_id: userId }));
-      const results = await Promise.all(deletePromises);
-      const error = results.find(res => res.error);
+      const response = await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, newRole }),
+      })
 
-      if (error) throw error.error;
-      
-      setUsers(users.filter(u => !selectedUsers.includes(u.id)));
-      setSelectedUsers([]);
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to update role")
+      }
+
       toast({
         title: "Success",
-        description: `${selectedUsers.length} users deleted successfully.`,
-      });
-    } catch (error) {
-      console.error("Error bulk deleting users:", error);
+        description: "User role updated successfully.",
+      })
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to delete selected users.",
-        variant: "destructive"
-      });
+        description: error.message || "Could not update user role.",
+        variant: "destructive",
+      })
+      console.error("Failed to update user role:", error)
+      // Revert UI on error
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => (user.id === userId ? { ...user, role: users.find(u => u.id === userId)?.role || user.role } : user))
+      )
     }
-  };
-
-  const handleBlockUser = async (userId: string, reason?: string) => {
-    const action = users.find(u => u.id === userId)?.is_blocked ? "unblock" : "block";
-    const confirmMessage = `Are you sure you want to ${action} this user?${action === "block" ? " They will not be able to access their account." : ""}`;
-    
-    if (!confirm(confirmMessage)) return;
-
-    const blockReason = action === "block" ? (reason || prompt("Enter reason for blocking (optional):")) : null;
-
-    try {
-      const updateData: any = {
-        is_blocked: action === "block",
-        blocked_at: action === "block" ? new Date().toISOString() : null,
-        block_reason: blockReason
-      };
-
-      const { error } = await supabase
-        .from("profiles")
-        .update(updateData)
-        .eq("id", userId);
-        
-      if (error) throw error;
-
-      setUsers(users.map(u => u.id === userId ? { ...u, ...updateData } : u));
-      toast({
-        title: "Success",
-        description: `User ${action}ed successfully.`,
-      });
-    } catch (error) {
-      console.error(`Error ${action}ing user:`, error);
-      toast({
-        title: "Error",
-        description: `Failed to ${action} user.`,
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleMakeAdmin = async (userId: string) => {
-    if (confirm("Are you sure you want to make this user an admin? They will have elevated privileges.")) {
-      try {
-        const { error } = await supabase
-          .from("profiles")
-          .update({ role: "admin" })
-          .eq("id", userId);
-
-        if (error) throw error;
-
-        setUsers(users.map(u => u.id === userId ? { ...u, role: "admin" } : u));
-        toast({
-          title: "Success",
-          description: "User promoted to admin.",
-        });
-      } catch (error) {
-        console.error("Error making user admin:", error);
-        toast({
-          title: "Error",
-          description: "Failed to promote user.",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-
-  const handleDeleteUser = async (userId: string) => {
-    if (confirm("Are you sure you want to permanently delete this user? This action is irreversible.")) {
-      try {
-        const { error } = await supabase.rpc('delete_user', { user_id: userId });
-        if (error) throw error;
-        setUsers(users.filter(u => u.id !== userId));
-        toast({
-          title: "Success",
-          description: "User deleted successfully.",
-        });
-      } catch (error) {
-        console.error("Error deleting user:", error);
-        toast({
-          title: "Error",
-          description: "Failed to delete user.",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-
+  }
 
   if (loading) {
-    return <div className="text-center py-12">Loading users...</div>;
+    return <div className="text-center py-12">Loading users...</div>
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <Link href="/admin/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
-          <ArrowLeft size={20} />
-          Back to Admin Dashboard
+    <main className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto py-8">
+        <Link href="/admin/dashboard" className="mb-4 flex items-center text-primary hover:underline">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
         </Link>
-
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground">Manage Users</h1>
-          {selectedUsers.length > 0 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">Bulk Actions ({selectedUsers.length})</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={handleBulkDelete} className="text-red-600">Delete Selected</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-        
-        {/* Filters */}
-        <Card className="mb-8">
-            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                    placeholder="Search by name or email..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Select value={roleFilter} onValueChange={setRoleFilter}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="All Roles" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Roles</SelectItem>
-                        <SelectItem value="customer">Customer</SelectItem>
-                        <SelectItem value="vendor">Vendor</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="super_admin">Super Admin</SelectItem>
-                    </SelectContent>
-                </Select>
-            </CardContent>
-        </Card>
+        <h1 className="text-4xl font-bold text-foreground mb-6">Manage Users</h1>
 
         <Card>
-          <CardContent className="pt-6">
+          <CardHeader>
+            <CardTitle>All Registered Users</CardTitle>
+          </CardHeader>
+          <CardContent>
             {users.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-slate-600 mb-4">No users found.</p>
-              </div>
+              <p className="text-slate-600">No users found.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="py-3 px-4">
-                        <Checkbox
-                            checked={selectedUsers.length > 0 && selectedUsers.length === users.length}
-                            onCheckedChange={handleSelectAll}
-                        />
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold">Name</th>
-                      <th className="text-left py-3 px-4 font-semibold">Email</th>
-                      <th className="text-left py-3 px-4 font-semibold">Role</th>
-                      <th className="text-left py-3 px-4 font-semibold">Status</th>
-                      <th className="text-left py-3 px-4 font-semibold">Joined Date</th>
-                      <th className="text-center py-3 px-4 font-semibold">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Member Since</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {users.map((user) => (
-                      <tr key={user.id} className="border-b hover:bg-slate-50">
-                        <td className="py-3 px-4">
-                            <Checkbox
-                                checked={selectedUsers.includes(user.id)}
-                                onCheckedChange={() => handleSelectUser(user.id)}
-                            />
-                        </td>
-                        <td className="py-3 px-4 font-semibold">{user.first_name || ""} {user.last_name || ""}</td>
-                        <td className="py-3 px-4">{user.email}</td>
-                        <td className="py-3 px-4">{user.role}</td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            user.is_blocked 
-                              ? "bg-red-100 text-red-800" 
-                              : "bg-green-100 text-green-800"
-                          }`}>
-                            {user.is_blocked ? "Blocked" : "Active"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">{new Date(user.created_at).toLocaleDateString()}</td>
-                        <td className="py-3 px-4 text-center space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleMakeAdmin(user.id)}
-                            disabled={user.role === 'admin' || user.role === 'super_admin'}
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.email}</TableCell>
+                        <TableCell>{`${user.first_name || ""} ${user.last_name || ""}`.trim() || "N/A"}</TableCell>
+                        <TableCell>
+                          <Select
+                            value={user.role}
+                            onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
+                            disabled={
+                              currentUserRole !== "super_admin" || // Only super admins can change roles
+                              user.id === currentUserId || // Cannot change your own role via this
+                              user.role === "super_admin" && currentUserRole !== "super_admin" // Non-super-admin cannot touch super-admin
+                            }
                           >
-                            <UserCog size={16} className="mr-2"/>
-                            Make Admin
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Select Role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="customer">Customer</SelectItem>
+                              <SelectItem value="vendor">Vendor</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                              {currentUserRole === "super_admin" && ( // Only super admin can assign super_admin role
+                                <SelectItem value="super_admin">Super Admin</SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/admin/users/${user.id}`}>View/Edit</Link>
                           </Button>
-                          <Button 
-                            variant={user.is_blocked ? "default" : "destructive"} 
-                            size="sm"
-                            onClick={() => handleBlockUser(user.id)}
-                          >
-                            {user.is_blocked ? "Unblock" : "Block"}
-                          </Button>
-                          <Button 
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => handleDeleteUser(user.id)}
-                          >
-                            <Trash2 size={16}/>
-                          </Button>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             )}
           </CardContent>
