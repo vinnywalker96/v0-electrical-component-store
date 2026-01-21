@@ -8,7 +8,7 @@ echo "Installing Python dependencies..."
 python3 -m pip install -r requirements.txt
 
 echo "Running Mantech scraper..."
-python3 scripts/scrape-mantech-python.py
+python3 scripts/scrape_mantech.py
 
 echo "Deactivating virtual environment..."
 deactivate

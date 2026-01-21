@@ -95,7 +95,7 @@ export default function DashboardPage() {
                 </Link>
             )}
             <Avatar className="w-12 h-12">
-              <AvatarImage src={profile?.avatar_url || ""} />
+              <AvatarImage src={profile?.profile_image_url || ""} />
               <AvatarFallback className="bg-primary text-white">
                 {(profile?.first_name?.[0] || user?.email?.[0] || "U").toUpperCase()}
               </AvatarFallback>

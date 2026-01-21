@@ -57,31 +57,14 @@ export function AdminSalesTable({ filterPeriod }: AdminSalesTableProps) {
 
         const { data: ordersData, error: ordersError } = await supabase
           .from("orders")
-          .select("*") // Fetch orders first
+          .select("*, user:profiles(*)") // Fetch orders and user profiles
           .gte("created_at", startDate.toISOString())
           .lte("created_at", endDate.toISOString())
           .order("created_at", { ascending: false });
 
         if (ordersError) throw ordersError;
 
-        // Explicitly fetch profiles for each order
-        const salesWithProfiles = await Promise.all(
-          (ordersData || []).map(async (order) => {
-            const { data: profileData, error: profileError } = await supabase
-              .from("profiles")
-              .select("first_name, last_name, email")
-              .eq("id", order.user_id)
-              .single();
-
-            if (profileError) {
-              console.warn(`[v0] Could not fetch profile for user ${order.user_id}:`, profileError.message);
-              return { ...order, user_id: null }; // Attach null profile
-            }
-            return { ...order, user_id: profileData };
-          })
-        );
-
-        setSalesData(salesWithProfiles as any);
+        setSalesData(ordersData || []);
       } catch (error: any) {
         console.error("Error fetching sales data:", error.message);
         toast({
@@ -134,12 +117,11 @@ export function AdminSalesTable({ filterPeriod }: AdminSalesTableProps) {
                     <td className="py-3 px-4 text-sm">{format(new Date(order.created_at), "PPP")}</td>
                     <td className="py-3 px-4 text-sm">
                         {/* Check if user_id exists and has first_name/last_name properties */}
-                        {order.user_id?.first_name && order.user_id?.last_name 
-                          ? `${order.user_id.first_name} ${order.user_id.last_name}` 
-                          : "N/A"}
-                    </td>
-                    <td className="py-3 px-4 text-sm">{order.user_id?.email || "N/A"}</td>
-                    <td className="py-3 px-4 text-right font-semibold">R{order.total_amount.toFixed(2)}</td>
+                                                {order.user?.first_name && order.user?.last_name
+                                                  ? `${order.user.first_name} ${order.user.last_name}`
+                                                  : "N/A"}
+                                            </td>
+                                            <td className="py-3 px-4 text-sm">{order.user?.email || "N/A"}</td>                    <td className="py-3 px-4 text-right font-semibold">R{order.total_amount.toFixed(2)}</td>
                     <td className="py-3 px-4 text-right text-green-600 font-semibold">
                       R{(order.total_amount * COMMISSION_RATE).toFixed(2)}
                     </td>

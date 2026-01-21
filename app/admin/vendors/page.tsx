@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/lib/context/language-context"
+import { toast } from "sonner"
 
 interface Seller {
     id: string
@@ -38,11 +39,7 @@ export default function AdminVendorsPage() {
                 setSellers(data.sellers)
             } catch (err: any) {
                 // setError(err.message)
-                toast({
-                    title: "Error",
-                    description: err.message || t("admin.failed_to_fetch_sellers"),
-                    variant: "destructive"
-                });
+                toast.error(err.message || t("admin.failed_to_fetch_sellers"));
             } finally {
                 setLoading(false)
             }
@@ -77,17 +74,10 @@ export default function AdminVendorsPage() {
                 throw new Error(data.error || `Failed to ${newStatus} vendor`);
             }
             setSellers(sellers.map(s => s.id === sellerId ? { ...s, verification_status: newStatus } : s));
-            toast({
-                title: "Success",
-                description: `Vendor ${newStatus} successfully!`,
-            });
+            toast.success(`Vendor ${newStatus} successfully!`);
         } catch (err: any) {
             console.error("[v0] handleUpdateStatus: Error:", err);
-            toast({
-                title: "Error",
-                description: err.message || `Failed to ${newStatus} vendor`,
-                variant: "destructive",
-            });
+            toast.error(err.message || `Failed to ${newStatus} vendor`);
         }
     };
 
@@ -109,17 +99,10 @@ export default function AdminVendorsPage() {
                 throw new Error(data.error || `Failed to ${action} vendor`)
             }
             setSellers(sellers.map(s => s.id === sellerId ? { ...s, is_blocked: action === "block" } : s))
-            toast({
-                title: "Success",
-                description: `Vendor ${action}ed successfully!`,
-            });
+            toast.success(`Vendor ${action}ed successfully!`);
         } catch (err: any) {
             // setError(err.message)
-            toast({
-                title: "Error",
-                description: err.message || `Failed to ${action} vendor`,
-                variant: "destructive",
-            });
+            toast.error(err.message || `Failed to ${action} vendor`);
         }
     }
 

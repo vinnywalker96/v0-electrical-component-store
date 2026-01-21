@@ -157,7 +157,7 @@ export default function ProfilePage() {
           lastName: updatedProfileData.last_name || "",
           phone: updatedProfileData.phone || "",
         })
-        setAvatarUrl(updatedProfileData.avatar_url)
+        setProfileImageUrl(updatedProfileData.profile_image_url)
       }
 
       setSuccess(true)

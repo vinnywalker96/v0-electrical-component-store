@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
         page,
         limit,
         total: totalCount,
-        totalPages: Math.ceil(totalCount / limit)
+        totalPages: Math.ceil((totalCount ?? 0) / limit)
       }
     })
 
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     // Get current product data
     const { data: product, error: fetchError } = await supabase
       .from('products')
-      .select('stock_quantity, name')
+      .select('stock_quantity, name, low_stock_threshold')
       .eq('id', productId)
       .single()
 

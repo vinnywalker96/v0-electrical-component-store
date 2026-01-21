@@ -78,7 +78,7 @@ export default function Navbar() {
     await supabase.auth.signOut()
     setUser(null)
     setUserRole(null)
-    router.push("/")
+    router.push("/auth/login")
   }
 
   const getDashboardLink = () => {

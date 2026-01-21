@@ -138,7 +138,7 @@ async function checkDatabase(supabase: any) {
 
 async function checkTables(supabase: any) {
   const tables = ['profiles', 'products', 'orders', 'sellers']
-  const results = {}
+  const results: Record<string, string> = {}
 
   for (const table of tables) {
     try {

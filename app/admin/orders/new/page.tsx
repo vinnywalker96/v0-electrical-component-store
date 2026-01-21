@@ -63,7 +63,7 @@ export default function AdminCreateOrderPage() {
         const { data: productsData } = await supabase
           .from("products")
           .select("*, sellers(store_name)")
-          .eq("stock_quantity", 0, { negate: true }) // Only products with stock
+          .neq("stock_quantity", 0) // Only products with stock
           .order("name")
 
         // Fetch users

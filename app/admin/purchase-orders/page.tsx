@@ -466,7 +466,7 @@ function ReceiveItemsForm({ order, onSuccess }: { order: PurchaseOrder | null, o
 
   useEffect(() => {
     if (order) {
-      const initial = {}
+      const initial: Record<string, number> = {}
       order.items.forEach(item => {
         initial[item.id] = item.quantity_received || 0
       })
