@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -11,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
+import { ImageUploadField } from "@/components/image-upload-field" // Import ImageUploadField
 
 const CATEGORIES = [
   "Resistors",
@@ -34,6 +33,7 @@ export default function NewProductPage() {
   const supabase = createClient()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined) // New state for image URL
 
   const [formData, setFormData] = useState({
     name: "",
@@ -72,6 +72,7 @@ export default function NewProductPage() {
         price: Number.parseFloat(formData.price.toString()),
         stock_quantity: Number.parseInt(formData.stock_quantity.toString()),
         specifications: specs,
+        image_url: imageUrl, // Include image_url in the insert
       })
 
       if (insertError) throw insertError
@@ -99,6 +100,15 @@ export default function NewProductPage() {
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{error}</div>}
+
+              {/* Image Upload Field */}
+              <ImageUploadField
+                label="Product Image"
+                folder="products"
+                currentImageUrl={imageUrl}
+                onUploadComplete={(result) => setImageUrl(result.publicUrl)}
+                onRemove={() => setImageUrl(undefined)}
+              />
 
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">Product Name *</label>

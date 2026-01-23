@@ -272,7 +272,15 @@ export default function AdminDashboardPage() {
                 </Button>
               </Link>
               {isSuperAdmin && (
-                <UserManagementButton />
+                <>
+                  <Link href="/admin/settings">
+                    <Button className="w-full h-16 text-lg justify-start gap-4" variant="outline">
+                      <Settings size={24} />
+                      Admin Settings
+                    </Button>
+                  </Link>
+                  <UserManagementButton />
+                </>
               )}
             </div>
 

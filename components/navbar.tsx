@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { Menu, X, ShoppingCart, User, LogOut, Settings, LayoutDashboard, Store } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useCart } from "@/lib/context/cart-context"
@@ -30,7 +30,7 @@ export default function Navbar() {
   const supabase = createClient()
   const { itemCount } = useCart()
   const { t } = useLanguage()
-  const pathname = useRouter().pathname
+  const pathname = usePathname()
 
   useEffect(() => {
     setMounted(true)
@@ -156,37 +156,13 @@ export default function Navbar() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      {pathname !== "/protected/dashboard" && ( // Conditional rendering for user portal
-                        <DropdownMenuItem asChild>
-                          <Link href="/protected/dashboard" className="flex items-center gap-2 cursor-pointer"
-                                onClick={() => showDashboardToast("User Portal")}>
-                            <LayoutDashboard className="w-4 h-4" />
-                            {t("Dashboard")}
-                          </Link>
-                        </DropdownMenuItem>
-                      )}
-                      {userRole === "admin" || userRole === "super_admin" ? (
-                        pathname !== "/admin/dashboard" && ( // Conditional rendering for admin dashboard
-                          <DropdownMenuItem asChild>
-                            <Link href="/admin/dashboard" className="flex items-center gap-2 cursor-pointer"
-                                  onClick={() => showDashboardToast("Admin")}>
-                            <LayoutDashboard className="w-4 h-4" />
-                            {t("Dashboard")}
-                          </Link>
-                          </DropdownMenuItem>
-                        )
-                      ) : null}
-                      {userRole === "vendor" ? (
-                        pathname !== "/seller/dashboard" && ( // Conditional rendering for vendor dashboard
-                          <DropdownMenuItem asChild>
-                            <Link href="/seller/dashboard" className="flex items-center gap-2 cursor-pointer"
-                                  onClick={() => showDashboardToast("Vendor Admin")}>
-                            <LayoutDashboard className="w-4 h-4" />
-                            {t("Dashboard")}
-                          </Link>
-                          </DropdownMenuItem>
-                        )
-                      ) : null}
+                      <DropdownMenuItem asChild>
+                        <Link href={getDashboardLink()} className="flex items-center gap-2 cursor-pointer"
+                              onClick={() => showDashboardToast(getDashboardLabel())}>
+                          <LayoutDashboard className="w-4 h-4" />
+                          {getDashboardLabel()}
+                        </Link>
+                      </DropdownMenuItem>
 
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>

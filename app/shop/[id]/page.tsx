@@ -177,7 +177,7 @@ export default function ProductDetailPage() {
                   product.stock_quantity > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                 }`}
               >
-                {product.stock_quantity > 0 ? t("product_detail.in_stock", { quantity: product.stock_quantity.toString() }) : t("product_detail.out_of_stock")}
+                {product.stock_quantity > 0 ? t("product_detail.in_stock") : t("product_detail.out_of_stock")}
               </span>
             </div>
 
@@ -200,7 +200,9 @@ export default function ProductDetailPage() {
                   </div>
                   <div>
                     <dt className="text-muted-foreground">{t("product_detail.stock")}</dt>
-                    <dd className="font-medium">{product.stock_quantity} units</dd>
+                    <dd className="font-medium">
+                        {product.stock_quantity > 0 ? t("product_detail.in_stock") : t("product_detail.out_of_stock")}
+                    </dd>
                   </div>
                 </dl>
               </CardContent>

@@ -91,7 +91,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {displayPrice}
           </span>
           <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded">
-            {product.stock_quantity > 0 ? t("product_card.in_stock", { quantity: product.stock_quantity }) : t("product_card.out_of_stock")}
+            {product.stock_quantity > 0 ? t("product_card.in_stock") : t("product_card.out_of_stock")}
           </span>
         </div>
       </CardContent>

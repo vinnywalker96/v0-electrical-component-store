@@ -4,7 +4,6 @@ import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import {
   ArrowLeft,
-  DollarSign,
   Mail,
   Phone,
   CalendarDays,
@@ -44,7 +43,7 @@ export default async function AdminOrderDetailPage({
   }
 
   /* ---------------- ORDER ---------------- */
-  const { data: order, error } = await (await supabase)
+  const { data: orderData, error: orderError } = await (await supabase)
     .from("orders")
     .select(`
       *,
@@ -56,15 +55,30 @@ export default async function AdminOrderDetailPage({
           image_url
         )
       ),
-      user:profiles!user_id(first_name, last_name, email, phone),
       seller:sellers(store_name, contact_email)
     `)
     .eq("id", params.id)
     .single()
 
-  if (error || !order) {
-    console.error("Error fetching order:", error?.message || error)
+  if (orderError || !orderData) {
+    console.error("Error fetching order:", orderError?.message || orderError)
     notFound()
+  }
+
+  const { data: profileData, error: profileError } = await (await supabase)
+    .from("profiles")
+    .select('first_name, last_name, email, phone')
+    .eq("id", orderData.user_id)
+    .single()
+
+  if (profileError) {
+    console.error("Error fetching profile:", profileError?.message || profileError)
+    // We can still render the page without the user profile
+  }
+
+  const order = {
+    ...orderData,
+    user: profileData
   }
 
   /* ---------------- UI ---------------- */
@@ -131,7 +145,6 @@ export default async function AdminOrderDetailPage({
             <div>
               <p className="text-sm text-muted-foreground">Total</p>
               <p className="flex items-center gap-2 font-semibold">
-                <DollarSign size={16} />
                 R{order.total_amount.toFixed(2)}
               </p>
             </div>

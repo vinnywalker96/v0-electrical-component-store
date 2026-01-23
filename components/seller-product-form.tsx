@@ -46,7 +46,7 @@ interface SellerProductFormProps {
   onSuccess?: () => void
 }
 
-export function SellerProductForm({ sellerId, storeName, product }: SellerProductFormProps) {
+export function SellerProductForm({ sellerId, storeName, product, onSuccess }: SellerProductFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
