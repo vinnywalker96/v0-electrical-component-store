@@ -198,7 +198,7 @@ export default function ProfilePage() {
 
           <ImageUploadField
             label="Profile Picture"
-            bucket="profiles"
+            folder="profiles"
             currentImageUrl={profileImageUrl ?? undefined}
             onUploadComplete={handleProfileImageUpload}
             onRemove={() => setProfileImageUrl(null)}

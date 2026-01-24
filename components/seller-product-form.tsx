@@ -46,7 +46,7 @@ interface SellerProductFormProps {
   onSuccess?: () => void
 }
 
-export function SellerProductForm({ sellerId, storeName, product }: SellerProductFormProps) {
+export function SellerProductForm({ sellerId, storeName, product, onSuccess }: SellerProductFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -238,7 +238,6 @@ export function SellerProductForm({ sellerId, storeName, product }: SellerProduc
             <Label>Product Image</Label>
             <ImageUploadField
               label="Upload Product Image"
-              bucket="products"
               folder={`seller-${sellerId}`}
               currentImageUrl={formData.image_url}
               onUploadComplete={(result) => {

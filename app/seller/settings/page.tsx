@@ -152,7 +152,7 @@ export default function SellerSettingsPage() {
                   label="Profile Picture"
                   onUploadComplete={(result) => handleProfileImageUpload(result.url)}
                   currentImageUrl={seller?.profile_image_url}
-                  bucket="profiles"
+
                   folder={`seller-${seller?.id}`}
                   accept="image/*"
                 />

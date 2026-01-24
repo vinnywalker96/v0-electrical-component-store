@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { createClient } from "@supabase/supabase-js" // Use the base client
+import { createClient } from "@/lib/supabase/server"
 import { ArrowLeft, Edit } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,15 +11,7 @@ export default async function AdminProductDetailPage({ params }: { params: { id:
     notFound();
   }
   const { id } = params
-  console.log("AdminProductDetailPage params:", params);
-  console.log(`Fetching product with ID: ${id}`);
-  console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-
-  // Use service role client to bypass RLS
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabase = await createClient()
 
   // Fetch product first
   const { data: product, error: productError } = await supabase
@@ -27,8 +19,6 @@ export default async function AdminProductDetailPage({ params }: { params: { id:
     .select("*")
     .eq("id", id)
     .single()
-
-  console.log("Fetched product data:", product);
 
   if (productError || !product) {
     console.error(`Error fetching product with ID ${id}:`, productError);

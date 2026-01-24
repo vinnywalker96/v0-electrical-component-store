@@ -6,12 +6,11 @@ import { useState } from "react"
 import { Upload, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { uploadFile, type UploadResult } from "@/lib/utils/file-upload"
+import { uploadFileToVercelBlob, type UploadResult } from "@/lib/utils/vercel-blob-upload"
 import Image from "next/image"
 
 interface ImageUploadFieldProps {
   label: string
-  bucket: "products" | "profiles" | "documents" | "payments"
   folder?: string
   currentImageUrl?: string
   onUploadComplete: (result: UploadResult) => void
@@ -22,7 +21,6 @@ interface ImageUploadFieldProps {
 
 export function ImageUploadField({
   label,
-  bucket,
   folder,
   currentImageUrl,
   onUploadComplete,
@@ -40,7 +38,7 @@ export function ImageUploadField({
     setUploading(true)
     setError("")
 
-    const result = await uploadImage(file, bucket, folder)
+    const result = await uploadFileToVercelBlob(file, folder)
 
     if (result.error) {
       setError(result.error)

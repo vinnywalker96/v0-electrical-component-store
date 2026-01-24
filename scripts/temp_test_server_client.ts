@@ -1,1 +1,0 @@
-I've created the API endpoint `app/api/admin/users/route.ts`. I am creating a test file called `temp_test_server_client.ts` which will help me test the `createServerClient` function.
