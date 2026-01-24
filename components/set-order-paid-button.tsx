@@ -43,7 +43,7 @@ export function SetOrderPaidButton({ orderId, currentPaymentStatus }: SetOrderPa
       toast({
         title: "Payment Status Updated",
         description: `Order #${orderId.slice(0, 8)} has been marked as PAID.`,
-        variant: "success"
+        variant: "default"
       });
       router.refresh(); // Refresh the page to show updated status
     } catch (error: any) {

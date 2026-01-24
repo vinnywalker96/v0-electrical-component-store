@@ -238,7 +238,6 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
             <Label>Product Image</Label>
             <ImageUploadField
               label="Upload Product Image"
-              bucket="products"
               folder={`seller-${sellerId}`}
               currentImageUrl={formData.image_url}
               onUploadComplete={(result) => {

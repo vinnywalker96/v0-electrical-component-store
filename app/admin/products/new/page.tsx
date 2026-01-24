@@ -106,7 +106,7 @@ export default function NewProductPage() {
                 label="Product Image"
                 folder="products"
                 currentImageUrl={imageUrl}
-                onUploadComplete={(result) => setImageUrl(result.publicUrl)}
+                onUploadComplete={(result) => setImageUrl(result.url)}
                 onRemove={() => setImageUrl(undefined)}
               />
 
