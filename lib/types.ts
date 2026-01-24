@@ -6,12 +6,14 @@ export interface Product {
   brand: string
   price: number
   stock_quantity: number
+  sku?: string // Added for product SKU
   image_url?: string
   primary_image_url?: string // Added for primary product image
   images?: string[] // Added for multiple product images
   specifications?: Record<string, unknown>
   technical_documents?: string[] // Added for technical documentation URLs
   seller_id?: string
+  seller?: Seller // Added for seller relationship
   created_at: string
   updated_at: string
 }
@@ -27,6 +29,7 @@ export interface CartItem {
 export interface Order {
   id: string
   user_id: string
+  user?: UserProfile // Added for user profile relationship
   seller_id?: string
   status: string
   total_amount: number

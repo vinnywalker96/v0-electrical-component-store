@@ -15,6 +15,7 @@ function generateSimpleEmailHtml(data: {
     account_number: string
     branch_code: string
   } | null
+  invoiceUrl?: string // Add invoiceUrl to data
 }): string {
   const itemsHtml = data.items
     .map(
@@ -57,6 +58,10 @@ function generateSimpleEmailHtml(data: {
     `
   }
 
+  const invoiceLinkHtml = data.invoiceUrl
+    ? `<p style="margin-top: 20px;"><a href="${data.invoiceUrl}" style="background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Download Your Invoice</a></p>`
+    : ""
+
   return `
     <!DOCTYPE html>
     <html>
@@ -98,7 +103,7 @@ function generateSimpleEmailHtml(data: {
             </tr>
           </tfoot>
         </table>
-        
+        ${invoiceLinkHtml}
         <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 14px;">
           If you have any questions about your order, please contact us.
         </p>
@@ -124,7 +129,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { orderId, firstName, lastName, email, total, items, paymentMethod, reference } = body
+    const { orderId, firstName, lastName, email, total, items, paymentMethod, reference, invoiceUrl } = body
 
     if (!email || !orderId) {
       return NextResponse.json({ error: "Email and orderId are required" }, { status: 400 })
@@ -146,20 +151,34 @@ export async function POST(request: NextRequest) {
       paymentMethod,
       reference,
       bankingDetails,
+      invoiceUrl,
     })
 
     const apiKey = process.env.RESEND_API_KEY
     if (apiKey) {
       try {
-        // Dynamic import to avoid build-time instantiation
         const resendModule = await import("resend")
         const resend = new resendModule.Resend(apiKey)
+
+        let attachments = []
+        if (invoiceUrl) {
+          const response = await fetch(invoiceUrl)
+          const arrayBuffer = await response.arrayBuffer()
+          const buffer = Buffer.from(arrayBuffer)
+
+          attachments.push({
+            filename: `invoice-${orderId}.pdf`,
+            content: buffer,
+            contentType: 'application/pdf',
+          })
+        }
 
         const response = await resend.emails.send({
           from: "orders@kg-compponents.com",
           to: email,
           subject: `Order Confirmation - ${orderId}`,
           html: htmlContent,
+          attachments,
         })
 
         if (response.error) {
@@ -182,3 +201,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }
+

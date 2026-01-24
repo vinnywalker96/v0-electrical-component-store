@@ -50,13 +50,34 @@ export async function POST(request: NextRequest) {
       const { data: orderItems } = await supabase.from("order_items").select("quantity, unit_price, product:products(name)").eq("order_id", orderId)
 
       // Format items for the email
-      const itemsForEmail = orderItems?.map(item => ({
-        name: item.product?.name || "Unknown Product",
-        quantity: item.quantity,
-        price: item.unit_price,
-      })) || []
+      const itemsForEmail = orderItems?.map(item => {
+        const productName = item.product && !Array.isArray(item.product)
+          ? (item.product as { name: string }).name
+          : (item.product && Array.isArray(item.product) && item.product.length > 0)
+          ? item.product[0].name
+          : "Unknown Product";
+        return {
+          name: productName,
+          quantity: item.quantity,
+          price: item.unit_price,
+        }
+      }) || []
 
-      // Send order confirmation email
+      // Generate Invoice
+      const invoiceResponse = await fetch(`${request.nextUrl.origin}/api/invoices/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: order.id }),
+      })
+
+      if (!invoiceResponse.ok) {
+        console.error("Failed to generate invoice")
+        // Continue without invoice for now
+      }
+
+      const { invoice } = await invoiceResponse.json()
+
+      // Send order confirmation email with invoice
       await fetch(`${request.nextUrl.origin}/api/emails/order-confirmation`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,6 +90,7 @@ export async function POST(request: NextRequest) {
           items: itemsForEmail,
           paymentMethod: order.payment_method,
           reference: order.id,
+          invoiceUrl: invoice?.pdf_url,
         }),
       })
 

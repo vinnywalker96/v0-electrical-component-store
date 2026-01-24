@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient()
     const {
@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     if (!status) {
       return NextResponse.json({ error: "Status required" }, { status: 400 })
     }
-
+    const params = await context.params;
     const { data, error } = await supabase
       .from("orders")
       .update({ status, updated_at: new Date().toISOString() })

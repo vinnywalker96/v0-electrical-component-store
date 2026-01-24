@@ -16,10 +16,12 @@ import { Badge } from "@/components/ui/badge"
 import { SetOrderPaidButton } from "@/components/set-order-paid-button"
 
 export default async function AdminOrderDetailPage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const params = await paramsPromise;
+  const { id } = params;
   const supabase = createClient()
 
   /* ---------------- AUTH ---------------- */
@@ -34,7 +36,7 @@ export default async function AdminOrderDetailPage({
   const { data: profile } = await (await supabase)
     .from("profiles")
     .select("role")
-    .eq("user_id", user.id) // ✅ safer than eq("id", user.id)
+    .eq("id", user.id) // ✅ correct: profiles table uses 'id' as PK which matches user.id
     .single()
 
   if (!profile || !["admin", "super_admin"].includes(profile.role)) {
@@ -54,14 +56,14 @@ export default async function AdminOrderDetailPage({
           image_url
         )
       ),
-      user:profiles(first_name, last_name, email, phone),
+      user:profiles!user_id(first_name, last_name, email, phone),
       seller:sellers(store_name, contact_email)
     `)
     .eq("id", params.id)
     .single()
 
   if (error || !order) {
-    console.error("Error fetching order:", error)
+    console.error("Error fetching order:", error?.message || error)
     notFound()
   }
 

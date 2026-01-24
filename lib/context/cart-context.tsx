@@ -36,7 +36,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
-      const { data, error } = await supabase.from("cart_items").select("*, product:products(*)").eq("user_id", user.id)
+      const { data, error } = await supabase.from("cart_items").select("*, product:products(*, seller:sellers(*))").eq("user_id", user.id)
 
       if (error) throw error
       setItems(data || [])

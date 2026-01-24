@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
 
-dotenv.config({ path: '.env.local' }) // Load environment variables from .env.local
+dotenv.config({ path: '.env' }) // Load environment variables from .env
 
 async function runMigration() {
   let supabaseDbUrl = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL; // Use DATABASE_URL as fallback for Vercel

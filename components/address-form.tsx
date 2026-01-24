@@ -95,7 +95,7 @@ export function AddressForm({ userId, address }: AddressFormProps) {
             <Label htmlFor="addressType">Address Type *</Label>
             <Select
               value={formData.addressType}
-              onValueChange={(value) => setFormData({ ...formData, addressType: value })}
+              onValueChange={(value) => setFormData({ ...formData, addressType: value as "shipping" | "billing" })}
             >
               <SelectTrigger>
                 <SelectValue />

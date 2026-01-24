@@ -177,7 +177,7 @@ export default function ProductDetailPage() {
                   product.stock_quantity > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                 }`}
               >
-                {product.stock_quantity > 0 ? t("product_detail.in_stock", { quantity: product.stock_quantity }) : t("product_detail.out_of_stock")}
+                {product.stock_quantity > 0 ? t("product_detail.in_stock", { quantity: product.stock_quantity.toString() }) : t("product_detail.out_of_stock")}
               </span>
             </div>
 

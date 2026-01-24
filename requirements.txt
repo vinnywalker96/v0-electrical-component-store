@@ -1,6 +1,7 @@
 requests==2.31.0
 beautifulsoup4==4.12.2
-supabase==2.3.0
+supabase>=2.5.0
 python-dotenv==1.0.0
 aiohttp==3.9.1
 asyncio-mqtt==0.13.0
+websockets==10.4
