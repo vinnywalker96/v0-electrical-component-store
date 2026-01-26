@@ -148,14 +148,13 @@ export default function SellerSettingsPage() {
                 )}
               </div>
               <div className="flex-1">
-                <ImageUploadField
-                  label="Profile Picture"
-                  onUploadComplete={(result) => handleProfileImageUpload(result.url)}
-                  currentImageUrl={seller?.profile_image_url}
-
-                  folder={`seller-${seller?.id}`}
-                  accept="image/*"
-                />
+                                <ImageUploadField
+                                  label="Profile Picture"
+                                  onUploadComplete={(result) => handleProfileImageUpload(result.url)}
+                                  currentImageUrl={seller?.profile_image_url}
+                                  folder={`seller-${seller?.id}`}
+                                  accept="image/*"
+                                />
                 <p className="text-sm text-slate-600 mt-2">
                   Upload a profile image for your seller account. Max size: 5MB.
                 </p>

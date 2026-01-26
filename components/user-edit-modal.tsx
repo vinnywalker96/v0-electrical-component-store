@@ -104,7 +104,7 @@ export function UserEditModal({
         <DialogHeader>
           <DialogTitle>Edit User Profile</DialogTitle>
           <DialogDescription>
-            Make changes to user's profile and role here. Click save when you're
+            Make changes to user&apos;s profile and role here. Click save when you&apos;re
             done.
           </DialogDescription>
         </DialogHeader>

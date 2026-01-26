@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Minus, Plus, ShoppingCart, MessageSquare } from "lucide-react"
@@ -125,25 +126,13 @@ export default function ProductDetailPage() {
 
         <div className="grid md:grid-cols-2 gap-12">
           {/* Product Image */}
-          <div className="bg-gradient-to-br from-blue-50 to-slate-100 rounded-lg h-96 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-6xl mb-4">
-                {product.category === "Resistors"
-                  ? "⧉"
-                  : product.category === "LEDs"
-                    ? "💡"
-                    : product.category === "Capacitors"
-                      ? "||"
-                      : product.category === "Wires & Connectors"
-                        ? "🔌"
-                        : product.category === "Breadboards"
-                          ? "📍"
-                          : product.category === "Microcontrollers"
-                            ? "🎮"
-                            : "⚙"}
-              </div>
-              <p className="text-muted-foreground">{product.category}</p>
-            </div>
+          <div className="relative bg-gradient-to-br from-blue-50 to-slate-100 rounded-lg h-96 flex items-center justify-center overflow-hidden">
+            <Image
+              src={product.image_url || "/placeholder.svg"}
+              alt={product.name}
+              fill
+              className="object-contain"
+            />
           </div>
 
           {/* Product Info */}

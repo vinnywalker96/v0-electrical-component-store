@@ -8,7 +8,6 @@ export interface UploadResult {
 
 export async function uploadFile(
   file: File,
-  bucket: "products" | "profiles" | "documents" | "payments",
   folder?: string,
 ): Promise<UploadResult> {
   try {
@@ -30,7 +29,7 @@ export async function uploadFile(
     const filePath = folder ? `${folder}/${fileName}` : fileName
 
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage.from(bucket).upload(filePath, file, {
+    const { data, error } = await supabase.storage.from("public_uploads").upload(filePath, file, {
       cacheControl: "3600",
       upsert: false,
     })
@@ -43,7 +42,7 @@ export async function uploadFile(
     // Get public URL
     const {
       data: { publicUrl },
-    } = supabase.storage.from(bucket).getPublicUrl(data.path)
+    } = supabase.storage.from("public_uploads").getPublicUrl(data.path)
 
     return { url: publicUrl, path: data.path }
   } catch (error: any) {
@@ -52,10 +51,10 @@ export async function uploadFile(
   }
 }
 
-export async function deleteFile(bucket: string, path: string): Promise<boolean> {
+export async function deleteFile(path: string): Promise<boolean> {
   try {
     const supabase = createClient()
-    const { error } = await supabase.storage.from(bucket).remove([path])
+    const { error } = await supabase.storage.from("public_uploads").remove([path])
 
     if (error) {
       console.error("[v0] Delete error:", error)
@@ -69,8 +68,8 @@ export async function deleteFile(bucket: string, path: string): Promise<boolean>
   }
 }
 
-export function getFileUrl(bucket: string, path: string): string {
+export function getFileUrl(path: string): string {
   const supabase = createClient()
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path)
+  const { data } = supabase.storage.from("public_uploads").getPublicUrl(path)
   return data.publicUrl
 }

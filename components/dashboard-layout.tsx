@@ -27,7 +27,10 @@ export function DashboardLayout({
   const [mounted, setMounted] = useState(false)
   const { t } = useLanguage()
 
-  useEffect(() => setMounted(true), [])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const fetchProfile = async () => {
