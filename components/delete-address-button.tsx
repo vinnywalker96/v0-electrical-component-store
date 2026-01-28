@@ -5,18 +5,20 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
+import { useLanguage } from "@/lib/context/language-context"
 
 export function DeleteAddressButton({ addressId, isDefault }: { addressId: string; isDefault: boolean }) {
   const router = useRouter()
+  const { t } = useLanguage()
   const [deleting, setDeleting] = useState(false)
 
   const handleDelete = async () => {
     if (isDefault) {
-      alert("Cannot delete default address. Please set another address as default first.")
+      alert(t("addresses.cannot_delete_default"))
       return
     }
 
-    if (!confirm("Are you sure you want to delete this address?")) return
+    if (!confirm(t("addresses.confirm_delete"))) return
 
     setDeleting(true)
     try {
@@ -28,7 +30,7 @@ export function DeleteAddressButton({ addressId, isDefault }: { addressId: strin
       router.refresh()
     } catch (error) {
       console.error("Error deleting address:", error)
-      alert("Failed to delete address")
+      alert(t("addresses.delete_failed"))
     } finally {
       setDeleting(false)
     }

@@ -10,7 +10,7 @@ import { MainLayout } from "@/components/main-layout"
 import { CurrencyProvider } from "@/lib/context/currency-context"
 
 export const metadata: Metadata = {
-  title: "KG Compponents - Electrical Components Store",
+  title: "KG Components - Electrical Components Store",
   description:
     "Professional quality electrical and electronic components for professionals and makers"
 }

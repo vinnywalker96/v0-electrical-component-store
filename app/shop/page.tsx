@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import cache from "@/lib/redis" // Import Cache
+import { useLanguage } from "@/lib/context/language-context"
 
 const CACHE_EXPIRY_SECONDS = 300; // Cache for 5 minutes (reduced from 60 for better freshness)
 
@@ -23,6 +24,8 @@ export default function ShopPage() {
   const [maxPrice, setMaxPrice] = useState(10000)
   const [sellers, setSellers] = useState<any[]>([])
   const [isMounted, setIsMounted] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
+  const { t } = useLanguage()
 
   useEffect(() => {
     setIsMounted(true)
@@ -129,117 +132,126 @@ export default function ShopPage() {
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Shop Electrical Components</h1>
-          <p className="text-muted-foreground">Browse products from multiple sellers</p>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">{t("shop_page.title")}</h1>
+            <p className="text-muted-foreground">{t("shop_page.subtitle")}</p>
+          </div>
+          <Button
+            className="md:hidden"
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            {showFilters ? t("common.hide_filters") : t("common.show_filters")}
+          </Button>
         </div>
 
         {/* Filters */}
         {isMounted && (
-        <div className="bg-card rounded-lg border border-border p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Search</label>
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full"
-              />
-            </div>
+          <div className={`${showFilters ? 'block' : 'hidden'} md:block bg-card rounded-lg border border-border p-6 mb-8`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t("shop_page.filters.search")}</label>
+                <Input
+                  placeholder={t("shop_page.filters.search_placeholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full"
+                />
+              </div>
 
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Category</label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t("shop_page.filters.category")}</label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("shop_page.filters.all_categories")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("shop_page.filters.all_categories")}</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Brand</label>
-              <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All brands" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All brands</SelectItem>
-                  {brands.map((brand) => (
-                    <SelectItem key={brand} value={brand}>
-                      {brand}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t("shop_page.filters.brand")}</label>
+                <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("shop_page.filters.all_brands")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("shop_page.filters.all_brands")}</SelectItem>
+                    {brands.map((brand) => (
+                      <SelectItem key={brand} value={brand}>
+                        {brand}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Seller</label>
-              <Select value={selectedSeller} onValueChange={setSelectedSeller}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All sellers" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All sellers</SelectItem>
-                  {sellers.map((seller) => (
-                    <SelectItem key={seller.id} value={seller.id}>
-                      {seller.store_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t("shop_page.filters.seller")}</label>
+                <Select value={selectedSeller} onValueChange={setSelectedSeller}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("shop_page.filters.all_sellers")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("shop_page.filters.all_sellers")}</SelectItem>
+                    {sellers.map((seller) => (
+                      <SelectItem key={seller.id} value={seller.id}>
+                        {seller.store_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
-                Max Price: R{priceRange[1].toFixed(0)}
-              </label>
-              <Slider
-                value={[priceRange[1]]}
-                onValueChange={(val) => setPriceRange([0, val[0]])}
-                min={0}
-                max={maxPrice}
-                step={10}
-                className="w-full"
-              />
-            </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">
+                  {t("shop_page.filters.max_price")}: R{priceRange[1].toFixed(0)}
+                </label>
+                <Slider
+                  value={[priceRange[1]]}
+                  onValueChange={(val) => setPriceRange([0, val[0]])}
+                  min={0}
+                  max={maxPrice}
+                  step={10}
+                  className="w-full"
+                />
+              </div>
 
-            <div className="flex items-end">
-              <Button
-                onClick={() => {
-                  setSearchQuery("")
-                  setSelectedCategory("all")
-                  setSelectedBrand("all")
-                  setSelectedSeller("all")
-                  setPriceRange([0, maxPrice])
-                }}
-                variant="outline"
-                className="w-full"
-              >
-                Reset Filters
-              </Button>
+              <div className="flex items-end">
+                <Button
+                  onClick={() => {
+                    setSearchQuery("")
+                    setSelectedCategory("all")
+                    setSelectedBrand("all")
+                    setSelectedSeller("all")
+                    setPriceRange([0, maxPrice])
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {t("shop_page.filters.reset")}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
         )}
 
         {/* Products Grid */}
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Loading products...</p>
+            <p className="text-muted-foreground">{t("shop_page.loading")}</p>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12 bg-muted rounded-lg">
-            <p className="text-muted-foreground text-lg">No products found matching your criteria</p>
+            <p className="text-muted-foreground text-lg">{t("shop_page.no_results")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -250,7 +262,7 @@ export default function ShopPage() {
         )}
 
         <div className="mt-8 text-center text-sm text-muted-foreground">
-          Showing {filteredProducts.length} of {products.length} products
+          {t("shop_page.showing_results", { count: filteredProducts.length.toString(), total: products.length.toString() })}
         </div>
       </div>
     </main>

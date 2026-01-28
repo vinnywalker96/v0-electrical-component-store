@@ -2,8 +2,10 @@
 
 import type React from "react"
 import { useState } from "react"
+import { useLanguage } from "@/lib/context/language-context"
 
 export default function Contact() {
+  const { t } = useLanguage()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,7 +23,7 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     console.log("Form submitted:", formData)
-    alert("Thank you for your message! We will get back to you soon.")
+    alert(t("contact.success_message"))
     setFormData({ name: "", email: "", subject: "", message: "" })
   }
 
@@ -29,7 +31,7 @@ export default function Contact() {
     <div className="min-h-screen">
       <section className="bg-primary text-white py-16 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Contact Us</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("contact.title")}</h1>
           <p className="text-lg text-white/90">Have a question? We&apos;d love to hear from you</p>
         </div>
       </section>
@@ -40,7 +42,7 @@ export default function Contact() {
             <h2 className="text-2xl font-bold mb-6">Send us a Message</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block font-semibold mb-2">Name</label>
+                <label className="block font-semibold mb-2">{t("contact.name_label")}</label>
                 <input
                   type="text"
                   name="name"
@@ -48,11 +50,11 @@ export default function Contact() {
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-2 border border-border rounded-lg bg-input focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Your name"
+                  placeholder={t("contact.name_placeholder")}
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-2">Email</label>
+                <label className="block font-semibold mb-2">{t("contact.email_label")}</label>
                 <input
                   type="email"
                   name="email"
@@ -64,7 +66,7 @@ export default function Contact() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-2">Subject</label>
+                <label className="block font-semibold mb-2">{t("contact.message_label")}</label>
                 <input
                   type="text"
                   name="subject"
@@ -72,11 +74,11 @@ export default function Contact() {
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-2 border border-border rounded-lg bg-input focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="How can we help?"
+                  placeholder={t("contact.message_placeholder")}
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-2">Message</label>
+                <label className="block font-semibold mb-2">{t("contact.message_label")}</label>
                 <textarea
                   name="message"
                   value={formData.message}
@@ -84,14 +86,14 @@ export default function Contact() {
                   required
                   rows={5}
                   className="w-full px-4 py-2 border border-border rounded-lg bg-input focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Your message..."
+                  placeholder={t("contact.message_body_placeholder")}
                 />
               </div>
               <button
                 type="submit"
                 className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-lg transition"
               >
-                Send Message
+                {t("contact.send_button")}
               </button>
             </form>
           </div>

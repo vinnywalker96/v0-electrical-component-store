@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { useLanguage } from "@/lib/context/language-context"
 
 interface Commission {
   id: string
@@ -23,6 +24,7 @@ export default function VendorCommissionsPage() {
   const [commissions, setCommissions] = useState<Commission[]>([])
   const [totalEarned, setTotalEarned] = useState(0)
   const [pendingAmount, setPendingAmount] = useState(0)
+  const { t } = useLanguage()
 
   const fetchCommissions = useCallback(async () => {
     try {
@@ -76,15 +78,15 @@ export default function VendorCommissionsPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Link href="/vendor/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
           <ArrowLeft size={20} />
-          Back to Dashboard
+          {t("commissions.back_to_dashboard")}
         </Link>
 
-        <h1 className="text-4xl font-bold text-foreground mb-8">Commission History</h1>
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-8">{t("commissions.title")}</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <Card>
             <CardHeader>
-              <CardTitle>Total Earned</CardTitle>
+              <CardTitle>{t("commissions.total_earned")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-600">R{totalEarned.toFixed(2)}</div>
@@ -93,7 +95,7 @@ export default function VendorCommissionsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Pending Payment</CardTitle>
+              <CardTitle>{t("commissions.pending_payment")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-orange-600">R{pendingAmount.toFixed(2)}</div>
@@ -103,21 +105,21 @@ export default function VendorCommissionsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Commission Transactions</CardTitle>
+            <CardTitle>{t("commissions.transactions")}</CardTitle>
           </CardHeader>
           <CardContent>
             {commissions.length === 0 ? (
-              <p className="text-slate-600">No commission records yet</p>
+              <p className="text-slate-600">{t("commissions.no_records")}</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-semibold">Date</th>
-                      <th className="text-left py-3 px-4 font-semibold">Order ID</th>
-                      <th className="text-left py-3 px-4 font-semibold">Amount</th>
-                      <th className="text-left py-3 px-4 font-semibold">Status</th>
-                      <th className="text-left py-3 px-4 font-semibold">Paid Date</th>
+                      <th className="text-left py-3 px-4 font-semibold">{t("commissions.date")}</th>
+                      <th className="text-left py-3 px-4 font-semibold">{t("commissions.order_id")}</th>
+                      <th className="text-left py-3 px-4 font-semibold">{t("commissions.amount")}</th>
+                      <th className="text-left py-3 px-4 font-semibold">{t("commissions.status")}</th>
+                      <th className="text-left py-3 px-4 font-semibold">{t("commissions.paid_date")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -128,11 +130,10 @@ export default function VendorCommissionsPage() {
                         <td className="py-3 px-4 font-semibold">R{commission.amount.toFixed(2)}</td>
                         <td className="py-3 px-4">
                           <span
-                            className={`px-3 py-1 rounded-full text-sm capitalize ${
-                              commission.status === "paid"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-orange-100 text-orange-800"
-                            }`}
+                            className={`px-3 py-1 rounded-full text-sm capitalize ${commission.status === "paid"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-orange-100 text-orange-800"
+                              }`}
                           >
                             {commission.status}
                           </span>

@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { useLanguage } from "@/lib/context/language-context"
 
 export default function BankingDetailsPage() {
   const router = useRouter()
   const supabase = createClient()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
@@ -33,7 +35,7 @@ export default function BankingDetailsPage() {
         if (response.status === 403) {
           router.push("/admin/dashboard")
         }
-        throw new Error("Failed to fetch banking details")
+        throw new Error(t("admin_banking.error"))
       }
 
       const { banking_details } = await response.json()
@@ -55,7 +57,7 @@ export default function BankingDetailsPage() {
     } finally {
       setLoading(false)
     }
-  }, [router])
+  }, [router, t])
 
   useEffect(() => {
     fetchBankingDetails()
@@ -77,10 +79,10 @@ export default function BankingDetailsPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to save banking details")
+        throw new Error(data.error || t("admin_banking.error"))
       }
 
-      setSuccess("Banking details updated successfully!")
+      setSuccess(t("admin_banking.success"))
       setTimeout(() => setSuccess(""), 3000)
     } catch (err: any) {
       setError(err.message)
@@ -90,17 +92,17 @@ export default function BankingDetailsPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12">Loading...</div>
+    return <div className="text-center py-12">{t("admin_banking.loading")}</div>
   }
 
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-foreground mb-8">Banking Details</h1>
+        <h1 className="text-4xl font-bold text-foreground mb-8">{t("admin_banking.title")}</h1>
 
         <Card>
           <CardHeader>
-            <CardTitle>Configure Bank Transfer Details</CardTitle>
+            <CardTitle>{t("admin_banking.configure")}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -111,7 +113,7 @@ export default function BankingDetailsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Account Holder Name</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block">{t("admin_banking.account_holder")}</label>
                   <Input
                     placeholder="e.g., KG Compponents Ltd"
                     value={formData.account_holder}
@@ -121,7 +123,7 @@ export default function BankingDetailsPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Bank Name</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block">{t("admin_banking.bank_name")}</label>
                   <Input
                     placeholder="e.g., First National Bank"
                     value={formData.bank_name}
@@ -134,7 +136,7 @@ export default function BankingDetailsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Account Number</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block">{t("admin_banking.account_number")}</label>
                   <Input
                     placeholder="e.g., 123456789"
                     value={formData.account_number}
@@ -144,7 +146,7 @@ export default function BankingDetailsPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Branch Code</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block">{t("admin_banking.branch_code")}</label>
                   <Input
                     placeholder="e.g., 250655"
                     value={formData.branch_code}
@@ -155,7 +157,7 @@ export default function BankingDetailsPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">SWIFT Code</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t("admin_banking.swift_code")}</label>
                 <Input
                   placeholder="e.g., FIRNZAJJ"
                   value={formData.swift_code}
@@ -165,7 +167,7 @@ export default function BankingDetailsPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Reference Note (optional)</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t("admin_banking.reference_note")}</label>
                 <Textarea
                   placeholder="e.g., Please include your order number as reference"
                   value={formData.reference_note}
@@ -175,7 +177,7 @@ export default function BankingDetailsPage() {
               </div>
 
               <Button type="submit" disabled={saving} className="w-full">
-                {saving ? "Saving..." : "Save Banking Details"}
+                {saving ? t("admin_banking.saving") : t("admin_banking.save")}
               </Button>
             </form>
           </CardContent>
@@ -183,13 +185,13 @@ export default function BankingDetailsPage() {
 
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Information</CardTitle>
+            <CardTitle>{t("admin_banking.info_title")}</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-slate-600 space-y-2">
             <p>
-              These banking details will be sent to customers when they choose Bank Transfer as their payment method.
+              {t("admin_banking.info_desc")}
             </p>
-            <p>Only Super Admin can edit this information.</p>
+            <p>{t("admin_banking.admin_only")}</p>
           </CardContent>
         </Card>
       </div>

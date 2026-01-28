@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
 import { ArrowLeft, Edit } from "lucide-react"
 import { UserEditModal } from "@/components/user-edit-modal"
+import { useLanguage } from "@/lib/context/language-context"
 
 interface UserProfile {
   id: string
@@ -43,6 +44,7 @@ interface UserData extends UserProfile {
 export default function AdminUsersPage() {
   const supabase = createClient()
   const router = useRouter()
+  const { t } = useLanguage()
   const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null)
@@ -67,14 +69,14 @@ export default function AdminUsersPage() {
         const response = await fetch("/api/admin/users")
         if (!response.ok) {
           const errorData = await response.json()
-          throw new Error(errorData.error || "Failed to fetch users")
+          throw new Error(errorData.error || t("admin_users.update_error"))
         }
         const data: UserData[] = await response.json()
         setUsers(data)
       } catch (error: any) {
         toast({
-          title: "Error",
-          description: error.message || "Could not load users.",
+          title: t("common.error"),
+          description: error.message || t("admin_users.update_error"),
           variant: "destructive",
         })
         console.error("Failed to fetch users:", error)
@@ -83,7 +85,7 @@ export default function AdminUsersPage() {
       }
     }
     fetchUsers()
-  }, [supabase, router])
+  }, [supabase, router, t])
 
   async function handleRoleChange(userId: string, newRole: string) {
     // Optimistically update UI
@@ -102,17 +104,17 @@ export default function AdminUsersPage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to update role")
+        throw new Error(errorData.error || t("admin_users.update_error"))
       }
 
       toast({
-        title: "Success",
-        description: "User role updated successfully.",
+        title: t("common.success"),
+        description: t("admin_users.update_success"),
       })
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Could not update user role.",
+        title: t("common.error"),
+        description: error.message || t("admin_users.update_error"),
         variant: "destructive",
       })
       console.error("Failed to update user role:", error)
@@ -128,7 +130,7 @@ export default function AdminUsersPage() {
       // Create a temporary client for this action to perform the update
       // This is necessary because handleRoleChange and update of other fields are separate calls and need separate privilege checks
       // For this modal, we assume the user is authenticated and has permissions, handled by the API route
-      
+
       const response = await fetch("/api/admin/users", {
         method: "PUT",
         headers: {
@@ -146,24 +148,24 @@ export default function AdminUsersPage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to update user profile.")
+        throw new Error(errorData.error || t("admin_users.update_error"))
       }
 
       // Update local state with all changes
       setUsers((prevUsers) =>
         prevUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user))
       )
-      
+
       toast({
-        title: "Success",
-        description: "User profile updated successfully.",
+        title: t("common.success"),
+        description: t("admin_users.update_success"),
       })
       setIsModalOpen(false) // Close modal on success
       setEditingUser(null)
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Could not update user profile.",
+        title: t("common.error"),
+        description: error.message || t("admin_users.update_error"),
         variant: "destructive",
       })
       console.error("Failed to update user profile:", error)
@@ -182,41 +184,41 @@ export default function AdminUsersPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12">Loading users...</div>
+    return <div className="text-center py-12">{t("admin_users.loading")}</div>
   }
 
   return (
     <main className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto py-8">
         <Link href="/admin/dashboard" className="mb-4 flex items-center text-primary hover:underline">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+          <ArrowLeft className="w-4 h-4 mr-2" /> {t("admin_users.back_to_dashboard")}
         </Link>
-        <h1 className="text-4xl font-bold text-foreground mb-6">Manage Users</h1>
+        <h1 className="text-4xl font-bold text-foreground mb-6">{t("admin_users.title")}</h1>
 
         <Card>
           <CardHeader>
-            <CardTitle>All Registered Users</CardTitle>
+            <CardTitle>{t("admin_users.all_users")}</CardTitle>
           </CardHeader>
           <CardContent>
             {users.length === 0 ? (
-              <p className="text-slate-600">No users found.</p>
+              <p className="text-slate-600">{t("admin_users.no_users")}</p>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Member Since</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t("admin_users.email")}</TableHead>
+                      <TableHead>{t("admin_users.name")}</TableHead>
+                      <TableHead>{t("admin_users.role")}</TableHead>
+                      <TableHead>{t("admin_users.member_since")}</TableHead>
+                      <TableHead>{t("admin_users.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {users.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="font-medium">{user.email}</TableCell>
-                        <TableCell>{`${user.first_name || ""} ${user.last_name || ""}`.trim() || "N/A"}</TableCell>
+                        <TableCell>{`${user.first_name || ""} ${user.last_name || ""}`.trim() || t("common.no_results")}</TableCell>
                         <TableCell>
                           <Select
                             value={user.role}
@@ -228,14 +230,14 @@ export default function AdminUsersPage() {
                             }
                           >
                             <SelectTrigger className="w-[180px]">
-                              <SelectValue placeholder="Select Role" />
+                              <SelectValue placeholder={t("admin_users.select_role")} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="customer">Customer</SelectItem>
-                              <SelectItem value="vendor">Vendor</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="customer">{t("admin_users.customer")}</SelectItem>
+                              <SelectItem value="vendor">{t("admin_users.vendor")}</SelectItem>
+                              <SelectItem value="admin">{t("admin_users.admin")}</SelectItem>
                               {currentUserRole === "super_admin" && ( // Only super admin can assign super_admin role
-                                <SelectItem value="super_admin">Super Admin</SelectItem>
+                                <SelectItem value="super_admin">{t("admin_users.super_admin")}</SelectItem>
                               )}
                             </SelectContent>
                           </Select>
@@ -243,7 +245,7 @@ export default function AdminUsersPage() {
                         <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <Button variant="outline" size="sm" onClick={() => openEditModal(user)}>
-                            <Edit className="w-4 h-4 mr-2" /> View/Edit
+                            <Edit className="w-4 h-4 mr-2" /> {t("admin_users.view_edit")}
                           </Button>
                         </TableCell>
                       </TableRow>

@@ -5,11 +5,13 @@ import { useEffect, useState } from "react"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { customerNavItems } from "@/lib/nav-items"
+import { getCustomerNavItems } from "@/lib/nav-items"
+import { useLanguage } from "@/lib/context/language-context"
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
+  const { t } = useLanguage()
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -33,11 +35,11 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading...</p>
+          <p>{t("common.loading")}</p>
         </div>
       </div>
     )
   }
 
-  return <DashboardLayout navItems={customerNavItems}>{children}</DashboardLayout>
+  return <DashboardLayout navItems={getCustomerNavItems(t)}>{children}</DashboardLayout>
 }

@@ -12,8 +12,11 @@ import { toast } from "@/hooks/use-toast"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
+import { useLanguage } from "@/lib/context/language-context"
+
 export default function AdminOrdersPage() {
   const supabase = createClient()
+  const { t } = useLanguage()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -28,7 +31,7 @@ export default function AdminOrdersPage() {
       } catch (error) {
         console.error("[v0] Error fetching orders:", error)
         toast({
-          title: "Error",
+          title: t("common.error"),
           description: "Failed to fetch orders.",
           variant: "destructive"
         })
@@ -38,12 +41,12 @@ export default function AdminOrdersPage() {
     }
 
     fetchOrders()
-  }, [supabase])
+  }, [supabase, t])
 
   const handleSelectOrder = (orderId: string) => {
-    setSelectedOrders(prev => 
-      prev.includes(orderId) 
-        ? prev.filter(id => id !== orderId) 
+    setSelectedOrders(prev =>
+      prev.includes(orderId)
+        ? prev.filter(id => id !== orderId)
         : [...prev, orderId]
     );
   };
@@ -57,16 +60,16 @@ export default function AdminOrdersPage() {
   };
 
   const handleBulkStatusChange = async (newStatus: string) => {
-    if (!confirm(`Are you sure you want to update ${selectedOrders.length} orders to "${newStatus}"?`)) return;
+    if (!confirm(t("common.confirm"))) return;
 
     try {
       const { error } = await supabase.from("orders").update({ status: newStatus }).in("id", selectedOrders);
       if (error) throw error;
-      
+
       setOrders(orders.map(o => selectedOrders.includes(o.id) ? { ...o, status: newStatus } : o));
       setSelectedOrders([]);
       toast({
-        title: "Success",
+        title: t("common.success"),
         description: `${selectedOrders.length} orders updated successfully!`,
       });
 
@@ -78,7 +81,7 @@ export default function AdminOrdersPage() {
     } catch (error) {
       console.error("Error bulk updating orders:", error);
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: "Failed to update selected orders.",
         variant: "destructive"
       });
@@ -93,8 +96,8 @@ export default function AdminOrdersPage() {
 
       setOrders(orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)))
       toast({
-        title: "Order Status Updated",
-        description: `Order #${orderId.slice(0, 8)} status updated to ${newStatus}.`,
+        title: t("common.success"),
+        description: `Order #${orderId.slice(0, 8)} status updated to ${t("orders." + newStatus)}.`,
       });
 
       // Send notification if order is completed
@@ -129,7 +132,7 @@ export default function AdminOrdersPage() {
     } catch (error) {
       console.error("[v0] Error updating order:", error)
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: "Failed to update order status.",
         variant: "destructive"
       });
@@ -139,7 +142,7 @@ export default function AdminOrdersPage() {
   const filteredOrders = statusFilter === "all" ? orders : orders.filter((o) => o.status === statusFilter)
 
   if (loading) {
-    return <div className="text-center py-12">Loading orders...</div>
+    return <div className="text-center py-12">{t("admin_dashboard.loading_sales")}</div>
   }
 
   return (
@@ -147,38 +150,38 @@ export default function AdminOrdersPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Link href="/admin/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
           <ArrowLeft size={20} />
-          Back to Admin Dashboard
+          {t("admin_dashboard.back_to_dashboard")}
         </Link>
 
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground">All Orders</h1>
-          <div className="flex gap-4 items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{t("admin_dashboard.all_orders")}</h1>
+          <div className="flex flex-wrap gap-3 items-center w-full sm:w-auto">
             {selectedOrders.length > 0 && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline">Bulk Actions ({selectedOrders.length})</Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => handleBulkStatusChange("processing")}>Set to Processing</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleBulkStatusChange("shipped")}>Set to Shipped</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleBulkStatusChange("delivered")}>Set to Delivered</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleBulkStatusChange("cancelled")}>Set to Cancelled</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex-1 sm:flex-none">{t("admin_dashboard.bulk_actions")} ({selectedOrders.length})</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleBulkStatusChange("processing")}>{t("admin_dashboard.set_to")} {t("orders.processing")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleBulkStatusChange("shipped")}>{t("admin_dashboard.set_to")} {t("orders.shipped")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleBulkStatusChange("delivered")}>{t("admin_dashboard.set_to")} {t("orders.delivered")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleBulkStatusChange("cancelled")}>{t("admin_dashboard.set_to")} {t("orders.cancelled")}</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block sr-only">Filter by Status</label>
+            <div className="flex-1 sm:flex-none">
+              <label className="text-sm font-medium text-foreground mb-2 block sr-only">{t("admin_dashboard.filter_status")}</label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Orders</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="shipped">Shipped</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="all">{t("admin_dashboard.all_orders")}</SelectItem>
+                  <SelectItem value="pending">{t("orders.pending")}</SelectItem>
+                  <SelectItem value="processing">{t("orders.processing")}</SelectItem>
+                  <SelectItem value="shipped">{t("orders.shipped")}</SelectItem>
+                  <SelectItem value="delivered">{t("orders.delivered")}</SelectItem>
+                  <SelectItem value="cancelled">{t("orders.cancelled")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -188,7 +191,7 @@ export default function AdminOrdersPage() {
         <Card>
           <CardContent className="pt-6">
             {filteredOrders.length === 0 ? (
-              <p className="text-center text-slate-600 py-12">No orders found</p>
+              <p className="text-center text-slate-600 py-12">{t("admin_dashboard.no_orders")}</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -196,26 +199,26 @@ export default function AdminOrdersPage() {
                     <tr className="border-b">
                       <th className="py-3 px-4">
                         <Checkbox
-                            checked={selectedOrders.length > 0 && selectedOrders.length === filteredOrders.length}
-                            onCheckedChange={handleSelectAll}
+                          checked={selectedOrders.length > 0 && selectedOrders.length === filteredOrders.length}
+                          onCheckedChange={handleSelectAll}
                         />
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold">Order ID</th>
-                      <th className="text-left py-3 px-4 font-semibold">Date</th>
-                      <th className="text-left py-3 px-4 font-semibold">Status</th>
-                      <th className="text-left py-3 px-4 font-semibold">Payment</th>
-                      <th className="text-right py-3 px-4 font-semibold">Total</th>
-                      <th className="text-center py-3 px-4 font-semibold">Actions</th>
+                      <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.table.order_id")}</th>
+                      <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.table.date")}</th>
+                      <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.table.status")}</th>
+                      <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.table.payment")}</th>
+                      <th className="text-right py-3 px-4 font-semibold">{t("checkout.total")}</th>
+                      <th className="text-center py-3 px-4 font-semibold">{t("admin_dashboard.table.action")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredOrders.map((order) => (
                       <tr key={order.id} className="border-b hover:bg-slate-50">
                         <td className="py-3 px-4">
-                            <Checkbox
-                                checked={selectedOrders.includes(order.id)}
-                                onCheckedChange={() => handleSelectOrder(order.id)}
-                            />
+                          <Checkbox
+                            checked={selectedOrders.includes(order.id)}
+                            onCheckedChange={() => handleSelectOrder(order.id)}
+                          />
                         </td>
                         <td className="py-3 px-4 font-mono text-sm">{order.id.slice(0, 8)}</td>
                         <td className="py-3 px-4 text-sm">{new Date(order.created_at).toLocaleDateString()}</td>
@@ -225,19 +228,19 @@ export default function AdminOrdersPage() {
                             onChange={(e) => updateOrderStatus(order.id, e.target.value)}
                             className="px-2 py-1 border rounded text-sm bg-white"
                           >
-                            <option value="pending">Pending</option>
-                            <option value="processing">Processing</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="cancelled">Cancelled</option>
+                            <option value="pending">{t("orders.pending")}</option>
+                            <option value="processing">{t("orders.processing")}</option>
+                            <option value="shipped">{t("orders.shipped")}</option>
+                            <option value="delivered">{t("orders.delivered")}</option>
+                            <option value="cancelled">{t("orders.cancelled")}</option>
                           </select>
                         </td>
                         <td className="py-3 px-4 text-sm capitalize">{order.payment_method.replace(/_/g, " ")}</td>
-                        <td className="py-3 px-4 text-right font-semibold">${order.total_amount.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-right font-semibold">R{order.total_amount.toFixed(2)}</td>
                         <td className="py-3 px-4 text-center">
                           <Link href={`/admin/orders/${order.id}`}>
                             <Button variant="outline" size="sm">
-                              View
+                              {t("admin_dashboard.table.view")}
                             </Button>
                           </Link>
                         </td>

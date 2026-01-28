@@ -37,7 +37,7 @@ export function DocumentUploadField({
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
-      const result = await uploadFile(file, bucket, folder)
+      const result = await uploadFile(file, folder ? `${bucket}/${folder}` : bucket)
 
       if (result.error) {
         setError(result.error)
@@ -62,11 +62,9 @@ export function DocumentUploadField({
 
   async function handleRemoveDocument(urlToRemove: string) {
     // Extract path from URL
-    // Assuming URL format like: https://[supabase-project-id].supabase.co/storage/v1/object/public/[bucket]/[folder]/[filename]
-    const pathSegments = urlToRemove.split('/')
-    const fileName = pathSegments.pop()
-    const folderName = pathSegments.pop()
-    const pathInStorage = folder ? `${folderName}/${fileName}` : fileName;
+    // Assuming URL format like: https://[supabase-project-id].supabase.co/storage/v1/object/public/public_uploads/[path]
+    const urlParts = urlToRemove.split('/public_uploads/')
+    const pathInStorage = urlParts.length > 1 ? urlParts[1] : ""
 
     if (!pathInStorage) {
       toast({
@@ -81,7 +79,7 @@ export function DocumentUploadField({
     if (!confirmed) return
 
     try {
-      const success = await deleteFile(bucket, pathInStorage)
+      const success = await deleteFile(pathInStorage)
       if (success) {
         onUploadComplete(currentDocumentUrls.filter((url) => url !== urlToRemove))
         toast({

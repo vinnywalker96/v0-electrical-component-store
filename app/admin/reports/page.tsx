@@ -84,8 +84,8 @@ export default function AdminReportsPage() {
                   <TableCell className="font-medium">{order.id.substring(0, 8)}</TableCell>
                   <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>{formatPrice(order.total_amount)}</TableCell>
-                  <TableCell>{order.status}</TableCell>
-                  <TableCell>{order.payment_status}</TableCell>
+                  <TableCell className="capitalize">{t(`seller_orders.${order.status}`)}</TableCell>
+                  <TableCell className="capitalize">{t(`seller_orders.${order.payment_status}`)}</TableCell>
                   <TableCell>{order.user_id?.substring(0, 8)}</TableCell>
                 </TableRow>
               ))}

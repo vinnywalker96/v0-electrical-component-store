@@ -9,11 +9,13 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useLanguage } from "@/lib/context/language-context"
 
 export default function SignUpPage() {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const { t } = useLanguage()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [formData, setFormData] = useState({
@@ -29,12 +31,12 @@ export default function SignUpPage() {
     setError(null)
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
+      setError(t("auth.password_mismatch"))
       return
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters")
+      setError(t("auth.password_too_short"))
       return
     }
 
@@ -81,7 +83,7 @@ export default function SignUpPage() {
       }, 2000)
     } catch (err: any) {
       console.error("[v0] Sign up error:", err)
-      setError(err.message || "Failed to create account")
+      setError(err.message || t("auth.failed_sign_up"))
     } finally {
       setLoading(false)
     }
@@ -93,9 +95,9 @@ export default function SignUpPage() {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <div className="text-green-600 text-5xl mb-4">✓</div>
-            <h2 className="text-2xl font-bold mb-2">Account Created!</h2>
+            <h2 className="text-2xl font-bold mb-2">{t("auth.account_created_title")}</h2>
             <p className="text-slate-600">
-              A confirmation email has been sent. You&apos;ll be redirected to sign in shortly.
+              {t("auth.account_created_desc")}
             </p>
           </CardContent>
         </Card>
@@ -107,15 +109,15 @@ export default function SignUpPage() {
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Create Account</CardTitle>
+          <CardTitle className="text-2xl text-center">{t("auth.createAccount")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUp} className="space-y-4">
             {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{error}</div>}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">First Name</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t("auth.firstName")}</label>
                 <Input
                   placeholder="John"
                   value={formData.firstName}
@@ -125,7 +127,7 @@ export default function SignUpPage() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Last Name</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t("auth.lastName")}</label>
                 <Input
                   placeholder="Doe"
                   value={formData.lastName}
@@ -137,10 +139,10 @@ export default function SignUpPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Email</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">{t("auth.email")}</label>
               <Input
                 type="email"
-                placeholder="your@email.com"
+                placeholder={t("footer.email_placeholder")}
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
@@ -149,7 +151,7 @@ export default function SignUpPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Password</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">{t("auth.password")}</label>
               <Input
                 type="password"
                 placeholder="••••••••"
@@ -161,7 +163,7 @@ export default function SignUpPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Confirm Password</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">{t("auth.confirmPassword")}</label>
               <Input
                 type="password"
                 placeholder="••••••••"
@@ -173,21 +175,21 @@ export default function SignUpPage() {
             </div>
 
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Creating account..." : "Create Account"}
+              {loading ? t("auth.signing_up") : t("auth.createAccount")}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm">
             <p className="text-slate-600">
-              Already have an account?{" "}
+              {t("auth.alreadyHaveAccount")}{" "}
               <Link href="/auth/login" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Sign in
+                {t("auth.sign_in_link")}
               </Link>
             </p>
           </div>
 
           <Link href="/" className="block text-center mt-4 text-sm text-blue-600 hover:text-blue-700">
-            Back to Home
+            {t("auth.back_to_home")}
           </Link>
         </CardContent>
       </Card>

@@ -5,11 +5,13 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useLanguage } from "@/lib/context/language-context"
 
 export function NewsletterSignup() {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
+  const { t } = useLanguage()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -26,15 +28,15 @@ export function NewsletterSignup() {
       const data = await response.json()
 
       if (response.ok) {
-        setMessage("Thanks for subscribing!")
+        setMessage(t("footer.thanks"))
         setEmail("")
         setTimeout(() => setMessage(""), 3000)
       } else {
-        setMessage(data.error || "Failed to subscribe")
+        setMessage(data.error || t("footer.failed"))
       }
     } catch (error) {
       console.error("[v0] Subscribe error:", error)
-      setMessage("An error occurred. Please try again.")
+      setMessage(t("footer.error"))
     } finally {
       setLoading(false)
     }
@@ -44,14 +46,14 @@ export function NewsletterSignup() {
     <form onSubmit={handleSubmit} className="flex gap-2">
       <Input
         type="email"
-        placeholder="your@email.com"
+        placeholder={t("footer.email_placeholder")}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         disabled={loading}
         className="flex-1"
       />
       <Button type="submit" disabled={loading}>
-        {loading ? "Subscribing..." : "Subscribe"}
+        {loading ? t("footer.subscribing") : t("footer.subscribe")}
       </Button>
       {message && <div className="text-sm text-slate-600 whitespace-nowrap">{message}</div>}
     </form>

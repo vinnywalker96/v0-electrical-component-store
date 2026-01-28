@@ -72,10 +72,11 @@ export default function Navbar() {
 
   async function handleLogout() {
     toast({
-      title: "Logging Out",
-      description: "You are being logged out...",
+      title: t("common.logout"),
+      description: t("common.loading"),
     })
-    await supabase.auth.signOut()
+    // Sign out globally to terminate all sessions
+    await supabase.auth.signOut({ scope: 'global' })
     setUser(null)
     setUserRole(null)
     router.push("/auth/login")
@@ -88,9 +89,9 @@ export default function Navbar() {
   }
 
   const getDashboardLabel = () => {
-    if (userRole === "vendor") return "Vendor Dashboard"
-    if (userRole === "admin" || userRole === "super_admin") return "Admin Dashboard"
-    return "Dashboard"
+    if (userRole === "vendor") return t("navigation.vendor_dashboard") || "Vendor Dashboard"
+    if (userRole === "admin" || userRole === "super_admin") return t("navigation.admin_dashboard") || "Admin Dashboard"
+    return t("navigation.dashboard") || "Dashboard"
   }
 
   const showDashboardToast = (dashboardType: string) => {
@@ -158,7 +159,7 @@ export default function Navbar() {
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuItem asChild>
                         <Link href={getDashboardLink()} className="flex items-center gap-2 cursor-pointer"
-                              onClick={() => showDashboardToast(getDashboardLabel())}>
+                          onClick={() => showDashboardToast(getDashboardLabel())}>
                           <LayoutDashboard className="w-4 h-4" />
                           {getDashboardLabel()}
                         </Link>
@@ -166,14 +167,14 @@ export default function Navbar() {
 
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                          <Link href={
-                              (pathname || "").startsWith("/admin") ? "/admin/profile" :
-                              (pathname || "").startsWith("/seller") ? "/seller/profile" :
+                        <Link href={
+                          (pathname || "").startsWith("/admin") ? "/admin/profile" :
+                            (pathname || "").startsWith("/seller") ? "/seller/profile" :
                               "/protected/profile"
-                            } className="flex items-center gap-2 cursor-pointer">
-                            <User className="w-4 h-4" />
-                            {t("dropdown.profile")}
-                          </Link>
+                        } className="flex items-center gap-2 cursor-pointer">
+                          <User className="w-4 h-4" />
+                          {t("navigation.profile")}
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -181,7 +182,7 @@ export default function Navbar() {
                         className="flex items-center gap-2 cursor-pointer text-red-600"
                       >
                         <LogOut className="w-4 h-4" />
-                        {t("dropdown.logout")}
+                        {t("navigation.logout")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -218,31 +219,81 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu */}
-        {isOpen && (
-          <div className="md:hidden pb-4 flex flex-col gap-2">
-            <Link href="/" className="block px-2 py-2 hover:bg-muted rounded transition">
-              {t("common.home")}
+        <div
+          className={`md:hidden fixed inset-x-0 top-16 bg-background border-b border-border shadow-xl z-40 transition-all duration-300 ease-in-out transform ${isOpen ? "translate-y-0 opacity-100 visible" : "-translate-y-4 opacity-0 invisible"
+            }`}
+        >
+          <div className="p-4 space-y-2">
+            <Link href="/" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-xl transition" onClick={() => setIsOpen(false)}>
+              <span className="font-medium">{t("common.home")}</span>
             </Link>
-            <Link href="/shop" className="block px-2 py-2 hover:bg-muted rounded transition">
-              {t("common.shop")}
+            <Link href="/shop" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-xl transition" onClick={() => setIsOpen(false)}>
+              <span className="font-medium">{t("common.shop")}</span>
             </Link>
-            <Link href="/about" className="block px-2 py-2 hover:bg-muted rounded transition">
-              {t("common.about")}
+            <Link href="/about" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-xl transition" onClick={() => setIsOpen(false)}>
+              <span className="font-medium">{t("common.about")}</span>
             </Link>
-            <Link href="/contact" className="block px-2 py-2 hover:bg-muted rounded transition">
-              {t("common.contact")}
+            <Link href="/contact" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-xl transition" onClick={() => setIsOpen(false)}>
+              <span className="font-medium">{t("common.contact")}</span>
             </Link>
+
             {user && (
               <>
-                <Link href="/chat" className="block px-2 py-2 hover:bg-muted rounded transition">
-                  {t("common.messages")}
+                <div className="h-px bg-border my-2 mx-4" />
+                <Link href="/chat" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-xl transition" onClick={() => setIsOpen(false)}>
+                  <span className="font-medium">{t("common.messages")}</span>
                 </Link>
-                <Link href={getDashboardLink()} className="block px-2 py-2 hover:bg-muted rounded transition">
-                  {getDashboardLabel()}
+                <Link href={getDashboardLink()} className="flex items-center gap-3 px-4 py-3 bg-primary/5 text-primary hover:bg-primary/10 rounded-xl transition" onClick={() => {
+                  setIsOpen(false)
+                  showDashboardToast(getDashboardLabel())
+                }}>
+                  <LayoutDashboard className="w-5 h-5" />
+                  <span className="font-semibold">{getDashboardLabel()}</span>
                 </Link>
+                <Link href={
+                  (pathname || "").startsWith("/admin") ? "/admin/profile" :
+                    (pathname || "").startsWith("/seller") ? "/seller/profile" :
+                      "/protected/profile"
+                } className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-xl transition" onClick={() => setIsOpen(false)}>
+                  <User className="w-5 h-5" />
+                  <span className="font-medium">{t("navigation.profile")}</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout()
+                    setIsOpen(false)
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition mt-2"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-medium">{t("navigation.logout")}</span>
+                </button>
               </>
             )}
+
+            {!user && !loading && (
+              <div className="grid grid-cols-2 gap-4 mt-4 px-2">
+                <Link href="/auth/login" className="w-full" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full rounded-xl">
+                    {t("dropdown.login")}
+                  </Button>
+                </Link>
+                <Link href="/auth/signup" className="w-full" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full rounded-xl">
+                    {t("dropdown.signup")}
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* Backdrop for mobile menu */}
+        {isOpen && (
+          <div
+            className="md:hidden fixed inset-0 bg-black/20 z-30"
+            onClick={() => setIsOpen(false)}
+          />
         )}
       </div>
     </nav>
