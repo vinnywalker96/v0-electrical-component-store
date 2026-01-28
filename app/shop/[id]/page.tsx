@@ -162,9 +162,8 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-4 mb-6">
               <span className="text-3xl font-bold text-primary">{displayPrice}</span>
               <span
-                className={`px-3 py-1 rounded-full text-sm ${
-                  product.stock_quantity > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                }`}
+                className={`px-3 py-1 rounded-full text-sm ${product.stock_quantity > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  }`}
               >
                 {product.stock_quantity > 0 ? t("product_detail.in_stock") : t("product_detail.out_of_stock")}
               </span>
@@ -190,7 +189,7 @@ export default function ProductDetailPage() {
                   <div>
                     <dt className="text-muted-foreground">{t("product_detail.stock")}</dt>
                     <dd className="font-medium">
-                        {product.stock_quantity > 0 ? t("product_detail.in_stock") : t("product_detail.out_of_stock")}
+                      {product.stock_quantity > 0 ? t("product_detail.in_stock") : t("product_detail.out_of_stock")}
                     </dd>
                   </div>
                 </dl>
@@ -198,26 +197,26 @@ export default function ProductDetailPage() {
             </Card>
 
             {/* Quantity and Add to Cart */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center border border-border rounded-lg">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex items-center border border-border rounded-lg bg-slate-50 w-full sm:w-auto justify-between sm:justify-start">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="p-3 hover:bg-muted transition"
-                  disabled={quantity <= 1}
+                  className="p-3 hover:bg-white rounded-l-lg transition shadow-sm disabled:opacity-50"
+                  disabled={quantity <= 1 || !canAddToCart}
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="px-4 py-2 font-medium">{quantity}</span>
+                <span className="px-6 py-2 font-bold text-lg min-w-[3rem] text-center">{quantity}</span>
                 <button
                   onClick={() => setQuantity(Math.min(product.stock_quantity, quantity + 1))}
-                  className="p-3 hover:bg-muted transition"
-                  disabled={quantity >= product.stock_quantity}
+                  className="p-3 hover:bg-white rounded-r-lg transition shadow-sm"
+                  disabled={quantity >= product.stock_quantity || !canAddToCart}
                 >
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
 
-              <Button onClick={handleAddToCart} disabled={!canAddToCart || adding} size="lg" className="flex-1">
+              <Button onClick={handleAddToCart} disabled={!canAddToCart || adding} size="lg" className="w-full sm:flex-1 h-12 md:h-14 text-lg">
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 {adding ? t("product_detail.adding") : added ? t("product_detail.added_to_cart") : t("product_detail.add_to_cart")}
               </Button>

@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { AlertCircle } from "lucide-react"
 import type { Address } from "@/lib/types"
+import { useLanguage } from "@/lib/context/language-context"
 
 interface AddressFormProps {
   userId: string
@@ -22,6 +23,7 @@ interface AddressFormProps {
 
 export function AddressForm({ userId, address }: AddressFormProps) {
   const router = useRouter()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -74,7 +76,7 @@ export function AddressForm({ userId, address }: AddressFormProps) {
       router.push("/protected/addresses")
       router.refresh()
     } catch (err: any) {
-      setError(err.message || "Failed to save address")
+      setError(err.message || t("addresses.delete_failed"))
     } finally {
       setLoading(false)
     }
@@ -114,7 +116,7 @@ export function AddressForm({ userId, address }: AddressFormProps) {
               required
               value={formData.fullAddress}
               onChange={(e) => setFormData({ ...formData, fullAddress: e.target.value })}
-              placeholder="Enter your complete street address"
+              placeholder={t("addresses.street_address_placeholder")}
               rows={3}
             />
           </div>
@@ -127,7 +129,7 @@ export function AddressForm({ userId, address }: AddressFormProps) {
                 required
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                placeholder="City"
+                placeholder={t("addresses.city_placeholder")}
               />
             </div>
 
@@ -138,7 +140,7 @@ export function AddressForm({ userId, address }: AddressFormProps) {
                 required
                 value={formData.postalCode}
                 onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                placeholder="Postal Code"
+                placeholder={t("addresses.postal_code_placeholder")}
               />
             </div>
           </div>
@@ -156,7 +158,7 @@ export function AddressForm({ userId, address }: AddressFormProps) {
 
           <div className="flex gap-4">
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : address ? "Update Address" : "Save Address"}
+              {loading ? t("addresses.saving") : address ? t("addresses.update_address") : t("addresses.save_address")}
             </Button>
             <Button type="button" variant="outline" onClick={() => router.push("/protected/addresses")}>
               Cancel

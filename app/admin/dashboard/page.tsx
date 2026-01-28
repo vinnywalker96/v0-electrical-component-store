@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import type { Order } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Package, ShoppingCart, Users, TrendingUp, LogOut, Settings, CreditCard, UserCog } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Import Select components
 import { AdminSalesTable } from "@/components/admin-sales-table" // Import AdminSalesTable
+import { useLanguage } from "@/lib/context/language-context"
 
 import { UserManagementButton } from "@/components/user-management-button";
 
@@ -52,6 +54,7 @@ const getDateRange = (period: "day" | "week" | "month" | "year") => {
 
 export default function AdminDashboardPage() {
   const supabase = createClient()
+  const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({
     totalProducts: 0,
     totalOrders: 0,
@@ -65,6 +68,7 @@ export default function AdminDashboardPage() {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false)
   const [filterPeriod, setFilterPeriod] = useState<"day" | "week" | "month" | "year">("month"); // New state for filter
   const [activeTab, setActiveTab] = useState<"overview" | "sales">("overview"); // New state for tabs
+  const { t } = useLanguage()
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -135,12 +139,13 @@ export default function AdminDashboardPage() {
   }, [filterPeriod, supabase])
 
   async function handleLogout() {
-    await supabase.auth.signOut()
-    window.location.href = "/auth/login"
+    // Sign out globally to terminate all sessions
+    await supabase.auth.signOut({ scope: 'global' })
+    router.push("/auth/login")
   }
 
   if (loading) {
-    return <div className="text-center py-12">Loading admin dashboard...</div>
+    return <div className="text-center py-12">{t("admin_dashboard.loading")}</div>
   }
 
   return (
@@ -153,34 +158,34 @@ export default function AdminDashboardPage() {
                 variant={activeTab === "overview" ? "default" : "outline"}
                 onClick={() => setActiveTab("overview")}
               >
-                Overview
+                {t("admin_dashboard.overview")}
               </Button>
               <Button
                 variant={activeTab === "sales" ? "default" : "outline"}
                 onClick={() => setActiveTab("sales")}
               >
-                Sales Report
+                {t("admin_dashboard.sales_report")}
               </Button>
             </div>
             {activeTab === "overview" ? (
               <>
-                <h1 className="text-4xl font-bold text-foreground">Admin Dashboard</h1>
-                <p className="text-slate-600 mt-1">Manage products, orders, and inventory</p>
+                <h1 className="text-4xl font-bold text-foreground">{t("admin_dashboard.title")}</h1>
+                <p className="text-slate-600 mt-1">{t("admin_dashboard.subtitle")}</p>
               </>
             ) : (
-              <h1 className="text-4xl font-bold text-foreground">Sales Report</h1>
+              <h1 className="text-4xl font-bold text-foreground">{t("admin_dashboard.sales_report")}</h1>
             )}
           </div>
           <div className="flex gap-2">
             <Select value={filterPeriod} onValueChange={(value) => setFilterPeriod(value as "day" | "week" | "month" | "year")}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter Period" />
+                <SelectValue placeholder={t("admin_dashboard.filter_period")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="day">Today</SelectItem>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-                <SelectItem value="year">This Year</SelectItem>
+                <SelectItem value="day">{t("admin_dashboard.periods.today")}</SelectItem>
+                <SelectItem value="week">{t("admin_dashboard.periods.week")}</SelectItem>
+                <SelectItem value="month">{t("admin_dashboard.periods.month")}</SelectItem>
+                <SelectItem value="year">{t("admin_dashboard.periods.year")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -189,86 +194,86 @@ export default function AdminDashboardPage() {
         {activeTab === "overview" && (
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
               <Card>
-                <CardContent className="pt-6 flex items-center gap-4">
-                  <Package className="w-10 h-10 text-blue-600" />
+                <CardContent className="p-4 md:pt-6 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
+                  <Package className="w-8 h-8 md:w-10 md:h-10 text-blue-600" />
                   <div>
-                    <p className="text-sm text-slate-600">Products</p>
-                    <p className="text-2xl font-bold">{stats.totalProducts}</p>
+                    <p className="text-xs md:text-sm text-slate-600">{t("admin_dashboard.stats.products")}</p>
+                    <p className="text-xl md:text-2xl font-bold">{stats.totalProducts}</p>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardContent className="pt-6 flex items-center gap-4">
-                  <ShoppingCart className="w-10 h-10 text-green-600" />
+                <CardContent className="p-4 md:pt-6 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
+                  <ShoppingCart className="w-8 h-8 md:w-10 md:h-10 text-green-600" />
                   <div>
-                    <p className="text-sm text-slate-600">Orders</p>
-                    <p className="text-2xl font-bold">{stats.totalOrders}</p>
+                    <p className="text-xs md:text-sm text-slate-600">{t("admin_dashboard.stats.orders")}</p>
+                    <p className="text-xl md:text-2xl font-bold">{stats.totalOrders}</p>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardContent className="pt-6 flex items-center gap-4">
-                  <TrendingUp className="w-10 h-10 text-orange-600" />
+                <CardContent className="p-4 md:pt-6 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
+                  <TrendingUp className="w-8 h-8 md:w-10 md:h-10 text-orange-600" />
                   <div>
-                    <p className="text-sm text-slate-600">Revenue</p>
-                    <p className="text-2xl font-bold">R{stats.totalRevenue.toFixed(0)}</p>
+                    <p className="text-xs md:text-sm text-slate-600">{t("admin_dashboard.stats.revenue")}</p>
+                    <p className="text-xl md:text-2xl font-bold">R{stats.totalRevenue.toFixed(0)}</p>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardContent className="pt-6 flex items-center gap-4">
-                  <Settings className="w-10 h-10 text-yellow-600" />
+                <CardContent className="p-4 md:pt-6 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
+                  <Settings className="w-8 h-8 md:w-10 md:h-10 text-yellow-600" />
                   <div>
-                    <p className="text-sm text-slate-600">Pending</p>
-                    <p className="text-2xl font-bold">{stats.pendingOrders}</p>
+                    <p className="text-xs md:text-sm text-slate-600">{t("admin_dashboard.stats.pending")}</p>
+                    <p className="text-xl md:text-2xl font-bold">{stats.pendingOrders}</p>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardContent className="pt-6 flex items-center gap-4">
-                  <CreditCard className="w-10 h-10 text-red-600" />
+                <CardContent className="p-4 md:pt-6 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
+                  <CreditCard className="w-8 h-8 md:w-10 md:h-10 text-red-600" />
                   <div>
-                    <p className="text-sm text-slate-600">Unpaid</p>
-                    <p className="text-2xl font-bold">{stats.unpaidOrders}</p>
+                    <p className="text-xs md:text-sm text-slate-600">{t("admin_dashboard.stats.unpaid")}</p>
+                    <p className="text-xl md:text-2xl font-bold">{stats.unpaidOrders}</p>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardContent className="pt-6 flex items-center gap-4">
-                  <Users className="w-10 h-10 text-purple-600" />
+                <CardContent className="p-4 md:pt-6 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
+                  <Users className="w-8 h-8 md:w-10 md:h-10 text-purple-600" />
                   <div>
-                    <p className="text-sm text-slate-600">Users</p>
-                    <p className="text-2xl font-bold">{stats.totalUsers}</p>
+                    <p className="text-xs md:text-sm text-slate-600">{t("admin_dashboard.stats.users")}</p>
+                    <p className="text-xl md:text-2xl font-bold">{stats.totalUsers}</p>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Quick Links */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Link href="/admin/products">
                 <Button className="w-full h-16 text-lg justify-start gap-4">
                   <Package size={24} />
-                  Manage Products
+                  {t("admin_dashboard.quick_links.manage_products")}
                 </Button>
               </Link>
               <Link href="/admin/orders">
                 <Button className="w-full h-16 text-lg justify-start gap-4">
                   <ShoppingCart size={24} />
-                  View Orders
+                  {t("admin_dashboard.quick_links.view_orders")}
                 </Button>
               </Link>
               <Link href="/admin/banking-details">
                 <Button className="w-full h-16 text-lg justify-start gap-4 bg-transparent" variant="outline">
                   <CreditCard size={24} />
-                  Banking Details
+                  {t("admin_dashboard.quick_links.banking_details")}
                 </Button>
               </Link>
               {isSuperAdmin && (
@@ -276,7 +281,7 @@ export default function AdminDashboardPage() {
                   <Link href="/admin/settings">
                     <Button className="w-full h-16 text-lg justify-start gap-4" variant="outline">
                       <Settings size={24} />
-                      Admin Settings
+                      {t("admin_dashboard.quick_links.admin_settings")}
                     </Button>
                   </Link>
                   <UserManagementButton />
@@ -290,19 +295,19 @@ export default function AdminDashboardPage() {
                 <Link href="/admin/orders/new">
                   <Button className="w-full h-12 justify-start gap-2 bg-green-600 hover:bg-green-700">
                     <ShoppingCart size={18} />
-                    Create Order
+                    {t("admin_dashboard.actions.create_order")}
                   </Button>
                 </Link>
                 <Link href="/admin/users/new">
                   <Button className="w-full h-12 justify-start gap-2 bg-blue-600 hover:bg-blue-700">
                     <UserCog size={18} />
-                    Create User
+                    {t("admin_dashboard.actions.create_user")}
                   </Button>
                 </Link>
                 <Link href="/admin/vendors/new">
                   <Button className="w-full h-12 justify-start gap-2 bg-purple-600 hover:bg-purple-700">
                     <Settings size={18} />
-                    Create Vendor
+                    {t("admin_dashboard.actions.create_vendor")}
                   </Button>
                 </Link>
               </div>
@@ -311,22 +316,22 @@ export default function AdminDashboardPage() {
             {/* Recent Orders */}
             <Card>
               <CardHeader>
-                <CardTitle>Recent Orders</CardTitle>
+                <CardTitle>{t("admin_dashboard.recent_orders")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {recentOrders.length === 0 ? (
-                  <p className="text-slate-600">No orders yet</p>
+                  <p className="text-slate-600">{t("admin_dashboard.no_orders")}</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left py-3 px-4 font-semibold">Order ID</th>
-                          <th className="text-left py-3 px-4 font-semibold">Date</th>
-                          <th className="text-left py-3 px-4 font-semibold">Status</th>
-                          <th className="text-left py-3 px-4 font-semibold">Payment</th>
-                          <th className="text-right py-3 px-4 font-semibold">Amount</th>
-                          <th className="text-center py-3 px-4 font-semibold">Action</th>
+                          <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.table.order_id")}</th>
+                          <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.table.date")}</th>
+                          <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.table.status")}</th>
+                          <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.table.payment")}</th>
+                          <th className="text-right py-3 px-4 font-semibold">{t("admin_dashboard.table.amount")}</th>
+                          <th className="text-center py-3 px-4 font-semibold">{t("admin_dashboard.table.action")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -341,11 +346,10 @@ export default function AdminDashboardPage() {
                             </td>
                             <td className="py-3 px-4">
                               <span
-                                className={`px-3 py-1 rounded-full text-sm capitalize ${
-                                  order.payment_status === "paid"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
+                                className={`px-3 py-1 rounded-full text-sm capitalize ${order.payment_status === "paid"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                                  }`}
                               >
                                 {order.payment_status || "unpaid"}
                               </span>
@@ -354,7 +358,7 @@ export default function AdminDashboardPage() {
                             <td className="py-3 px-4 text-center">
                               <Link href={`/admin/orders/${order.id}`}>
                                 <Button variant="outline" size="sm">
-                                  View
+                                  {t("admin_dashboard.table.view")}
                                 </Button>
                               </Link>
                             </td>

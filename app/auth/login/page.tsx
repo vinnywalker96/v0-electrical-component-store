@@ -9,11 +9,13 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useLanguage } from "@/lib/context/language-context"
 
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
+  const { t } = useLanguage()
   const [error, setError] = useState<string | null>(null)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -43,17 +45,17 @@ export default function LoginPage() {
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Sign In</CardTitle>
+          <CardTitle className="text-2xl text-center">{t("auth.login")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{error}</div>}
 
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Email</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">{t("auth.email")}</label>
               <Input
                 type="email"
-                placeholder="your@email.com"
+                placeholder={t("footer.email_placeholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -62,7 +64,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Password</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">{t("auth.password")}</label>
               <Input
                 type="password"
                 placeholder="••••••••"
@@ -74,21 +76,21 @@ export default function LoginPage() {
             </div>
 
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? t("auth.signing_in") : t("auth.login")}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm">
             <p className="text-slate-600">
-              Don&apos;t have an account?{" "}
+              {t("auth.dontHaveAccount")}{" "}
               <Link href="/auth/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
-                Sign up
+                {t("auth.sign_up_link")}
               </Link>
             </p>
           </div>
 
           <Link href="/" className="block text-center mt-4 text-sm text-blue-600 hover:text-blue-700">
-            Back to Home
+            {t("auth.back_to_home")}
           </Link>
         </CardContent>
       </Card>

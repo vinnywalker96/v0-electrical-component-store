@@ -285,7 +285,7 @@ export default function CheckoutPage() {
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-foreground mb-8">{t("checkout.title")}</h1>
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-8">{t("checkout.title")}</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Checkout Form */}
@@ -296,7 +296,7 @@ export default function CheckoutPage() {
                 <CardTitle>{t("checkout.personal_info")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     placeholder={t("checkout.first_name")}
                     value={formData.firstName}
@@ -355,7 +355,7 @@ export default function CheckoutPage() {
                   onChange={(e) => setFormData({ ...formData, shippingAddress: e.target.value })}
                   required
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     placeholder={t("checkout.city")}
                     value={formData.shippingCity}
@@ -384,7 +384,7 @@ export default function CheckoutPage() {
                   onChange={(e) => setFormData({ ...formData, billingAddress: e.target.value })}
                   required
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     placeholder={t("checkout.city")}
                     value={formData.billingCity}

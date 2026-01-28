@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { LayoutDashboard, Store } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"
 import { ImageUploadField } from "@/components/image-upload-field"
@@ -15,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { useLanguage } from "@/lib/context/language-context"
 
 /* =======================
    Types
@@ -39,6 +41,7 @@ type UserProfile = {
 ======================= */
 export default function ProfilePage() {
   const supabase = createClient()
+  const { t } = useLanguage()
 
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -173,7 +176,7 @@ export default function ProfilePage() {
      Loading state
   ======================= */
   if (loading) {
-    return <div className="text-center py-12">Loading profile...</div>
+    return <div className="text-center py-12">{t("common.loading")}</div>
   }
 
   /* =======================
@@ -181,23 +184,23 @@ export default function ProfilePage() {
   ======================= */
   return (
     <>
-      <h1 className="text-4xl font-bold mb-8">My Profile</h1>
+      <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-8">{t("navigation.profile")}</h1>
 
       {/* Personal Info */}
       <Card>
         <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
+          <CardTitle>{t("checkout.personal_info")}</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {success && (
             <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-              Profile updated successfully!
+              {t("common.success")}
             </div>
           )}
 
           <ImageUploadField
-            label="Profile Picture"
+            label={t("vendor_dashboard.image")}
             folder="profiles"
             currentImageUrl={profileImageUrl ?? undefined}
             onUploadComplete={handleProfileImageUpload}
@@ -208,7 +211,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">
-                First Name
+                {t("checkout.first_name")}
               </label>
               <Input
                 value={formData.firstName}
@@ -221,7 +224,7 @@ export default function ProfilePage() {
 
             <div>
               <label className="text-sm font-medium mb-2 block">
-                Last Name
+                {t("checkout.last_name")}
               </label>
               <Input
                 value={formData.lastName}
@@ -235,7 +238,7 @@ export default function ProfilePage() {
 
           {/* Email */}
           <div>
-            <label className="text-sm font-medium mb-2 block">Email</label>
+            <label className="text-sm font-medium mb-2 block">{t("checkout.email")}</label>
             <Input
               type="email"
               value={profile?.email ?? ""}
@@ -243,13 +246,13 @@ export default function ProfilePage() {
               className="bg-slate-100"
             />
             <p className="text-xs text-slate-600 mt-1">
-              Email cannot be changed
+              {t("seller_orders.email_static")}
             </p>
           </div>
 
           {/* Phone */}
           <div>
-            <label className="text-sm font-medium mb-2 block">Phone</label>
+            <label className="text-sm font-medium mb-2 block">{t("checkout.phone")}</label>
             <Input
               value={formData.phone}
               onChange={(e) =>
@@ -262,10 +265,10 @@ export default function ProfilePage() {
           {/* Actions */}
           <div className="flex gap-4">
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? t("common.loading") : t("common.save")}
             </Button>
             <Link href="/protected/dashboard">
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </Link>
           </div>
         </CardContent>
@@ -274,11 +277,11 @@ export default function ProfilePage() {
       {/* Account Info */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Account Information</CardTitle>
+          <CardTitle>{t("vendor_dashboard.account_info")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm text-slate-600">Member Since</p>
+            <p className="text-sm text-slate-600">{t("vendor_dashboard.member_since")}</p>
             <p className="font-semibold">
               {profile?.created_at
                 ? new Date(profile.created_at).toLocaleDateString()
@@ -287,9 +290,9 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <p className="text-sm text-slate-600">Account Type</p>
+            <p className="text-sm text-slate-600">{t("vendor_dashboard.account_type")}</p>
             <p className="font-semibold capitalize">
-              {profile?.role ?? "Customer"}
+              {profile?.role ? t(`admin_users.${profile.role}`) : t("seller_orders.customer")}
             </p>
           </div>
         </CardContent>
@@ -299,26 +302,32 @@ export default function ProfilePage() {
       {(profile?.role === "admin" ||
         profile?.role === "super_admin" ||
         profile?.role === "vendor") && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Dashboards</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {(profile.role === "admin" ||
-              profile.role === "super_admin") && (
-              <Link href="/admin/dashboard">
-                <Button variant="outline">Admin Dashboard</Button>
-              </Link>
-            )}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>{t("navigation.dashboard")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(profile.role === "admin" ||
+                profile.role === "super_admin") && (
+                  <Link href="/admin/dashboard">
+                    <Button variant="outline" className="w-full justify-start">
+                      <LayoutDashboard className="w-4 h-4 mr-2" />
+                      {t("admin_dashboard.title")}
+                    </Button>
+                  </Link>
+                )}
 
-            {profile.role === "vendor" && (
-              <Link href="/seller/dashboard">
-                <Button variant="outline">Vendor Dashboard</Button>
-              </Link>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              {(profile.role === "vendor" || profile.role === "admin" || profile.role === "super_admin") && (
+                <Link href="/seller/dashboard">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Store className="w-4 h-4 mr-2" />
+                    {t("vendor_dashboard.vendor_dashboard")}
+                  </Button>
+                </Link>
+              )}
+            </CardContent>
+          </Card>
+        )}
     </>
   )
 }

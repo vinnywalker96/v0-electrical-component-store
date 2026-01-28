@@ -11,16 +11,19 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Send } from "lucide-react"
 import type { Message } from "@/lib/types"
+import { useLanguage } from "@/lib/context/language-context"
 
 interface ChatInterfaceProps {
   currentUserId: string
   otherUser: any
   product: any
   initialMessages: Message[]
+  basePath?: string
 }
 
-export function ChatInterface({ currentUserId, otherUser, product, initialMessages }: ChatInterfaceProps) {
+export function ChatInterface({ currentUserId, otherUser, product, initialMessages, basePath }: ChatInterfaceProps) {
   const router = useRouter()
+  const { t } = useLanguage()
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [newMessage, setNewMessage] = useState("")
   const [sending, setSending] = useState(false)
@@ -94,9 +97,9 @@ export function ChatInterface({ currentUserId, otherUser, product, initialMessag
 
   return (
     <div>
-      <Link href="/chat" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4">
+      <Link href={basePath || "/chat"} className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4">
         <ArrowLeft className="w-4 h-4" />
-        Back to Messages
+        {t("chat.back_to_messages")}
       </Link>
 
       <Card>
@@ -104,7 +107,7 @@ export function ChatInterface({ currentUserId, otherUser, product, initialMessag
           <CardTitle className="flex items-center justify-between">
             <div>
               <p className="text-lg font-semibold">
-                {otherUser.first_name || otherUser.email?.split("@")[0] || "User"}
+                {otherUser.first_name || otherUser.email?.split("@")[0] || t("chat.user_fallback")}
               </p>
               {product && (
                 <Link href={`/shop/${product.id}`} className="text-sm text-muted-foreground hover:text-primary">
@@ -118,7 +121,7 @@ export function ChatInterface({ currentUserId, otherUser, product, initialMessag
           {/* Messages */}
           <div className="h-[500px] overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
-              <div className="text-center text-muted-foreground py-12">No messages yet. Start a conversation!</div>
+              <div className="text-center text-muted-foreground py-12">{t("chat.no_messages_conversation")}</div>
             ) : (
               messages.map((msg) => (
                 <div
@@ -126,11 +129,10 @@ export function ChatInterface({ currentUserId, otherUser, product, initialMessag
                   className={`flex ${msg.sender_id === currentUserId ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                      msg.sender_id === currentUserId
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-foreground"
-                    }`}
+                    className={`max-w-[70%] rounded-lg px-4 py-2 ${msg.sender_id === currentUserId
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-foreground"
+                      }`}
                   >
                     <p className="text-sm break-words">{msg.message}</p>
                     <p className="text-xs mt-1 opacity-70">{new Date(msg.created_at).toLocaleTimeString()}</p>
@@ -146,7 +148,7 @@ export function ChatInterface({ currentUserId, otherUser, product, initialMessag
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type your message..."
+              placeholder={t("chat.type_message")}
               className="flex-1"
               disabled={sending}
             />

@@ -14,98 +14,98 @@ import {
   TrendingUp,
 } from "lucide-react"
 
-export const adminNavItems = [
+export const getAdminNavItems = (t: (key: string) => string) => [
   {
     href: "/admin/dashboard",
-    label: "Dashboard",
+    label: t("navigation.dashboard"),
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
-  { href: "/admin/users", label: "Users", icon: <Users className="w-5 h-5" /> },
-  { href: "/admin/vendors", label: "Vendors", icon: <Store className="w-5 h-5" /> },
+  { href: "/admin/users", label: t("navigation.users"), icon: <Users className="w-5 h-5" /> },
+  { href: "/admin/vendors", label: t("navigation.vendors"), icon: <Store className="w-5 h-5" /> },
   {
     href: "/admin/products",
-    label: "Products",
+    label: t("navigation.products"),
     icon: <Package className="w-5 h-5" />,
   },
   {
     href: "/admin/orders",
-    label: "Orders",
+    label: t("navigation.orders"),
     icon: <ShoppingBag className="w-5 h-5" />,
   },
-  { href: "/admin/banking-details", label: "Banking Details", icon: <CreditCard className="w-5 h-5" /> },
-  { href: "/admin/reports", label: "Reports", icon: <TrendingUp className="w-5 h-5" /> },
+  { href: "/admin/banking-details", label: t("navigation.banking_details"), icon: <CreditCard className="w-5 h-5" /> },
+  { href: "/admin/reports", label: t("navigation.reports"), icon: <TrendingUp className="w-5 h-5" /> },
   {
-    href: "/chat",
-    label: "Messages",
+    href: "/admin/messages",
+    label: t("navigation.messages"),
     icon: <MessageSquare className="w-5 h-5" />,
   },
   {
     href: "/admin/settings",
-    label: "Settings",
+    label: t("navigation.settings"),
     icon: <Settings className="w-5 h-5" />,
   },
-  { href: "/auth/logout", label: "Logout", icon: <LogOut className="w-5 h-5" /> },
+  { href: "/auth/logout", label: t("navigation.logout"), icon: <LogOut className="w-5 h-5" /> },
 ]
 
-export const sellerNavItems = [
+export const getSellerNavItems = (t: (key: string) => string) => [
   {
     href: "/seller/dashboard",
-    label: "Dashboard",
+    label: t("navigation.dashboard"),
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
   {
     href: "/seller/products",
-    label: "Products",
+    label: t("navigation.products"),
     icon: <Package className="w-5 h-5" />,
   },
   {
     href: "/seller/orders",
-    label: "Orders",
+    label: t("navigation.orders"),
     icon: <ShoppingBag className="w-5 h-5" />,
   },
   {
-    href: "/chat",
-    label: "Messages",
+    href: "/seller/messages",
+    label: t("navigation.messages"),
     icon: <MessageSquare className="w-5 h-5" />,
   },
   {
     href: "/seller/settings",
-    label: "Settings",
+    label: t("navigation.settings"),
     icon: <Settings className="w-5 h-5" />,
   },
-  { href: "/auth/logout", label: "Logout", icon: <LogOut className="w-5 h-5" /> },
+  { href: "/auth/logout", label: t("navigation.logout"), icon: <LogOut className="w-5 h-5" /> },
 ]
 
-export const customerNavItems = [
+export const getCustomerNavItems = (t: (key: string) => string) => [
   {
     href: "/protected/dashboard",
-    label: "Dashboard",
+    label: t("navigation.dashboard"),
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
   {
     href: "/protected/profile",
-    label: "Profile",
+    label: t("navigation.profile"),
     icon: <User className="w-5 h-5" />,
   },
   {
     href: "/protected/orders",
-    label: "Orders",
+    label: t("navigation.orders"),
     icon: <ShoppingBag className="w-5 h-5" />,
   },
   {
     href: "/protected/addresses",
-    label: "Addresses",
+    label: t("navigation.addresses"),
     icon: <Home className="w-5 h-5" />,
   },
-  
+
   {
     href: "/protected/settings",
-    label: "Settings",
+    label: t("navigation.settings"),
     icon: <Settings className="w-5 h-5" />,
   },
   {
-    href: "/chat",
-    label: "Messages",
+    href: "/protected/messages",
+    label: t("navigation.messages"),
     icon: <MessageSquare className="w-5 h-5" />,
   },
 ]

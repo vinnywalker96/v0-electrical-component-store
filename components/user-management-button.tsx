@@ -3,9 +3,11 @@
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { UserCog } from "lucide-react"
+import { useLanguage } from "@/lib/context/language-context"
 
 export function UserManagementButton() {
   const router = useRouter()
+  const { t } = useLanguage()
 
   const handleClick = () => {
     router.push("/admin/users")
@@ -18,7 +20,7 @@ export function UserManagementButton() {
       variant="outline"
     >
       <UserCog size={24} />
-      Manage Users
+      {t("admin_dashboard.quick_links.manage_users")}
     </Button>
   )
 }

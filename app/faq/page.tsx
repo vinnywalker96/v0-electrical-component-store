@@ -2,56 +2,14 @@
 
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
-
-const FAQS = [
-  {
-    question: "What types of electrical components do you stock?",
-    answer:
-      "We carry a wide range including resistors, capacitors, inductors, diodes, transistors, integrated circuits, wires, switches, relays, breadboards, circuit boards, and more. Check our Shop page for our complete inventory.",
-  },
-  {
-    question: "Do you offer bulk discounts?",
-    answer:
-      "Yes! We offer tiered discounts for bulk orders. Please contact our sales team or check your cart for automatic volume discounts.",
-  },
-  {
-    question: "What is your shipping policy?",
-    answer:
-      "We ship nationwide. Standard delivery takes 2-3 business days. Orders over R500 qualify for free shipping. Express delivery is also available.",
-  },
-  {
-    question: "How do I know if a component is in stock?",
-    answer:
-      "All products on our website are in stock. The availability is updated in real-time. You can also add items to your cart to reserve them.",
-  },
-  {
-    question: "What payment methods do you accept?",
-    answer:
-      "We accept all major credit cards, EFT transfers, and cash on delivery for eligible locations. All transactions are secure and encrypted.",
-  },
-  {
-    question: "Can I return or exchange products?",
-    answer:
-      "Yes, we offer 30-day returns and exchanges for unused, unopened items. Please see our Returns & Refund Policy page for complete details.",
-  },
-  {
-    question: "Do you provide technical support?",
-    answer:
-      "Our technical team is available to help with product selection, specifications, and troubleshooting. Contact us via email or phone.",
-  },
-  {
-    question: "Can I get custom components or specific certifications?",
-    answer:
-      "Yes, we can source custom components and provide certified electronics for specific applications. Please contact our team with your requirements.",
-  },
-]
+import { useLanguage } from "@/lib/context/language-context"
 
 interface FAQItem {
   question: string
   answer: string
 }
 
-function FAQItem({ faq }: { faq: FAQItem }) {
+function FAQItemComponent({ faq }: { faq: FAQItem }) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -69,11 +27,48 @@ function FAQItem({ faq }: { faq: FAQItem }) {
 }
 
 export default function FAQ() {
+  const { t } = useLanguage()
+
+  const FAQS = [
+    {
+      question: t("faq.q1_question"),
+      answer: t("faq.q1_answer"),
+    },
+    {
+      question: t("faq.q2_question"),
+      answer: t("faq.q2_answer"),
+    },
+    {
+      question: t("faq.q3_question"),
+      answer: t("faq.q3_answer"),
+    },
+    {
+      question: t("faq.q4_question"),
+      answer: t("faq.q4_answer"),
+    },
+    {
+      question: t("faq.q5_question"),
+      answer: t("faq.q5_answer"),
+    },
+    {
+      question: t("faq.q6_question"),
+      answer: t("faq.q6_answer"),
+    },
+    {
+      question: t("faq.q7_question"),
+      answer: t("faq.q7_answer"),
+    },
+    {
+      question: t("faq.q8_question"),
+      answer: t("faq.q8_answer"),
+    },
+  ]
+
   return (
     <div className="min-h-screen">
       <section className="bg-primary text-white py-16 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("faq.title")}</h1>
           <p className="text-lg text-white/90">Find answers to common questions about our products and services</p>
         </div>
       </section>
@@ -81,7 +76,7 @@ export default function FAQ() {
       <section className="py-16 px-4">
         <div className="max-w-3xl mx-auto space-y-4">
           {FAQS.map((faq, index) => (
-            <FAQItem key={index} faq={faq} />
+            <FAQItemComponent key={index} faq={faq} />
           ))}
         </div>
       </section>
