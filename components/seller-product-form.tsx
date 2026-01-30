@@ -11,7 +11,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AlertCircle } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AlertCircle, Globe } from "lucide-react"
 import type { Product } from "@/lib/types"
 import { toast } from "@/hooks/use-toast"
 import { ImageUploadField } from "@/components/image-upload-field"
@@ -138,68 +139,85 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
       <CardContent className="pt-6">
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">Product Name (English) *</Label>
-            <Input
-              id="name"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g., 1K Ohm Resistor Pack"
-            />
-          </div>
+          <Tabs defaultValue="en" className="w-full">
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-base font-semibold">Product Content</Label>
+              <TabsList>
+                <TabsTrigger value="en" className="flex gap-2 items-center">
+                  <Globe className="h-4 w-4" /> English
+                </TabsTrigger>
+                <TabsTrigger value="pt" className="flex gap-2 items-center">
+                  <Globe className="h-4 w-4" /> Portuguese
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="name_pt">Product Name (Portuguese)</Label>
-            <Input
-              id="name_pt"
-              value={formData.name_pt}
-              onChange={(e) => setFormData({ ...formData, name_pt: e.target.value })}
-              placeholder="ex: Pacote de Resistores de 1K Ohm"
-            />
-          </div>
+            <TabsContent value="en" className="space-y-4 pt-4 border-t">
+              <div className="space-y-2">
+                <Label htmlFor="name">Product Name *</Label>
+                <Input
+                  id="name"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g., 1K Ohm Resistor Pack"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Describe your product in English..."
+                  rows={4}
+                />
+              </div>
+            </TabsContent>
 
-          <div className="space-y-2">
-            <Label htmlFor="sku">SKU *</Label>
-            <Input
-              id="sku"
-              required
-              value={formData.sku}
-              onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-              placeholder="e.g., RES1000K-01"
-            />
-          </div>
+            <TabsContent value="pt" className="space-y-4 pt-4 border-t">
+              <div className="space-y-2">
+                <Label htmlFor="name_pt">Product Name (Portuguese)</Label>
+                <Input
+                  id="name_pt"
+                  value={formData.name_pt}
+                  onChange={(e) => setFormData({ ...formData, name_pt: e.target.value })}
+                  placeholder="ex: Pacote de Resistores de 1K Ohm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description_pt">Description (Portuguese)</Label>
+                <Textarea
+                  id="description_pt"
+                  value={formData.description_pt}
+                  onChange={(e) => setFormData({ ...formData, description_pt: e.target.value })}
+                  placeholder="Descreva seu produto em português..."
+                  rows={4}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
 
-          <div className="space-y-2">
-            <Label htmlFor="vendor">Vendor</Label>
-            <Input
-              id="vendor"
-              readOnly
-              value={storeName}
-              className="bg-gray-100 cursor-not-allowed"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (English)</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Describe your product in English..."
-              rows={4}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description_pt">Description (Portuguese)</Label>
-            <Textarea
-              id="description_pt"
-              value={formData.description_pt}
-              onChange={(e) => setFormData({ ...formData, description_pt: e.target.value })}
-              placeholder="Descreva seu produto em português..."
-              rows={4}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="sku">SKU *</Label>
+              <Input
+                id="sku"
+                required
+                value={formData.sku}
+                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                placeholder="e.g., RES1000K-01"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="vendor">Vendor</Label>
+              <Input
+                id="vendor"
+                readOnly
+                value={storeName}
+                className="bg-gray-100 cursor-not-allowed"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

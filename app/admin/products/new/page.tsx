@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowLeft } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ArrowLeft, Globe } from "lucide-react"
 import { ImageUploadField } from "@/components/image-upload-field" // Import ImageUploadField
 
 const CATEGORIES = [
@@ -114,44 +115,60 @@ export default function NewProductPage() {
                 onRemove={() => setImageUrl(undefined)}
               />
 
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Product Name (English) *</label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Resistor 1K Ohm"
-                  required
-                />
-              </div>
+              <Tabs defaultValue="en" className="w-full">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-foreground block">Product Content</label>
+                  <TabsList>
+                    <TabsTrigger value="en" className="flex gap-2 items-center text-xs">
+                      <Globe className="h-3 w-3" /> English
+                    </TabsTrigger>
+                    <TabsTrigger value="pt" className="flex gap-2 items-center text-xs">
+                      <Globe className="h-3 w-3" /> Portuguese
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Product Name (Portuguese)</label>
-                <Input
-                  value={formData.name_pt}
-                  onChange={(e) => setFormData({ ...formData, name_pt: e.target.value })}
-                  placeholder="ex: Resistor 1K Ohm"
-                />
-              </div>
+                <TabsContent value="en" className="space-y-4 pt-4 border-t">
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">Product Name *</label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="e.g., Resistor 1K Ohm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">Description</label>
+                    <Textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Product description in English..."
+                      rows={4}
+                    />
+                  </div>
+                </TabsContent>
 
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Description (English)</label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Product description in English..."
-                  rows={4}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Description (Portuguese)</label>
-                <Textarea
-                  value={formData.description_pt}
-                  onChange={(e) => setFormData({ ...formData, description_pt: e.target.value })}
-                  placeholder="Descrição do produto em português..."
-                  rows={4}
-                />
-              </div>
+                <TabsContent value="pt" className="space-y-4 pt-4 border-t">
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">Product Name (Portuguese)</label>
+                    <Input
+                      value={formData.name_pt}
+                      onChange={(e) => setFormData({ ...formData, name_pt: e.target.value })}
+                      placeholder="ex: Resistor 1K Ohm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-2 block">Description (Portuguese)</label>
+                    <Textarea
+                      value={formData.description_pt}
+                      onChange={(e) => setFormData({ ...formData, description_pt: e.target.value })}
+                      placeholder="Descrição do produto em português..."
+                      rows={4}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
