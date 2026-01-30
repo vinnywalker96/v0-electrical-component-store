@@ -12,7 +12,7 @@ export default async function AdminProductDetailPage({ searchParams }: { searchP
   if (!id) {
     notFound();
   }
-  
+
   // Use service role client to bypass RLS
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -66,7 +66,10 @@ export default async function AdminProductDetailPage({ searchParams }: { searchP
         </Link>
 
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground">{productWithSeller.name}</h1>
+          <h1 className="text-4xl font-bold text-foreground">
+            {productWithSeller.name}
+            {productWithSeller.name_pt && <span className="text-2xl text-muted-foreground ml-4">({productWithSeller.name_pt})</span>}
+          </h1>
           <Link href={`/admin/products/edit?id=${productWithSeller.id}`}>
             <Button className="flex gap-2">
               <Edit size={20} />
@@ -93,8 +96,8 @@ export default async function AdminProductDetailPage({ searchParams }: { searchP
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Brand</p>
-                <p className="text-lg font-semibold">{productWithSeller.brand}</p>
+                <p className="text-sm font-medium text-muted-foreground">Manufacturer</p>
+                <p className="text-lg font-semibold">{productWithSeller.manufacturer}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Vendor</p>
@@ -112,9 +115,15 @@ export default async function AdminProductDetailPage({ searchParams }: { searchP
               </div>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Description</p>
+              <p className="text-sm font-medium text-muted-foreground">Description (English)</p>
               <p className="text-base">{productWithSeller.description}</p>
             </div>
+            {productWithSeller.description_pt && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Description (Portuguese)</p>
+                <p className="text-base">{productWithSeller.description_pt}</p>
+              </div>
+            )}
             {productWithSeller.image_url && (
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-2">Image</p>

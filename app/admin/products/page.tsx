@@ -18,15 +18,15 @@ const CACHE_EXPIRY_SECONDS = 180; // Cache for 3 minutes (reduced for admin pane
 
 export default function AdminProductsPage() {
   const supabase = createClient()
-  const { t } = useLanguage()
+  const { language, t } = useLanguage()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
-  const [brandFilter, setBrandFilter] = useState("all")
+  const [manufacturerFilter, setManufacturerFilter] = useState("all")
   const [stockStatusFilter, setStockStatusFilter] = useState("all")
   const [categories, setCategories] = useState<string[]>([])
-  const [brands, setBrands] = useState<string[]>([])
+  const [manufacturers, setManufacturers] = useState<string[]>([])
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]) // For bulk actions
 
   useEffect(() => {
@@ -36,19 +36,19 @@ export default function AdminProductsPage() {
       const uniqueCategories = [...new Set((catData || []).map(p => p.category))]
       setCategories(uniqueCategories);
 
-      // Fetch unique brands
-      const { data: brandData } = await supabase.from("products").select("brand").neq("brand", null)
-      const uniqueBrands = [...new Set((brandData || []).map(p => p.brand))]
-      setBrands(uniqueBrands);
+      // Fetch unique manufacturers
+      const { data: manufacturerData } = await supabase.from("products").select("manufacturer").neq("manufacturer", null)
+      const uniqueManufacturers = [...new Set((manufacturerData || []).map(p => p.manufacturer))]
+      setManufacturers(uniqueManufacturers);
     }
     fetchFilters();
-  }, [supabase, setCategories, setBrands]);
+  }, [supabase, setCategories, setManufacturers]);
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const cacheKey = `admin:products:search=${searchQuery}:cat=${categoryFilter}:brand=${brandFilter}:stock=${stockStatusFilter}`;
+        const cacheKey = `admin:products:search=${searchQuery}:cat=${categoryFilter}:manufacturer=${manufacturerFilter}:stock=${stockStatusFilter}`;
 
         try {
           const cachedProducts = await cache.get(cacheKey);
@@ -69,8 +69,8 @@ export default function AdminProductsPage() {
         if (categoryFilter !== "all") {
           query = query.eq("category", categoryFilter)
         }
-        if (brandFilter !== "all") {
-          query = query.eq("brand", brandFilter)
+        if (manufacturerFilter !== "all") {
+          query = query.eq("manufacturer", manufacturerFilter)
         }
         if (stockStatusFilter === "in_stock") {
           query = query.gt("stock_quantity", 0)
@@ -104,7 +104,7 @@ export default function AdminProductsPage() {
     }
 
     fetchProducts()
-  }, [supabase, searchQuery, categoryFilter, brandFilter, stockStatusFilter])
+  }, [supabase, searchQuery, categoryFilter, manufacturerFilter, stockStatusFilter])
 
   const handleSelectProduct = (productId: string) => {
     setSelectedProducts(prev =>
@@ -216,13 +216,13 @@ export default function AdminProductsPage() {
                 {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={brandFilter} onValueChange={setBrandFilter}>
+            <Select value={manufacturerFilter} onValueChange={setManufacturerFilter}>
               <SelectTrigger>
-                <SelectValue placeholder={t("admin_dashboard.all_brands")} />
+                <SelectValue placeholder={t("admin_dashboard.all_manufacturers")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("admin_dashboard.all_brands")}</SelectItem>
-                {brands.map(brand => <SelectItem key={brand} value={brand}>{brand}</SelectItem>)}
+                <SelectItem value="all">{t("admin_dashboard.all_manufacturers")}</SelectItem>
+                {manufacturers.map(manufacturer => <SelectItem key={manufacturer} value={manufacturer}>{manufacturer}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={stockStatusFilter} onValueChange={setStockStatusFilter}>
@@ -260,7 +260,7 @@ export default function AdminProductsPage() {
                       </th>
                       <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.name")}</th>
                       <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.category")}</th>
-                      <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.brand")}</th>
+                      <th className="text-left py-3 px-4 font-semibold">{t("admin_dashboard.manufacturer")}</th>
                       <th className="text-right py-3 px-4 font-semibold">{t("admin_dashboard.price")}</th>
                       <th className="text-right py-3 px-4 font-semibold">{t("admin_dashboard.stock")}</th>
                       <th className="text-center py-3 px-4 font-semibold">{t("common.actions")}</th>
@@ -279,11 +279,11 @@ export default function AdminProductsPage() {
                           </td>
                           <td className="py-3 px-4 font-semibold">
                             <Link href={`/admin/products/detail?id=${product.id}`} className="text-blue-600 hover:underline">
-                              {product.name}
+                              {language === "pt" && product.name_pt ? product.name_pt : product.name}
                             </Link>
                           </td>
                           <td className="py-3 px-4">{product.category}</td>
-                          <td className="py-3 px-4">{product.brand}</td>
+                          <td className="py-3 px-4">{product.manufacturer}</td>
                           <td className="py-3 px-4 text-right">${product.price.toFixed(2)}</td>
                           <td className="py-3 px-4 text-right">
                             <span

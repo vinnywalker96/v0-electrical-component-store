@@ -25,7 +25,7 @@ export default function ProductDetailPage() {
   const { addToCart } = useCart()
   const supabase = createClient()
   const { formatPrice } = useCurrency()
-  const { t } = useLanguage()
+  const { language, t } = useLanguage()
 
   useEffect(() => {
     async function fetchProduct() {
@@ -129,7 +129,7 @@ export default function ProductDetailPage() {
           <div className="relative bg-gradient-to-br from-blue-50 to-slate-100 rounded-lg h-96 flex items-center justify-center overflow-hidden">
             <Image
               src={product.image_url || "/placeholder.svg"}
-              alt={product.name}
+              alt={language === "pt" && product.name_pt ? product.name_pt : product.name}
               fill
               className="object-contain"
             />
@@ -138,8 +138,12 @@ export default function ProductDetailPage() {
           {/* Product Info */}
           <div>
             <p className="text-accent font-semibold mb-2">{product.category}</p>
-            <h1 className="text-3xl font-bold text-foreground mb-4">{product.name}</h1>
-            <p className="text-muted-foreground mb-6">{product.description}</p>
+            <h1 className="text-3xl font-bold text-foreground mb-4">
+              {language === "pt" && product.name_pt ? product.name_pt : product.name}
+            </h1>
+            <p className="text-muted-foreground mb-6">
+              {language === "pt" && product.description_pt ? product.description_pt : product.description}
+            </p>
 
             {seller && (
               <Card className="mb-6">
@@ -175,8 +179,8 @@ export default function ProductDetailPage() {
                 <h3 className="font-semibold mb-4">{t("product_detail.specifications")}</h3>
                 <dl className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <dt className="text-muted-foreground">{t("product_detail.brand")}</dt>
-                    <dd className="font-medium">{product.brand}</dd>
+                    <dt className="text-muted-foreground">{t("product_detail.manufacturer")}</dt>
+                    <dd className="font-medium">{product.manufacturer}</dd>
                   </div>
                   <div>
                     <dt className="text-muted-foreground">{t("product_detail.category")}</dt>

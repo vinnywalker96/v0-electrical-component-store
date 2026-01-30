@@ -1,9 +1,11 @@
 export interface Product {
   id: string
   name: string
+  name_pt?: string // Added for Portuguese translation
   description: string
+  description_pt?: string // Added for Portuguese translation
   category: string
-  brand: string
+  manufacturer: string
   price: number
   stock_quantity: number
   sku?: string // Added for product SKU
@@ -149,12 +151,12 @@ export interface VendorDocument {
   id: string
   seller_id: string
   document_type:
-    | "identity_document"
-    | "company_registration"
-    | "tax_certificate"
-    | "bank_statement"
-    | "proof_of_address"
-    | "other"
+  | "identity_document"
+  | "company_registration"
+  | "tax_certificate"
+  | "bank_statement"
+  | "proof_of_address"
+  | "other"
   document_url: string
   document_name?: string
   verification_status: "pending" | "approved" | "rejected"

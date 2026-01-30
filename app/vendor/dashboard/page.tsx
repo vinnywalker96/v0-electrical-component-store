@@ -115,10 +115,11 @@ export default function VendorDashboardPage() {
           <p className="text-slate-600 mt-1">{seller?.store_name}</p>
         </div>
         <Link href="/seller/products/new">
-                      <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        {t("vendor_dashboard.add_product")}
-                      </Button>        </Link>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            {t("vendor_dashboard.add_product")}
+          </Button>
+        </Link>
       </div>
 
       {!seller?.is_verified && (
@@ -149,7 +150,7 @@ export default function VendorDashboardPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-                            <div className="text-2xl font-bold">{formatPrice(stats.totalRevenue)}</div>          </CardContent>
+            <div className="text-2xl font-bold">{formatPrice(stats.totalRevenue)}</div>          </CardContent>
         </Card>
 
         <Card>
@@ -168,7 +169,7 @@ export default function VendorDashboardPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-                            <div className="text-2xl font-bold">{formatPrice(stats.totalCommission)}</div>            <p className="text-xs text-muted-foreground mt-1">
+            <div className="text-2xl font-bold">{formatPrice(stats.totalCommission)}</div>            <p className="text-xs text-muted-foreground mt-1">
               {t("vendor_dashboard.pending_commission")} {formatPrice(seller?.pending_commission || 0)}
             </p>
           </CardContent>

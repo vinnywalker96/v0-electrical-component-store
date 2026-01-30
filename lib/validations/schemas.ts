@@ -34,9 +34,11 @@ export const passwordChangeSchema = z.object({
 // Product schemas
 export const productSchema = z.object({
   name: z.string().min(1, 'Product name is required').max(200, 'Product name too long'),
+  name_pt: z.string().max(200, 'Portuguese name too long').optional(),
   description: z.string().min(10, 'Description must be at least 10 characters').max(2000, 'Description too long'),
+  description_pt: z.string().max(2000, 'Portuguese description too long').optional(),
   category: z.string().min(1, 'Category is required'),
-  brand: z.string().max(100, 'Brand name too long').optional(),
+  manufacturer: z.string().max(100, 'Manufacturer name too long').optional(),
   price: z.number().positive('Price must be positive').max(999999.99, 'Price too high'),
   stockQuantity: z.number().int().min(0, 'Stock quantity cannot be negative'),
   specifications: z.record(z.any()).optional(),
@@ -98,7 +100,7 @@ export const bulkActionSchema = z.object({
 export const productSearchSchema = z.object({
   query: z.string().optional(),
   category: z.string().optional(),
-  brand: z.string().optional(),
+  manufacturer: z.string().optional(),
   minPrice: z.number().optional(),
   maxPrice: z.number().optional(),
   inStock: z.boolean().optional(),

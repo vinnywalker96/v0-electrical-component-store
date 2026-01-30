@@ -13,7 +13,7 @@ import { useLanguage } from "@/lib/context/language-context"
 export default function SellerProductsPage() {
   const router = useRouter()
   const supabase = createClient()
-  const { t } = useLanguage()
+  const { language, t } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [seller, setSeller] = useState<any>(null)
   const [products, setProducts] = useState<any[]>([])
@@ -96,8 +96,10 @@ export default function SellerProductsPage() {
                   {products.map((product) => (
                     <tr key={product.id} className="border-b hover:bg-muted/50">
                       <td className="py-3 px-4">
-                        <div className="font-medium">{product.name}</div>
-                        <div className="text-sm text-muted-foreground">{product.brand}</div>
+                        <div className="font-medium">
+                          {language === "pt" && product.name_pt ? product.name_pt : product.name}
+                        </div>
+                        <div className="text-sm text-muted-foreground">{product.manufacturer}</div>
                       </td>
                       <td className="py-3 px-4">{product.category}</td>
                       <td className="py-3 px-4 text-right">

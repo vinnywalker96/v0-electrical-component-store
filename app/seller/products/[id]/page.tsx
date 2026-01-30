@@ -52,7 +52,10 @@ export default async function SellerProductDetailPage({ params }: { params: Prom
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{product.name}</h1>
+          <h1 className="text-3xl font-bold">
+            {product.name}
+            {product.name_pt && <span className="text-xl text-muted-foreground ml-4">({product.name_pt})</span>}
+          </h1>
           <p className="text-muted-foreground">Product Details</p>
         </div>
         <Link href={`/seller/products/${product.id}/edit`}>
@@ -74,8 +77,8 @@ export default async function SellerProductDetailPage({ params }: { params: Prom
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Brand</label>
-                  <p className="font-medium">{product.brand || "Not specified"}</p>
+                  <label className="text-sm font-medium text-muted-foreground">Manufacturer</label>
+                  <p className="font-medium">{product.manufacturer || "Not specified"}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Category</label>
@@ -108,12 +111,23 @@ export default async function SellerProductDetailPage({ params }: { params: Prom
           {/* Description */}
           <Card>
             <CardHeader>
-              <CardTitle>Description</CardTitle>
+              <CardTitle>Description (English)</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="whitespace-pre-wrap">{product.description || "No description provided."}</p>
             </CardContent>
           </Card>
+
+          {product.description_pt && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Description (Portuguese)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="whitespace-pre-wrap">{product.description_pt}</p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Specifications */}
           {product.specifications && (

@@ -21,7 +21,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart()
   const supabase = createClient()
   const { formatPrice } = useCurrency()
-  const { t } = useLanguage()
+  const { language, t } = useLanguage()
 
   async function handleAddToCart() {
     setLoading(true)
@@ -81,9 +81,13 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
       </CardHeader>
       <CardContent className="flex-1">
-        <h3 className="font-semibold text-sm line-clamp-2">{product.name}</h3>
-        <p className="text-xs text-slate-600 mt-1 line-clamp-2">{product.description}</p>
-        <p className="text-xs text-slate-500 mt-2">{product.brand}</p>
+        <h3 className="font-semibold text-sm line-clamp-2">
+          {language === "pt" && product.name_pt ? product.name_pt : product.name}
+        </h3>
+        <p className="text-xs text-slate-600 mt-1 line-clamp-2">
+          {language === "pt" && product.description_pt ? product.description_pt : product.description}
+        </p>
+        <p className="text-xs text-slate-500 mt-2">{product.manufacturer}</p>
         <div className="flex justify-between items-center mt-3">
           <span
             className={`text-sm font-semibold px-2 py-1 rounded ${isPriceAvailable ? "text-primary bg-primary/10" : "text-orange-600 bg-orange-50"}`}

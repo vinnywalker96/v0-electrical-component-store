@@ -9,7 +9,7 @@ import { useLanguage } from "@/lib/context/language-context"
 
 export default function CartPage() {
   const { items, total, tax, clearCart, removeFromCart, updateQuantity, loading } = useCart()
-  const { t } = useLanguage()
+  const { language, t } = useLanguage()
 
   if (loading) {
     return (
@@ -65,9 +65,11 @@ export default function CartPage() {
                   <div className="flex flex-col sm:flex-row gap-4">
                     {/* Product Basic Info */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-lg truncate">{item.product?.name}</h3>
+                      <h3 className="font-semibold text-lg truncate">
+                        {language === "pt" && item.product?.name_pt ? item.product.name_pt : item.product?.name}
+                      </h3>
                       <p className="text-sm text-slate-600 mt-1">
-                        {item.product?.brand} • {item.product?.category}
+                        {item.product?.manufacturer} • {item.product?.category}
                       </p>
                       <p className="text-xl font-bold text-blue-600 mt-2">
                         {item.product?.price ? `$${item.product.price.toFixed(2)}` : "TBD"}

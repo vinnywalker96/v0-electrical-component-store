@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/lib/context/language-context"
+import { useCurrency } from "@/lib/context/currency-context"
 
 interface Commission {
   id: string
@@ -25,6 +26,7 @@ export default function VendorCommissionsPage() {
   const [totalEarned, setTotalEarned] = useState(0)
   const [pendingAmount, setPendingAmount] = useState(0)
   const { t } = useLanguage()
+  const { formatPrice } = useCurrency()
 
   const fetchCommissions = useCallback(async () => {
     try {
@@ -70,7 +72,7 @@ export default function VendorCommissionsPage() {
   }, [fetchCommissions])
 
   if (loading) {
-    return <div className="text-center py-12">Loading commissions...</div>
+    return <div className="text-center py-12">{t("common.loading")}</div>
   }
 
   return (
@@ -89,7 +91,7 @@ export default function VendorCommissionsPage() {
               <CardTitle>{t("commissions.total_earned")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-600">R{totalEarned.toFixed(2)}</div>
+              <div className="text-3xl font-bold text-green-600">{formatPrice(totalEarned)}</div>
             </CardContent>
           </Card>
 
@@ -98,7 +100,7 @@ export default function VendorCommissionsPage() {
               <CardTitle>{t("commissions.pending_payment")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-orange-600">R{pendingAmount.toFixed(2)}</div>
+              <div className="text-3xl font-bold text-orange-600">{formatPrice(pendingAmount)}</div>
             </CardContent>
           </Card>
         </div>
@@ -127,7 +129,7 @@ export default function VendorCommissionsPage() {
                       <tr key={commission.id} className="border-b hover:bg-slate-50">
                         <td className="py-3 px-4">{new Date(commission.created_at).toLocaleDateString()}</td>
                         <td className="py-3 px-4 font-mono text-sm">{commission.order_id.slice(0, 8)}</td>
-                        <td className="py-3 px-4 font-semibold">R{commission.amount.toFixed(2)}</td>
+                        <td className="py-3 px-4 font-semibold">{formatPrice(commission.amount)}</td>
                         <td className="py-3 px-4">
                           <span
                             className={`px-3 py-1 rounded-full text-sm capitalize ${commission.status === "paid"

@@ -53,10 +53,12 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
 
   const [formData, setFormData] = useState({
     name: product?.name || "",
+    name_pt: product?.name_pt || "",
     description: product?.description || "",
+    description_pt: product?.description_pt || "",
     sku: product?.sku || "", // Added SKU field
     category: product?.category || "Resistors",
-    brand: product?.brand || "",
+    manufacturer: product?.manufacturer || "",
     price: product?.price || 0,
     stock_quantity: product?.stock_quantity || 0,
     image_url: product?.image_url || "",
@@ -84,10 +86,12 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
 
       const productData = {
         name: formData.name,
+        name_pt: formData.name_pt,
         description: formData.description,
+        description_pt: formData.description_pt,
         sku: formData.sku, // Added SKU to productData
         category: formData.category,
-        brand: formData.brand,
+        manufacturer: formData.manufacturer,
         price: Number.parseFloat(formData.price.toString()) || 0,
         stock_quantity: Number.parseInt(formData.stock_quantity.toString()) || 0,
         image_url: formData.image_url || null,
@@ -135,13 +139,23 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="name">Product Name *</Label>
+            <Label htmlFor="name">Product Name (English) *</Label>
             <Input
               id="name"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g., 1K Ohm Resistor Pack"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="name_pt">Product Name (Portuguese)</Label>
+            <Input
+              id="name_pt"
+              value={formData.name_pt}
+              onChange={(e) => setFormData({ ...formData, name_pt: e.target.value })}
+              placeholder="ex: Pacote de Resistores de 1K Ohm"
             />
           </div>
 
@@ -167,12 +181,23 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Description (English)</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Describe your product..."
+              placeholder="Describe your product in English..."
+              rows={4}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description_pt">Description (Portuguese)</Label>
+            <Textarea
+              id="description_pt"
+              value={formData.description_pt}
+              onChange={(e) => setFormData({ ...formData, description_pt: e.target.value })}
+              placeholder="Descreva seu produto em português..."
               rows={4}
             />
           </div>
@@ -198,11 +223,11 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="brand">Brand</Label>
+              <Label htmlFor="manufacturer">Manufacturer</Label>
               <Input
-                id="brand"
-                value={formData.brand}
-                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                id="manufacturer"
+                value={formData.manufacturer}
+                onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
                 placeholder="e.g., Generic, Arduino"
               />
             </div>

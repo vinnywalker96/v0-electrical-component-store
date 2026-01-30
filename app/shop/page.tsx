@@ -18,7 +18,7 @@ export default function ShopPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [selectedBrand, setSelectedBrand] = useState<string>("all")
+  const [selectedManufacturer, setSelectedManufacturer] = useState<string>("all")
   const [selectedSeller, setSelectedSeller] = useState<string>("all")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
   const [maxPrice, setMaxPrice] = useState(10000)
@@ -113,21 +113,23 @@ export default function ShopPage() {
   }, [fetchProducts, fetchSellers])
 
   const categories = useMemo(() => [...new Set(products.map((p) => p.category).filter(Boolean))], [products])
-  const brands = useMemo(() => [...new Set(products.map((p) => p.brand).filter(Boolean))], [products])
+  const manufacturers = useMemo(() => [...new Set(products.map((p) => p.manufacturer).filter(Boolean))], [products])
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        (product.name_pt && product.name_pt.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.description_pt && product.description_pt.toLowerCase().includes(searchQuery.toLowerCase()))
       const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
-      const matchesBrand = selectedBrand === "all" || product.brand === selectedBrand
+      const matchesManufacturer = selectedManufacturer === "all" || product.manufacturer === selectedManufacturer
       const matchesSeller = selectedSeller === "all" || !product.seller_id || product.seller_id === selectedSeller
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
 
-      return matchesSearch && matchesCategory && matchesBrand && matchesSeller && matchesPrice
+      return matchesSearch && matchesCategory && matchesManufacturer && matchesSeller && matchesPrice
     })
-  }, [products, searchQuery, selectedCategory, selectedBrand, selectedSeller, priceRange])
+  }, [products, searchQuery, selectedCategory, selectedManufacturer, selectedSeller, priceRange])
 
   return (
     <main className="min-h-screen bg-background">
@@ -178,16 +180,16 @@ export default function ShopPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">{t("shop_page.filters.brand")}</label>
-                <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                <label className="text-sm font-medium text-foreground mb-2 block">{t("shop_page.filters.manufacturer")}</label>
+                <Select value={selectedManufacturer} onValueChange={setSelectedManufacturer}>
                   <SelectTrigger>
-                    <SelectValue placeholder={t("shop_page.filters.all_brands")} />
+                    <SelectValue placeholder={t("shop_page.filters.all_manufacturers")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("shop_page.filters.all_brands")}</SelectItem>
-                    {brands.map((brand) => (
-                      <SelectItem key={brand} value={brand}>
-                        {brand}
+                    <SelectItem value="all">{t("shop_page.filters.all_manufacturers")}</SelectItem>
+                    {manufacturers.map((manufacturer) => (
+                      <SelectItem key={manufacturer} value={manufacturer}>
+                        {manufacturer}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -230,7 +232,7 @@ export default function ShopPage() {
                   onClick={() => {
                     setSearchQuery("")
                     setSelectedCategory("all")
-                    setSelectedBrand("all")
+                    setSelectedManufacturer("all")
                     setSelectedSeller("all")
                     setPriceRange([0, maxPrice])
                   }}

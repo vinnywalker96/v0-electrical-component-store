@@ -37,9 +37,11 @@ export default function NewProductPage() {
 
   const [formData, setFormData] = useState({
     name: "",
+    name_pt: "",
     description: "",
+    description_pt: "",
     category: "Resistors",
-    brand: "Generic",
+    manufacturer: "Generic",
     price: 0,
     stock_quantity: 0,
     specifications: "",
@@ -66,9 +68,11 @@ export default function NewProductPage() {
 
       const { error: insertError } = await supabase.from("products").insert({
         name: formData.name,
+        name_pt: formData.name_pt,
         description: formData.description,
+        description_pt: formData.description_pt,
         category: formData.category,
-        brand: formData.brand,
+        manufacturer: formData.manufacturer,
         price: Number.parseFloat(formData.price.toString()),
         stock_quantity: Number.parseInt(formData.stock_quantity.toString()),
         specifications: specs,
@@ -111,7 +115,7 @@ export default function NewProductPage() {
               />
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Product Name *</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">Product Name (English) *</label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -121,11 +125,30 @@ export default function NewProductPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Description</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">Product Name (Portuguese)</label>
+                <Input
+                  value={formData.name_pt}
+                  onChange={(e) => setFormData({ ...formData, name_pt: e.target.value })}
+                  placeholder="ex: Resistor 1K Ohm"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Description (English)</label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Product description..."
+                  placeholder="Product description in English..."
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">Description (Portuguese)</label>
+                <Textarea
+                  value={formData.description_pt}
+                  onChange={(e) => setFormData({ ...formData, description_pt: e.target.value })}
+                  placeholder="Descrição do produto em português..."
                   rows={4}
                 />
               </div>
@@ -147,10 +170,10 @@ export default function NewProductPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Brand</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Manufacturer</label>
                   <Input
-                    value={formData.brand}
-                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                    value={formData.manufacturer}
+                    onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
                     placeholder="e.g., Generic, Arduino"
                   />
                 </div>
