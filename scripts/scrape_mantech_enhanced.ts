@@ -192,8 +192,8 @@ async function traverseCategories(page: any, level: number, parentId: string | n
     let listBoxExists = null;
     try {
         listBoxExists = await page.$(`#${listBoxId}`);
-    } catch (e) {
-        console.log(`Error checking for listbox: ${e.message}. Retrying navigation...`);
+    } catch (e: any) {
+        console.log(`Error checking for listbox: ${e.message || "Unknown error"}. Retrying navigation...`);
         return; // Skip this branch if page is unstable
     }
 

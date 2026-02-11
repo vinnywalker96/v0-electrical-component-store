@@ -99,8 +99,8 @@ export function ProductCard({ product }: ProductCardProps) {
             <NextImage
               src={product.image_url}
               alt={language === "pt"
-                ? (translatedName || product.name_pt || product.name)
-                : (translatedName || product.name || product.name_pt)}
+                ? (translatedName || product.name_pt || product.name || "")
+                : (translatedName || product.name || product.name_pt || "")}
               width={160}
               height={160}
               className="object-contain w-full h-full p-2"

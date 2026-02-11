@@ -157,8 +157,8 @@ export default function ProductDetailPage() {
               <Image
                 src={product.image_url}
                 alt={language === "pt"
-                  ? (translatedName || product.name_pt || product.name)
-                  : (translatedName || product.name || product.name_pt)}
+                  ? (translatedName || product.name_pt || product.name || "")
+                  : (translatedName || product.name || product.name_pt || "")}
                 fill
                 className="object-contain p-8"
                 priority
