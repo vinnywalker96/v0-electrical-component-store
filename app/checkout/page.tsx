@@ -236,6 +236,7 @@ export default function CheckoutPage() {
             })),
             paymentMethod: formData.paymentMethod,
             reference: order.id,
+            language: useLanguage().language, // Get current language
           }),
         });
       } catch (error) {

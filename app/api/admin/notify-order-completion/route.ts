@@ -34,16 +34,15 @@ export async function POST(request: Request) {
     }
 
     await resend.emails.send({
-      from: "no-reply@kgcomponents.co.za", // Replace with your verified Resend email
+      from: "notifications@kg-components.com",
       to: adminEmails,
-      subject: `Order Completed: #${orderId.slice(0, 8)} from ${customerName}`,
+      subject: `Order Completed: #${orderId.slice(0, 8)} - ${customerName}`,
       html: `
         <p>Order <strong>#${orderId.slice(0, 8)}</strong> has been marked as <strong>COMPLETED</strong>.</p>
         <p><strong>Customer:</strong> ${customerName} (${customerEmail})</p>
-        <p><strong>Total Amount:</strong> R${totalAmount.toFixed(2)}</p>
-        <p>Review the completed order details:</p>
-        <p><a href="${orderLink}">View Order Details</a></p>
-        <p>Thank you,</p>
+        <p><strong>Total Amount:</strong> R ${totalAmount.toFixed(2)}</p>
+        <p><a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://kg-components.com'}/admin/orders/${orderId}">View Order Details</a></p>
+        <br/>
         <p>KG Components Admin Team</p>
       `,
     });

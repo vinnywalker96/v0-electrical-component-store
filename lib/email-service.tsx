@@ -13,6 +13,8 @@ interface OrderEmailData {
     price: number
   }>
   paymentMethod: string
+  reference: string
+  invoiceUrl?: string
   bankingDetails?: {
     accountHolder: string
     bankName: string
@@ -31,12 +33,14 @@ export function generateOrderConfirmationEmail(data: OrderEmailData, language: L
       ? `
     <div style="background-color: #f0f7ff; padding: 20px; border-radius: 8px; margin-top: 20px;">
       <h3 style="color: #0052cc; margin-top: 0;">${language === "pt" ? "Detalhes Bancários" : "Banking Details"}</h3>
-      <p><strong>${language === "pt" ? "Titular da Conta:" : "Account Holder:"}</strong> ${data.bankingDetails.accountHolder}</p>
       <p><strong>${language === "pt" ? "Banco:" : "Bank:"}</strong> ${data.bankingDetails.bankName}</p>
+      <p><strong>${language === "pt" ? "Titular da Conta:" : "Account Holder:"}</strong> ${data.bankingDetails.accountHolder}</p>
       <p><strong>${language === "pt" ? "Número da Conta:" : "Account Number:"}</strong> ${data.bankingDetails.accountNumber}</p>
       ${data.bankingDetails.branchCode ? `<p><strong>${language === "pt" ? "Código da Agência:" : "Branch Code:"}</strong> ${data.bankingDetails.branchCode}</p>` : ""}
       ${data.bankingDetails.swiftCode ? `<p><strong>${language === "pt" ? "Código SWIFT:" : "SWIFT Code:"}</strong> ${data.bankingDetails.swiftCode}</p>` : ""}
-      ${data.bankingDetails.referenceNote ? `<p><strong>${language === "pt" ? "Referência:" : "Reference:"}</strong> ${data.bankingDetails.referenceNote}</p>` : ""}
+      <p style="margin-top: 15px; color: #666; font-size: 14px;">
+        <strong>${language === "pt" ? "IMPORTANTE:" : "IMPORTANT:"}</strong> ${language === "pt" ? "Por favor, use" : "Please use"} <strong>${data.reference}</strong> ${language === "pt" ? "como sua referência de pagamento." : "as your payment reference."}
+      </p>
     </div>
   `
       : ""
@@ -72,15 +76,15 @@ export function generateOrderConfirmationEmail(data: OrderEmailData, language: L
             
             <h3>${language === "pt" ? "Itens do Pedido:" : "Order Items:"}</h3>
             ${data.items
-              .map(
-                (item) => `
+      .map(
+        (item) => `
               <div class="order-item">
                 <span>${item.name} x${item.quantity}</span>
                 <span>R ${(item.price * item.quantity).toFixed(2)}</span>
               </div>
             `,
-              )
-              .join("")}
+      )
+      .join("")}
             
             <div class="total-section">
               <div class="total-row">
@@ -88,6 +92,14 @@ export function generateOrderConfirmationEmail(data: OrderEmailData, language: L
                 <span>R ${data.total.toFixed(2)}</span>
               </div>
             </div>
+
+            ${data.invoiceUrl ? `
+              <div style="margin-top: 20px; text-align: center;">
+                <a href="${data.invoiceUrl}" style="background-color: #0052cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                  ${language === "pt" ? "Baixar Fatura" : "Download Invoice"}
+                </a>
+              </div>
+            ` : ""}
             
             ${bankingDetailsHtml}
             

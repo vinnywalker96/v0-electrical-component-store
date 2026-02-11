@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Plus, Edit, Eye } from "lucide-react"
 import { DeleteProductButton } from "@/components/delete-product-button"
 import { useLanguage } from "@/lib/context/language-context"
+import { getTranslation } from "@/lib/utils/translation"
+
 
 export default function SellerProductsPage() {
   const router = useRouter()
@@ -17,6 +19,31 @@ export default function SellerProductsPage() {
   const [loading, setLoading] = useState(true)
   const [seller, setSeller] = useState<any>(null)
   const [products, setProducts] = useState<any[]>([])
+  const [translatedNames, setTranslatedNames] = useState<Record<string, string>>({})
+
+  // Auto-translate product names when translation is missing
+  useEffect(() => {
+    // Reset translations when language changes
+    setTranslatedNames({})
+
+    if (language === "pt") {
+      products.forEach((product) => {
+        if (!product.name_pt && product.name) {
+          getTranslation(product.name, "pt").then((translated) => {
+            setTranslatedNames((prev) => ({ ...prev, [product.id]: translated }))
+          })
+        }
+      })
+    } else if (language === "en") {
+      products.forEach((product) => {
+        if (!product.name && product.name_pt) {
+          getTranslation(product.name_pt, "en").then((translated) => {
+            setTranslatedNames((prev) => ({ ...prev, [product.id]: translated }))
+          })
+        }
+      })
+    }
+  }, [language, products])
 
   useEffect(() => {
     async function fetchData() {
@@ -97,7 +124,11 @@ export default function SellerProductsPage() {
                     <tr key={product.id} className="border-b hover:bg-muted/50">
                       <td className="py-3 px-4">
                         <div className="font-medium">
-                          {language === "pt" && product.name_pt ? product.name_pt : product.name}
+                          {language === "pt" && product.name_pt
+                            ? product.name_pt
+                            : language === "pt" && translatedNames[product.id]
+                              ? translatedNames[product.id]
+                              : product.name}
                         </div>
                         <div className="text-sm text-muted-foreground">{product.manufacturer}</div>
                       </td>

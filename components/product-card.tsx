@@ -1,15 +1,18 @@
 "use client"
 
 import Link from "next/link"
-import { useState, memo } from "react"
+import { useState, memo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { useCart } from "@/lib/context/cart-context"
 import { createClient } from "@/lib/supabase/client"
 import { Store } from "lucide-react"
+import NextImage from "next/image"
 import type { Product } from "@/lib/types"
 import { useCurrency } from "@/lib/context/currency-context"
 import { useLanguage } from "@/lib/context/language-context"
+import { getTranslation } from "@/lib/utils/translation"
+
 
 interface ProductCardProps {
   product: Product & { seller?: any }
@@ -18,10 +21,50 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const [loading, setLoading] = useState(false)
   const [added, setAdded] = useState(false)
+  const [translatedName, setTranslatedName] = useState<string>("")
+  const [translatedDesc, setTranslatedDesc] = useState<string>("")
   const { addToCart } = useCart()
   const supabase = createClient()
   const { formatPrice } = useCurrency()
   const { language, t } = useLanguage()
+
+  // Auto-translate when translation is missing
+  useEffect(() => {
+    console.log('[ProductCard] Translation effect triggered', { language, name: product.name, name_pt: product.name_pt })
+
+    // Reset translations when language changes
+    setTranslatedName("")
+    setTranslatedDesc("")
+
+    if (language === "pt") {
+      // Check if name_pt is missing OR is just a duplicate of the English name
+      if ((!product.name_pt || product.name_pt === product.name) && product.name) {
+        console.log('[ProductCard] Translating name EN->PT:', product.name)
+        getTranslation(product.name, "pt").then((result) => {
+          console.log('[ProductCard] Translation result:', result)
+          setTranslatedName(result)
+        })
+      }
+
+      // Check if description_pt is missing OR is just a duplicate
+      if ((!product.description_pt || product.description_pt === product.description) && product.description) {
+        getTranslation(product.description, "pt").then(setTranslatedDesc)
+      }
+    } else if (language === "en") {
+      // Translate PT -> EN (when product only has Portuguese name)
+      if ((!product.name || product.name === product.name_pt) && product.name_pt) {
+        console.log('[ProductCard] Translating name PT->EN:', product.name_pt)
+        getTranslation(product.name_pt, "en").then((result) => {
+          console.log('[ProductCard] Translation result:', result)
+          setTranslatedName(result)
+        })
+      }
+
+      if ((!product.description || product.description === product.description_pt) && product.description_pt) {
+        getTranslation(product.description_pt, "en").then(setTranslatedDesc)
+      }
+    }
+  }, [language, product.name, product.name_pt, product.description, product.description_pt])
 
   async function handleAddToCart() {
     setLoading(true)
@@ -51,25 +94,41 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="flex flex-col h-full">
       <CardHeader>
-        <div className="w-full h-40 bg-gradient-to-br from-blue-50 to-slate-100 rounded-lg flex items-center justify-center mb-2">
-          <div className="text-center">
-            <div className="text-3xl text-blue-600 mb-1">
-              {product.category === "Resistors"
-                ? "⧉"
-                : product.category === "LEDs"
-                  ? "💡"
+        <div className="w-full h-40 bg-gradient-to-br from-blue-50 to-slate-100 rounded-lg flex items-center justify-center mb-2 overflow-hidden">
+          {product.image_url ? (
+            <NextImage
+              src={product.image_url}
+              alt={language === "pt"
+                ? (translatedName || product.name_pt || product.name || "")
+                : (translatedName || product.name || product.name_pt || "")}
+              width={160}
+              height={160}
+              className="object-contain w-full h-full p-2"
+              onError={(e) => {
+                // Fallback to category icon if image fails to load
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : (
+            <div className="text-center">
+              <div className="text-3xl text-blue-600 mb-1">
+                {product.category === "Resistors"
+                  ? "⧉"
                   : product.category === "Capacitors"
                     ? "||"
-                    : product.category === "Wires & Connectors"
-                      ? "🔌"
-                      : product.category === "Breadboards"
-                        ? "📍"
-                        : product.category === "Microcontrollers"
-                          ? "🎮"
-                          : "⚙"}
+                    : product.category === "Potentiometers"
+                      ? "⚙"
+                      : product.category === "Wires & Connectors"
+                        ? "🔌"
+                        : product.category === "Breadboards"
+                          ? "📍"
+                          : product.category === "Microcontrollers"
+                            ? "🎮"
+                            : "⚙"}
+              </div>
+              <p className="text-xs text-slate-500">{product.category}</p>
             </div>
-            <p className="text-xs text-slate-500">{product.category}</p>
-          </div>
+          )}
         </div>
 
         {product.seller && (
@@ -82,10 +141,14 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardHeader>
       <CardContent className="flex-1">
         <h3 className="font-semibold text-sm line-clamp-2">
-          {language === "pt" && product.name_pt ? product.name_pt : product.name}
+          {language === "pt"
+            ? (translatedName || product.name_pt || product.name)
+            : (translatedName || product.name || product.name_pt)}
         </h3>
         <p className="text-xs text-slate-600 mt-1 line-clamp-2">
-          {language === "pt" && product.description_pt ? product.description_pt : product.description}
+          {language === "pt"
+            ? (translatedDesc || product.description_pt || product.description)
+            : (translatedDesc || product.description || product.description_pt)}
         </p>
         <p className="text-xs text-slate-500 mt-2">{product.manufacturer}</p>
         <div className="flex justify-between items-center mt-3">

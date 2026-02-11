@@ -34,15 +34,14 @@ export async function POST(request: Request) {
     }
 
     await resend.emails.send({
-      from: "no-reply@kgcomponents.co.za", // Replace with your verified Resend email
+      from: "notifications@kg-components.com",
       to: adminEmails,
-      subject: `New Vendor Application: ${storeName} needs approval`,
+      subject: `New Vendor Application: ${storeName}`,
       html: `
         <p>A new vendor, <strong>${storeName}</strong>, has applied to join the marketplace.</p>
         <p>Email: ${sellerEmail}</p>
-        <p>Please review their application and approve or reject them.</p>
-        <p><a href="${approvalLink}">Review Vendor Application</a></p>
-        <p>Thank you,</p>
+        <p><a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://kg-components.com'}/admin/vendors/${sellerId}">Review Vendor Application</a></p>
+        <br/>
         <p>KG Components Admin Team</p>
       `,
     });

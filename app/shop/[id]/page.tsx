@@ -12,6 +12,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import type { Product } from "@/lib/types"
 import { useCurrency } from "@/lib/context/currency-context"
 import { useLanguage } from "@/lib/context/language-context"
+import { getTranslation } from "@/lib/utils/translation"
+
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -22,6 +24,8 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState(false)
+  const [translatedName, setTranslatedName] = useState<string>("")
+  const [translatedDesc, setTranslatedDesc] = useState<string>("")
   const { addToCart } = useCart()
   const supabase = createClient()
   const { formatPrice } = useCurrency()
@@ -50,6 +54,28 @@ export default function ProductDetailPage() {
       fetchProduct()
     }
   }, [params.id, supabase, setProduct, setSeller])
+
+  // Auto-translate when translation is missing
+  useEffect(() => {
+    // Reset translations when language changes
+    setTranslatedName("")
+    setTranslatedDesc("")
+
+    if (product) {
+      if (language === "pt" && !product.name_pt && product.name) {
+        getTranslation(product.name, "pt").then(setTranslatedName)
+      } else if (language === "en" && !product.name && product.name_pt) {
+        getTranslation(product.name_pt, "en").then(setTranslatedName)
+      }
+
+      if (language === "pt" && !product.description_pt && product.description) {
+        getTranslation(product.description, "pt").then(setTranslatedDesc)
+      } else if (language === "en" && !product.description && product.description_pt) {
+        getTranslation(product.description_pt, "en").then(setTranslatedDesc)
+      }
+    }
+  }, [language, product])
+
 
   async function handleAddToCart() {
     if (!product) return
@@ -126,23 +152,51 @@ export default function ProductDetailPage() {
 
         <div className="grid md:grid-cols-2 gap-12">
           {/* Product Image */}
-          <div className="relative bg-gradient-to-br from-blue-50 to-slate-100 rounded-lg h-96 flex items-center justify-center overflow-hidden">
-            <Image
-              src={product.image_url || "/placeholder.svg"}
-              alt={language === "pt" && product.name_pt ? product.name_pt : product.name}
-              fill
-              className="object-contain"
-            />
+          <div className="relative bg-gradient-to-br from-blue-50 to-slate-100 rounded-lg h-96 flex items-center justify-center overflow-hidden p-4">
+            {product.image_url ? (
+              <Image
+                src={product.image_url}
+                alt={language === "pt"
+                  ? (translatedName || product.name_pt || product.name || "")
+                  : (translatedName || product.name || product.name_pt || "")}
+                fill
+                className="object-contain p-8"
+                priority
+              />
+            ) : (
+              <div className="text-center">
+                <div className="text-6xl text-blue-600 mb-4">
+                  {product.category === "Resistors"
+                    ? "⧉"
+                    : product.category === "Capacitors"
+                      ? "||"
+                      : product.category === "Potentiometers"
+                        ? "⚙"
+                        : product.category === "LEDs"
+                          ? "💡"
+                          : "⚙"}
+                </div>
+                <p className="text-sm text-slate-500">{product.category}</p>
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
           <div>
             <p className="text-accent font-semibold mb-2">{product.category}</p>
             <h1 className="text-3xl font-bold text-foreground mb-4">
-              {language === "pt" && product.name_pt ? product.name_pt : product.name}
+              {language === "pt" && product.name_pt
+                ? product.name_pt
+                : language === "pt" && translatedName
+                  ? translatedName
+                  : product.name}
             </h1>
             <p className="text-muted-foreground mb-6">
-              {language === "pt" && product.description_pt ? product.description_pt : product.description}
+              {language === "pt" && product.description_pt
+                ? product.description_pt
+                : language === "pt" && translatedDesc
+                  ? translatedDesc
+                  : product.description}
             </p>
 
             {seller && (
