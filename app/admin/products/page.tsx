@@ -13,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox" // Import Checkbox
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import cache from "@/lib/redis"; // Import Cache
 import { useLanguage } from "@/lib/context/language-context"
+import { getTranslation } from "@/lib/utils/translation"
+
 
 const CACHE_EXPIRY_SECONDS = 180; // Cache for 3 minutes (reduced for admin panel)
 
@@ -28,6 +30,31 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<string[]>([])
   const [manufacturers, setManufacturers] = useState<string[]>([])
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]) // For bulk actions
+  const [translatedNames, setTranslatedNames] = useState<Record<string, string>>({})
+
+  // Auto-translate product names when translation is missing
+  useEffect(() => {
+    // Reset translations when language changes
+    setTranslatedNames({})
+
+    if (language === "pt") {
+      products.forEach((product) => {
+        if (!product.name_pt && product.name) {
+          getTranslation(product.name, "pt").then((translated) => {
+            setTranslatedNames((prev) => ({ ...prev, [product.id]: translated }))
+          })
+        }
+      })
+    } else if (language === "en") {
+      products.forEach((product) => {
+        if (!product.name && product.name_pt) {
+          getTranslation(product.name_pt, "en").then((translated) => {
+            setTranslatedNames((prev) => ({ ...prev, [product.id]: translated }))
+          })
+        }
+      })
+    }
+  }, [language, products])
 
   useEffect(() => {
     const fetchFilters = async () => {
@@ -279,7 +306,11 @@ export default function AdminProductsPage() {
                           </td>
                           <td className="py-3 px-4 font-semibold">
                             <Link href={`/admin/products/detail?id=${product.id}`} className="text-blue-600 hover:underline">
-                              {language === "pt" && product.name_pt ? product.name_pt : product.name}
+                              {language === "pt" && product.name_pt
+                                ? product.name_pt
+                                : language === "pt" && translatedNames[product.id]
+                                  ? translatedNames[product.id]
+                                  : product.name}
                             </Link>
                           </td>
                           <td className="py-3 px-4">{product.category}</td>

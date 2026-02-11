@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
         const productName = item.product && !Array.isArray(item.product)
           ? (item.product as { name: string }).name
           : (item.product && Array.isArray(item.product) && item.product.length > 0)
-          ? item.product[0].name
-          : "Unknown Product";
+            ? item.product[0].name
+            : "Unknown Product";
         return {
           name: productName,
           quantity: item.quantity,
@@ -78,6 +78,8 @@ export async function POST(request: NextRequest) {
       const { invoice } = await invoiceResponse.json()
 
       // Send order confirmation email with invoice
+      const { language = "en" } = body // Get language from checkout request if available
+
       await fetch(`${request.nextUrl.origin}/api/emails/order-confirmation`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,6 +93,7 @@ export async function POST(request: NextRequest) {
           paymentMethod: order.payment_method,
           reference: order.id,
           invoiceUrl: invoice?.pdf_url,
+          language: language,
         }),
       })
 

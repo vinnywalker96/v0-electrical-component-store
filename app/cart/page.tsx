@@ -1,15 +1,43 @@
 "use client"
 
 import Link from "next/link"
+import { useEffect, useState } from "react"
 import { useCart } from "@/lib/context/cart-context"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, ArrowLeft, Plus, Minus } from "lucide-react"
 import { useLanguage } from "@/lib/context/language-context"
+import { getTranslation } from "@/lib/utils/translation"
+
 
 export default function CartPage() {
   const { items, total, tax, clearCart, removeFromCart, updateQuantity, loading } = useCart()
   const { language, t } = useLanguage()
+  const [translatedNames, setTranslatedNames] = useState<Record<string, string>>({})
+
+  // Auto-translate product names when language is Portuguese
+  useEffect(() => {
+    // Reset translations when language changes
+    setTranslatedNames({})
+
+    if (language === "pt") {
+      items.forEach((item) => {
+        if (item.product && !item.product.name_pt && item.product.name) {
+          getTranslation(item.product.name, "pt").then((translated) => {
+            setTranslatedNames((prev) => ({ ...prev, [item.product!.id]: translated }))
+          })
+        }
+      })
+    } else if (language === "en") {
+      items.forEach((item) => {
+        if (item.product && !item.product.name && item.product.name_pt) {
+          getTranslation(item.product.name_pt, "en").then((translated) => {
+            setTranslatedNames((prev) => ({ ...prev, [item.product!.id]: translated }))
+          })
+        }
+      })
+    }
+  }, [language, items])
 
   if (loading) {
     return (
@@ -66,7 +94,11 @@ export default function CartPage() {
                     {/* Product Basic Info */}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-lg truncate">
-                        {language === "pt" && item.product?.name_pt ? item.product.name_pt : item.product?.name}
+                        {language === "pt" && item.product?.name_pt
+                          ? item.product.name_pt
+                          : language === "pt" && translatedNames[item.product?.id || ""]
+                            ? translatedNames[item.product?.id || ""]
+                            : item.product?.name}
                       </h3>
                       <p className="text-sm text-slate-600 mt-1">
                         {item.product?.manufacturer} • {item.product?.category}

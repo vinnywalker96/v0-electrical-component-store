@@ -36,21 +36,19 @@ export async function POST(request: Request) {
     }
 
     await resend.emails.send({
-      from: "no-reply@kgcomponents.co.za", // Replace with your verified Resend email
+      from: "notifications@kg-components.com",
       to: adminEmails,
-      subject: `New Order Alert: #${orderId.slice(0, 8)} from ${customerName}`,
+      subject: `New Order Received - ${orderId}`,
       html: `
-        <p>A new order (<strong>#${orderId.slice(0, 8)}</strong>) has been placed on the marketplace.</p>
+        <h1>New Order Received</h1>
+        <p><strong>Order ID:</strong> ${orderId}</p>
         <p><strong>Customer:</strong> ${customerName} (${customerEmail})</p>
-        <p><strong>Total Amount:</strong> R${totalAmount.toFixed(2)}</p>
-        <p><strong>Order Items:</strong></p>
+        <p><strong>Total Amount:</strong> R ${totalAmount.toFixed(2)}</p>
+        <h3>Items:</h3>
         <ul>
-          ${orderItemsHtml}
+          ${items.map((item: any) => `<li>${item.name} (x${item.quantity}) - R ${item.unitPrice.toFixed(2)}</li>`).join("")}
         </ul>
-        <p>Please review the order details:</p>
-        <p><a href="${orderLink}">View Order Details</a></p>
-        <p>Thank you,</p>
-        <p>KG Components Admin Team</p>
+        <p><a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://kg-components.com'}/admin/orders">View in Admin Dashboard</a></p>
       `,
     });
 

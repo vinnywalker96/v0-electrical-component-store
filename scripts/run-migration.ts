@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
 
+dotenv.config({ path: '.env.local' })
 dotenv.config({ path: '.env' }) // Load environment variables from .env
 
 async function runMigration() {
@@ -10,7 +11,7 @@ async function runMigration() {
 
   if (!supabaseDbUrl) {
     console.warn('SUPABASE_DB_URL or DATABASE_URL environment variable is not set. Attempting to construct from NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
-    
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -37,6 +38,7 @@ async function runMigration() {
 
   const pool = new Pool({
     connectionString: supabaseDbUrl,
+    ssl: { rejectUnauthorized: false },
   });
 
   try {
@@ -65,9 +67,10 @@ async function runMigration() {
       } else {
         // Otherwise, split by semicolon as usual
         statements = migrationSQL
+          .replace(/--.*$/gm, '')
           .split(';')
           .map(stmt => stmt.trim())
-          .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+          .filter(stmt => stmt.length > 0);
       }
 
       if (statements.length === 0) {
