@@ -3,7 +3,7 @@
  * Uses MyMemory Translation API (free tier, no API key required)
  */
 
-const TRANSLATION_CACHE_KEY = 'product_translations'
+const TRANSLATION_CACHE_KEY = 'product_translations_v2'
 const CACHE_EXPIRY_DAYS = 7
 
 interface TranslationCache {
@@ -22,13 +22,26 @@ export function detectLanguage(text: string): 'en' | 'pt' {
 
     const lowerText = text.toLowerCase()
 
-    // Portuguese indicators
-    const ptIndicators = ['ção', 'ões', 'ão', 'ã', 'õe', 'para', 'com', 'não', 'são', 'está', 'pelo', 'pela']
+    // Portuguese indicators - common words, articles, and suffixes
+    const ptIndicators = [
+        'ção', 'ões', 'ão', 'ã', 'õe',
+        ' de ', ' do ', ' da ', ' em ', ' para ', ' com ', ' não ', ' são ', ' um ', ' uma ',
+        'alto-falante', 'resistencia', 'condensador', 'potenciometro', 'cabo', 'fio', 'conector'
+    ]
     const ptCount = ptIndicators.filter(indicator => lowerText.includes(indicator)).length
 
-    // English indicators
-    const enIndicators = ['the', 'and', 'for', 'with', 'this', 'that', 'from', 'have', 'been', 'will']
+    // English indicators - common words, articles
+    const enIndicators = [
+        ' the ', ' and ', ' with ', ' this ', ' that ', ' from ', ' have ', ' been ', ' will ',
+        'speaker', 'resistor', 'capacitor', 'potentiometer', 'cable', 'wire', 'connector'
+    ]
     const enCount = enIndicators.filter(indicator => lowerText.includes(indicator)).length
+
+    // Special case for uppercase-only or short strings where indicators might miss
+    // If it contains characters unique to Portuguese, it's Portuguese
+    if (/[áàâãéèêíïóòôõúüç]/.test(lowerText)) {
+        return 'pt'
+    }
 
     return ptCount > enCount ? 'pt' : 'en'
 }

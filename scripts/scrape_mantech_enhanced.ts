@@ -160,8 +160,8 @@ async function scrapeMantech() {
     try {
         sellerId = await getOrCreateMantechVendor();
         console.log(`Using Seller ID: ${sellerId}`);
-    } catch (e) {
-        console.error("Failed to get/create seller:", e);
+    } catch (e: any) {
+        console.error("Failed to get/create seller:", e.message || e);
         return;
     }
 
@@ -255,8 +255,8 @@ async function traverseCategories(page: any, level: number, parentId: string | n
                 page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }).catch(() => { }),
                 page.select(`#${listBoxId}`, optionInfo.value)
             ]);
-        } catch (e) {
-            console.error(`Error during selection/navigation: ${e.message}`);
+        } catch (e: any) {
+            console.error(`Error during selection/navigation: ${e.message || "Unknown error"}`);
             continue; // Skip sub-branches if navigation fails
         }
 

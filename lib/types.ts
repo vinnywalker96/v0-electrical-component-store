@@ -5,6 +5,7 @@ export interface Product {
   description: string
   description_pt?: string // Added for Portuguese translation
   category: string
+  category_id?: string // Link to categories table
   manufacturer: string
   price: number
   stock_quantity: number
@@ -14,8 +15,20 @@ export interface Product {
   images?: string[] // Added for multiple product images
   specifications?: Record<string, unknown>
   technical_documents?: string[] // Added for technical documentation URLs
+  category_path?: string[] // Added for breadcrumbs
   seller_id?: string
   seller?: Seller // Added for seller relationship
+  created_at: string
+  updated_at: string
+}
+
+export interface Category {
+  id: string
+  name: string
+  name_pt?: string
+  parent_id?: string
+  slug: string
+  level: number
   created_at: string
   updated_at: string
 }

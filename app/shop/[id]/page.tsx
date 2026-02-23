@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import type { Product } from "@/lib/types"
 import { useCurrency } from "@/lib/context/currency-context"
 import { useLanguage } from "@/lib/context/language-context"
-import { getTranslation } from "@/lib/utils/translation"
+import { getTranslation, detectLanguage } from "@/lib/utils/translation"
 
 
 export default function ProductDetailPage() {
@@ -55,23 +55,59 @@ export default function ProductDetailPage() {
     }
   }, [params.id, supabase, setProduct, setSeller])
 
-  // Auto-translate when translation is missing
+  // Auto-translate when translation is missing or language mismatch
   useEffect(() => {
     // Reset translations when language changes
     setTranslatedName("")
     setTranslatedDesc("")
 
     if (product) {
-      if (language === "pt" && !product.name_pt && product.name) {
-        getTranslation(product.name, "pt").then(setTranslatedName)
-      } else if (language === "en" && !product.name && product.name_pt) {
-        getTranslation(product.name_pt, "en").then(setTranslatedName)
-      }
+      if (language === "pt") {
+        const needsTranslation = !product.name_pt ||
+          product.name_pt === product.name ||
+          (product.name && detectLanguage(product.name) === 'en');
 
-      if (language === "pt" && !product.description_pt && product.description) {
-        getTranslation(product.description, "pt").then(setTranslatedDesc)
-      } else if (language === "en" && !product.description && product.description_pt) {
-        getTranslation(product.description_pt, "en").then(setTranslatedDesc)
+        if (needsTranslation && product.name) {
+          getTranslation(product.name, "pt").then((result) => {
+            if (result && result !== product.name) setTranslatedName(result)
+          })
+        }
+
+        const needsDescTranslation = !product.description_pt ||
+          product.description_pt === product.description ||
+          (product.description && detectLanguage(product.description) === 'en');
+
+        if (needsDescTranslation && product.description) {
+          getTranslation(product.description, "pt").then((result) => {
+            if (result && result !== product.description) setTranslatedDesc(result)
+          })
+        }
+      } else if (language === "en") {
+        const needsTranslation = !product.name ||
+          product.name === product.name_pt ||
+          (product.name_pt && detectLanguage(product.name_pt) === 'pt') ||
+          (product.name && detectLanguage(product.name) === 'pt');
+
+        if (needsTranslation && (product.name_pt || product.name)) {
+          getTranslation(product.name_pt || product.name, "en").then((result) => {
+            if (result && result !== (product.name_pt || product.name)) {
+              setTranslatedName(result)
+            }
+          })
+        }
+
+        const needsDescTranslation = !product.description ||
+          product.description === product.description_pt ||
+          (product.description_pt && detectLanguage(product.description_pt) === 'pt') ||
+          (product.description && detectLanguage(product.description) === 'pt');
+
+        if (needsDescTranslation && (product.description_pt || product.description)) {
+          getTranslation(product.description_pt || product.description, "en").then((result) => {
+            if (result && result !== (product.description_pt || product.description)) {
+              setTranslatedDesc(result)
+            }
+          })
+        }
       }
     }
   }, [language, product])
