@@ -11,7 +11,7 @@ import NextImage from "next/image"
 import type { Product } from "@/lib/types"
 import { useCurrency } from "@/lib/context/currency-context"
 import { useLanguage } from "@/lib/context/language-context"
-import { getTranslation } from "@/lib/utils/translation"
+import { getTranslation, detectLanguage } from "@/lib/utils/translation"
 
 
 interface ProductCardProps {
@@ -28,40 +28,59 @@ export function ProductCard({ product }: ProductCardProps) {
   const { formatPrice } = useCurrency()
   const { language, t } = useLanguage()
 
-  // Auto-translate when translation is missing
+  // Auto-translate when translation is missing or language mismatch
   useEffect(() => {
-    console.log('[ProductCard] Translation effect triggered', { language, name: product.name, name_pt: product.name_pt })
-
     // Reset translations when language changes
     setTranslatedName("")
     setTranslatedDesc("")
 
     if (language === "pt") {
-      // Check if name_pt is missing OR is just a duplicate of the English name
-      if ((!product.name_pt || product.name_pt === product.name) && product.name) {
-        console.log('[ProductCard] Translating name EN->PT:', product.name)
+      // Check if name_pt is missing OR is identical to English OR name is detected as English
+      const needsTranslation = !product.name_pt ||
+        product.name_pt === product.name ||
+        (product.name && detectLanguage(product.name) === 'en');
+
+      if (needsTranslation && product.name) {
         getTranslation(product.name, "pt").then((result) => {
-          console.log('[ProductCard] Translation result:', result)
-          setTranslatedName(result)
+          if (result && result !== product.name) setTranslatedName(result)
         })
       }
 
-      // Check if description_pt is missing OR is just a duplicate
-      if ((!product.description_pt || product.description_pt === product.description) && product.description) {
-        getTranslation(product.description, "pt").then(setTranslatedDesc)
+      const needsDescTranslation = !product.description_pt ||
+        product.description_pt === product.description ||
+        (product.description && detectLanguage(product.description) === 'en');
+
+      if (needsDescTranslation && product.description) {
+        getTranslation(product.description, "pt").then((result) => {
+          if (result && result !== product.description) setTranslatedDesc(result)
+        })
       }
     } else if (language === "en") {
-      // Translate PT -> EN (when product only has Portuguese name)
-      if ((!product.name || product.name === product.name_pt) && product.name_pt) {
-        console.log('[ProductCard] Translating name PT->EN:', product.name_pt)
-        getTranslation(product.name_pt, "en").then((result) => {
-          console.log('[ProductCard] Translation result:', result)
-          setTranslatedName(result)
+      // Check if name is missing OR identical to name_pt OR name_pt is detected as Portuguese
+      const needsTranslation = !product.name ||
+        product.name === product.name_pt ||
+        (product.name_pt && detectLanguage(product.name_pt) === 'pt') ||
+        (product.name && detectLanguage(product.name) === 'pt');
+
+      if (needsTranslation && (product.name_pt || product.name)) {
+        getTranslation(product.name_pt || product.name, "en").then((result) => {
+          if (result && result !== (product.name_pt || product.name)) {
+            setTranslatedName(result)
+          }
         })
       }
 
-      if ((!product.description || product.description === product.description_pt) && product.description_pt) {
-        getTranslation(product.description_pt, "en").then(setTranslatedDesc)
+      const needsDescTranslation = !product.description ||
+        product.description === product.description_pt ||
+        (product.description_pt && detectLanguage(product.description_pt) === 'pt') ||
+        (product.description && detectLanguage(product.description) === 'pt');
+
+      if (needsDescTranslation && (product.description_pt || product.description)) {
+        getTranslation(product.description_pt || product.description, "en").then((result) => {
+          if (result && result !== (product.description_pt || product.description)) {
+            setTranslatedDesc(result)
+          }
+        })
       }
     }
   }, [language, product.name, product.name_pt, product.description, product.description_pt])

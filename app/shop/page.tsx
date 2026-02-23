@@ -1,5 +1,4 @@
 "use client"
-
 import { useEffect, useState, useMemo, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { Product } from "@/lib/types"
@@ -10,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import cache from "@/lib/redis" // Import Cache
 import { useLanguage } from "@/lib/context/language-context"
+import type { Category } from "@/lib/types"
 
 const CACHE_EXPIRY_SECONDS = 300; // Cache for 5 minutes (reduced from 60 for better freshness)
 
@@ -17,9 +17,11 @@ export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [selectedManufacturer, setSelectedManufacturer] = useState<string>("all")
   const [selectedSeller, setSelectedSeller] = useState<string>("all")
+  const [selectedManufacturer, setSelectedManufacturer] = useState<string>("all")
+  const [dbCategories, setDbCategories] = useState<Category[]>([])
+  const [selectedMainCategoryId, setSelectedMainCategoryId] = useState<string>("all")
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>("all")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
   const [maxPrice, setMaxPrice] = useState(10000)
   const [sellers, setSellers] = useState<any[]>([])
@@ -107,12 +109,32 @@ export default function ShopPage() {
     }
   }, [supabase, setSellers]);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .range(0, 2000)
+        .order('name', { ascending: true });
+      if (error) throw error;
+      setDbCategories(data || []);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  }, [supabase]);
+
   useEffect(() => {
     fetchProducts()
     fetchSellers()
-  }, [fetchProducts, fetchSellers])
+    fetchCategories()
+  }, [fetchProducts, fetchSellers, fetchCategories])
 
-  const categories = useMemo(() => [...new Set(products.map((p) => p.category).filter(Boolean))], [products])
+  const mainCategories = useMemo(() => dbCategories.filter(c => !c.parent_id), [dbCategories])
+  const subCategories = useMemo(() => {
+    if (selectedMainCategoryId === "all") return []
+    return dbCategories.filter(c => c.parent_id === selectedMainCategoryId)
+  }, [dbCategories, selectedMainCategoryId])
+
   const manufacturers = useMemo(() => [...new Set(products.map((p) => p.manufacturer).filter(Boolean))], [products])
 
   const filteredProducts = useMemo(() => {
@@ -122,14 +144,21 @@ export default function ShopPage() {
         (product.name_pt && product.name_pt.toLowerCase().includes(searchQuery.toLowerCase())) ||
         product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.description_pt && product.description_pt.toLowerCase().includes(searchQuery.toLowerCase()))
-      const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
+
+      const matchesMainCategory = selectedMainCategoryId === "all" ||
+        product.category_id === selectedMainCategoryId ||
+        (product as any).category_path?.includes(mainCategories.find(c => c.id === selectedMainCategoryId)?.name)
+
+      const matchesSubCategory = selectedSubCategoryId === "all" ||
+        product.category_id === selectedSubCategoryId
+
       const matchesManufacturer = selectedManufacturer === "all" || product.manufacturer === selectedManufacturer
       const matchesSeller = selectedSeller === "all" || !product.seller_id || product.seller_id === selectedSeller
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
 
-      return matchesSearch && matchesCategory && matchesManufacturer && matchesSeller && matchesPrice
+      return matchesSearch && matchesMainCategory && matchesSubCategory && matchesManufacturer && matchesSeller && matchesPrice
     })
-  }, [products, searchQuery, selectedCategory, selectedManufacturer, selectedSeller, priceRange])
+  }, [products, searchQuery, selectedMainCategoryId, selectedSubCategoryId, selectedManufacturer, selectedSeller, priceRange, mainCategories])
 
   return (
     <main className="min-h-screen bg-background">
@@ -150,10 +179,12 @@ export default function ShopPage() {
 
         {/* Filters */}
         {isMounted && (
-          <div className={`${showFilters ? 'block' : 'hidden'} md:block bg-card rounded-lg border border-border p-6 mb-8`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">{t("shop_page.filters.search")}</label>
+          <div className="space-y-6 bg-card rounded-xl border-2 border-border p-8 mb-10 shadow-lg relative">
+            <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
+            {/* Top Row: Search and Categories */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-4">
+                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">{t("shop_page.filters.search")}</label>
                 <Input
                   placeholder={t("shop_page.filters.search_placeholder")}
                   value={searchQuery}
@@ -162,27 +193,54 @@ export default function ShopPage() {
                 />
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">{t("shop_page.filters.category")}</label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
+              <div className="lg:col-span-4">
+                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">{t("shop_page.filters.category")}</label>
+                <Select value={selectedMainCategoryId} onValueChange={(val) => {
+                  setSelectedMainCategoryId(val)
+                  setSelectedSubCategoryId("all")
+                }}>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder={t("shop_page.filters.all_categories")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("shop_page.filters.all_categories")}</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
+                    {mainCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
+              <div className="lg:col-span-4">
+                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">Subcategory</label>
+                <Select
+                  value={selectedSubCategoryId}
+                  onValueChange={setSelectedSubCategoryId}
+                  disabled={selectedMainCategoryId === "all"}
+                >
+                  <SelectTrigger className={`w-full ${selectedMainCategoryId === "all" ? 'opacity-50' : ''}`}>
+                    <SelectValue placeholder={selectedMainCategoryId === "all" ? "Select category first" : "All Subcategories"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Subcategories</SelectItem>
+                    {subCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Bottom Row: Manufacturer, Seller, Price, Reset */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4 border-t border-border/50">
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">{t("shop_page.filters.manufacturer")}</label>
+                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">{t("shop_page.filters.manufacturer")}</label>
                 <Select value={selectedManufacturer} onValueChange={setSelectedManufacturer}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder={t("shop_page.filters.all_manufacturers")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -197,9 +255,9 @@ export default function ShopPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">{t("shop_page.filters.seller")}</label>
+                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">{t("shop_page.filters.seller")}</label>
                 <Select value={selectedSeller} onValueChange={setSelectedSeller}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder={t("shop_page.filters.all_sellers")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -231,7 +289,8 @@ export default function ShopPage() {
                 <Button
                   onClick={() => {
                     setSearchQuery("")
-                    setSelectedCategory("all")
+                    setSelectedMainCategoryId("all")
+                    setSelectedSubCategoryId("all")
                     setSelectedManufacturer("all")
                     setSelectedSeller("all")
                     setPriceRange([0, maxPrice])
