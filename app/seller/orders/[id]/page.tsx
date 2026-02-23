@@ -9,11 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { SetOrderPaidButton } from "@/components/set-order-paid-button"
 import { useLanguage } from "@/lib/context/language-context"
+import { useCurrency } from "@/lib/context/currency-context"
 
 export default function SellerOrderDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const supabase = createClient()
   const { t } = useLanguage()
+  const { formatPrice } = useCurrency()
   const [loading, setLoading] = useState(true)
   const [seller, setSeller] = useState<any>(null)
   const [order, setOrder] = useState<any>(null)
@@ -156,9 +158,9 @@ export default function SellerOrderDetailPage({ params }: { params: { id: string
                 <div>
                   <p className="font-semibold">{item.product.name}</p>
                   <p className="text-sm text-muted-foreground">{t("seller_orders.quantity")}: {item.quantity}</p>
-                  <p className="text-sm text-muted-foreground">{t("seller_orders.unit_price")}: R{item.unit_price.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">{t("seller_orders.unit_price")}: {formatPrice(item.unit_price)}</p>
                 </div>
-                <p className="font-semibold">R{(item.unit_price * item.quantity).toFixed(2)}</p>
+                <p className="font-semibold">{formatPrice(item.unit_price * item.quantity)}</p>
               </div>
             ))}
           </div>
@@ -166,7 +168,7 @@ export default function SellerOrderDetailPage({ params }: { params: { id: string
           <div className="mt-6 pt-4 border-t">
             <div className="flex justify-between font-bold text-lg">
               <span>{t("seller_orders.seller_total")}</span>
-              <span className="text-primary">R{sellerTotal.toFixed(2)}</span>
+              <span className="text-primary">{formatPrice(sellerTotal)}</span>
             </div>
           </div>
         </CardContent>

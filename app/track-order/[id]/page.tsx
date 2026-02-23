@@ -14,6 +14,8 @@ const ORDER_STATUSES = [
   { key: "delivered", label: "Delivered", icon: CheckCircle },
 ]
 
+import { useCurrency } from "@/lib/context/currency-context"
+
 export default function TrackOrderPage() {
   const params = useParams()
   const orderId = params.id as string
@@ -21,6 +23,7 @@ export default function TrackOrderPage() {
   const [orderItems, setOrderItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+  const { formatPrice } = useCurrency()
 
   const fetchOrder = useCallback(async () => {
     try {
@@ -112,9 +115,8 @@ export default function TrackOrderPage() {
                   <div key={status.key} className="flex-1 relative">
                     <div className="flex flex-col items-center">
                       <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
-                          isCompleted ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                        } ${isCurrent ? "ring-4 ring-primary/20" : ""}`}
+                        className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${isCompleted ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                          } ${isCurrent ? "ring-4 ring-primary/20" : ""}`}
                       >
                         <Icon className="h-6 w-6" />
                       </div>
@@ -126,9 +128,8 @@ export default function TrackOrderPage() {
                     </div>
                     {index < ORDER_STATUSES.length - 1 && (
                       <div
-                        className={`absolute top-6 left-[50%] w-full h-0.5 ${
-                          index < currentStatusIndex ? "bg-primary" : "bg-muted"
-                        }`}
+                        className={`absolute top-6 left-[50%] w-full h-0.5 ${index < currentStatusIndex ? "bg-primary" : "bg-muted"
+                          }`}
                       />
                     )}
                   </div>
@@ -173,7 +174,7 @@ export default function TrackOrderPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Amount</p>
-              <p className="font-semibold">R{order.total_amount?.toFixed(2)}</p>
+              <p className="font-semibold">{formatPrice(order.total_amount || 0)}</p>
             </div>
           </div>
 
@@ -203,7 +204,7 @@ export default function TrackOrderPage() {
                   </p>
                   <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                 </div>
-                <p className="font-semibold">R{(item.unit_price * item.quantity).toFixed(2)}</p>
+                <p className="font-semibold">{formatPrice(item.unit_price * item.quantity)}</p>
               </div>
             ))}
           </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import type { UserProfile, Order } from "@/lib/types"
@@ -17,7 +17,7 @@ import { useCurrency } from "@/lib/context/currency-context"
 import { useLanguage } from "@/lib/context/language-context"
 
 export default function DashboardPage() {
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)

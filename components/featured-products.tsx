@@ -5,11 +5,15 @@ import { ShoppingCart, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import type { Product } from "@/lib/types"
+import { useCurrency } from "@/lib/context/currency-context"
+import { useLanguage } from "@/lib/context/language-context"
 
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { formatPrice } = useCurrency()
+  const { t, language } = useLanguage()
 
   useEffect(() => {
     async function fetchFeaturedProducts() {
@@ -48,7 +52,7 @@ export default function FeaturedProducts() {
     return (
       <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <p className="text-muted-foreground">Loading products...</p>
+          <p className="text-muted-foreground">{t("featured_products.loading")}</p>
         </div>
       </section>
     )
@@ -58,12 +62,12 @@ export default function FeaturedProducts() {
     return (
       <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Featured Products</h2>
+          <h2 className="text-3xl font-bold mb-4">{t("featured_products.title")}</h2>
           <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-6 max-w-md mx-auto">
             <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-3" />
-            <p className="text-amber-800 dark:text-amber-200 font-medium">Products Coming Soon</p>
+            <p className="text-amber-800 dark:text-amber-200 font-medium">{t("featured_products.coming_soon")}</p>
             <p className="text-amber-600 dark:text-amber-300 text-sm mt-2">
-              Our product catalog is being set up. Check back shortly!
+              {t("featured_products.catalog_setup")}
             </p>
           </div>
         </div>
@@ -75,8 +79,8 @@ export default function FeaturedProducts() {
     return (
       <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Featured Products</h2>
-          <p className="text-muted-foreground">No products available yet. Check back soon!</p>
+          <h2 className="text-3xl font-bold mb-4">{t("featured_products.title")}</h2>
+          <p className="text-muted-foreground">{t("featured_products.no_products")}</p>
         </div>
       </section>
     )
@@ -86,8 +90,8 @@ export default function FeaturedProducts() {
     <section className="py-16 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Featured Products</h2>
-          <p className="text-muted-foreground text-lg">Check out our best-selling electrical components</p>
+          <h2 className="text-3xl font-bold mb-4">{t("featured_products.title")}</h2>
+          <p className="text-muted-foreground text-lg">{t("featured_products.subtitle")}</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -115,12 +119,14 @@ export default function FeaturedProducts() {
                   </div>
                 </div>
                 <div className="p-4 flex flex-col flex-1">
-                  <p className="text-sm text-accent font-semibold">{product.category}</p>
-                  <h3 className="font-semibold text-foreground mb-2 line-clamp-2">{product.name}</h3>
+                  <p className="text-sm text-accent font-semibold">
+                    {t(`categories.${product.category.toLowerCase().replace(/ & /g, '_').replace(/ /g, '_')}`) || product.category}
+                  </p>
+                  <h3 className="font-semibold text-foreground mb-2 line-clamp-2">{language === 'pt' ? product.name_pt || product.name : product.name}</h3>
                   <p className="text-xs text-muted-foreground mb-4 flex-1 line-clamp-2">{product.description}</p>
                   <div className="flex justify-between items-center mt-auto">
                     <span className="text-lg font-bold text-primary">
-                      {product.price > 0 ? `R${product.price.toFixed(2)}` : "Price TBD"}
+                      {product.price > 0 ? formatPrice(product.price) : "Price TBD"}
                     </span>
                     <button
                       onClick={(e) => {
@@ -142,7 +148,7 @@ export default function FeaturedProducts() {
             href="/shop"
             className="bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-8 rounded-lg transition inline-block"
           >
-            View All Products
+            {t("featured_products.view_all")}
           </Link>
         </div>
       </div>

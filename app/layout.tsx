@@ -21,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased flex flex-col min-h-screen`}>
+    <html lang="en" className="overflow-x-hidden w-full max-w-[100vw]">
+      <body className={`font-sans antialiased flex flex-col min-h-screen overflow-x-hidden w-full max-w-[100vw]`}>
         <StoreProvider>
           <LanguageProvider>
             <CartProvider>

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import cache from "@/lib/redis" // Import Cache
 import { useLanguage } from "@/lib/context/language-context"
+import { useCurrency } from "@/lib/context/currency-context"
 import type { Category } from "@/lib/types"
 
 const CACHE_EXPIRY_SECONDS = 300; // Cache for 5 minutes (reduced from 60 for better freshness)
@@ -27,7 +28,8 @@ export default function ShopPage() {
   const [sellers, setSellers] = useState<any[]>([])
   const [isMounted, setIsMounted] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
+  const { formatPrice } = useCurrency()
 
   useEffect(() => {
     setIsMounted(true)
@@ -129,16 +131,16 @@ export default function ShopPage() {
     fetchCategories()
   }, [fetchProducts, fetchSellers, fetchCategories])
 
-  const mainCategories = useMemo(() => dbCategories.filter(c => !c.parent_id), [dbCategories])
-  const subCategories = useMemo(() => {
+  const mainCategories = useMemo<Category[]>(() => dbCategories.filter(c => !c.parent_id), [dbCategories])
+  const subCategories = useMemo<Category[]>(() => {
     if (selectedMainCategoryId === "all") return []
     return dbCategories.filter(c => c.parent_id === selectedMainCategoryId)
   }, [dbCategories, selectedMainCategoryId])
 
   const manufacturers = useMemo(() => [...new Set(products.map((p) => p.manufacturer).filter(Boolean))], [products])
 
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+  const filteredProducts = useMemo<Product[]>(() => {
+    return (products as Product[]).filter((product: Product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.name_pt && product.name_pt.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -160,6 +162,28 @@ export default function ShopPage() {
     })
   }, [products, searchQuery, selectedMainCategoryId, selectedSubCategoryId, selectedManufacturer, selectedSeller, priceRange, mainCategories])
 
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+  }, [])
+
+  const handleMainCategoryChange = useCallback((val: string) => {
+    setSelectedMainCategoryId(val)
+    setSelectedSubCategoryId("all")
+  }, [])
+
+  const handlePriceChange = useCallback((val: number[]) => {
+    setPriceRange([0, val[0]])
+  }, [])
+
+  const handleReset = useCallback(() => {
+    setSearchQuery("")
+    setSelectedMainCategoryId("all")
+    setSelectedSubCategoryId("all")
+    setSelectedManufacturer("all")
+    setSelectedSeller("all")
+    setPriceRange([0, maxPrice])
+  }, [maxPrice])
+
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -179,7 +203,7 @@ export default function ShopPage() {
 
         {/* Filters */}
         {isMounted && (
-          <div className="space-y-6 bg-card rounded-xl border-2 border-border p-8 mb-10 shadow-lg relative">
+          <div className={`space-y-6 bg-card rounded-xl border-2 border-border p-8 mb-10 shadow-lg relative ${showFilters ? 'block' : 'hidden md:block'}`}>
             <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
             {/* Top Row: Search and Categories */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -188,17 +212,14 @@ export default function ShopPage() {
                 <Input
                   placeholder={t("shop_page.filters.search_placeholder")}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchChange}
                   className="w-full"
                 />
               </div>
 
               <div className="lg:col-span-4">
                 <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">{t("shop_page.filters.category")}</label>
-                <Select value={selectedMainCategoryId} onValueChange={(val) => {
-                  setSelectedMainCategoryId(val)
-                  setSelectedSubCategoryId("all")
-                }}>
+                <Select value={selectedMainCategoryId} onValueChange={handleMainCategoryChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder={t("shop_page.filters.all_categories")} />
                   </SelectTrigger>
@@ -206,7 +227,7 @@ export default function ShopPage() {
                     <SelectItem value="all">{t("shop_page.filters.all_categories")}</SelectItem>
                     {mainCategories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
+                        {language === "pt" ? cat.name_pt || cat.name : cat.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -214,20 +235,20 @@ export default function ShopPage() {
               </div>
 
               <div className="lg:col-span-4">
-                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">Subcategory</label>
+                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">{t("shop_page.filters.subcategory")}</label>
                 <Select
                   value={selectedSubCategoryId}
                   onValueChange={setSelectedSubCategoryId}
                   disabled={selectedMainCategoryId === "all"}
                 >
                   <SelectTrigger className={`w-full ${selectedMainCategoryId === "all" ? 'opacity-50' : ''}`}>
-                    <SelectValue placeholder={selectedMainCategoryId === "all" ? "Select category first" : "All Subcategories"} />
+                    <SelectValue placeholder={selectedMainCategoryId === "all" ? t("categories.select_category_first") : t("categories.no_subcategory")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Subcategories</SelectItem>
+                    <SelectItem value="all">{t("categories.no_subcategory")}</SelectItem>
                     {subCategories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
+                        {language === "pt" ? cat.name_pt || cat.name : cat.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -273,11 +294,11 @@ export default function ShopPage() {
 
               <div>
                 <label className="text-sm font-medium text-foreground mb-2 block">
-                  {t("shop_page.filters.max_price")}: R{priceRange[1].toFixed(0)}
+                  {t("shop_page.filters.max_price")}: {formatPrice(priceRange[1])}
                 </label>
                 <Slider
                   value={[priceRange[1]]}
-                  onValueChange={(val) => setPriceRange([0, val[0]])}
+                  onValueChange={handlePriceChange}
                   min={0}
                   max={maxPrice}
                   step={10}
@@ -287,14 +308,7 @@ export default function ShopPage() {
 
               <div className="flex items-end">
                 <Button
-                  onClick={() => {
-                    setSearchQuery("")
-                    setSelectedMainCategoryId("all")
-                    setSelectedSubCategoryId("all")
-                    setSelectedManufacturer("all")
-                    setSelectedSeller("all")
-                    setPriceRange([0, maxPrice])
-                  }}
+                  onClick={handleReset}
                   variant="outline"
                   className="w-full"
                 >

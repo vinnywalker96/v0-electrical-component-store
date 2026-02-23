@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
 import { useLanguage } from "@/lib/context/language-context"
+import { useCurrency } from "@/lib/context/currency-context"
 
 interface FAQItem {
   question: string
@@ -28,6 +29,9 @@ function FAQItemComponent({ faq }: { faq: FAQItem }) {
 
 export default function FAQ() {
   const { t } = useLanguage()
+  const { formatPrice } = useCurrency()
+
+  const shippingThreshold = formatPrice(500)
 
   const FAQS = [
     {
@@ -40,7 +44,7 @@ export default function FAQ() {
     },
     {
       question: t("faq.q3_question"),
-      answer: t("faq.q3_answer"),
+      answer: t("faq.q3_answer", { amount: shippingThreshold }),
     },
     {
       question: t("faq.q4_question"),

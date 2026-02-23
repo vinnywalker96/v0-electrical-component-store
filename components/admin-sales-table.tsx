@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { format } from "date-fns" // For date formatting
 import { toast } from "@/hooks/use-toast"
 import { useLanguage } from "@/lib/context/language-context"
+import { useCurrency } from "@/lib/context/currency-context"
 
 // Helper function to get date ranges (copied from admin dashboard, could be a utility)
 const getDateRange = (period: "day" | "week" | "month" | "year") => {
@@ -50,6 +51,7 @@ export function AdminSalesTable({ filterPeriod }: AdminSalesTableProps) {
   const [salesData, setSalesData] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage()
+  const { formatPrice } = useCurrency()
 
   useEffect(() => {
     const fetchSales = async () => {
@@ -162,9 +164,10 @@ export function AdminSalesTable({ filterPeriod }: AdminSalesTableProps) {
                         ? `${order.user.first_name} ${order.user.last_name}`
                         : "N/A"}
                     </td>
-                    <td className="py-3 px-4 text-sm">{order.user?.email || "N/A"}</td>                    <td className="py-3 px-4 text-right font-semibold">R{order.total_amount.toFixed(2)}</td>
+                    <td className="py-3 px-4 text-sm">{order.user?.email || "N/A"}</td>
+                    <td className="py-3 px-4 text-right font-semibold">{formatPrice(order.total_amount)}</td>
                     <td className="py-3 px-4 text-right text-green-600 font-semibold">
-                      R{(order.total_amount * COMMISSION_RATE).toFixed(2)}
+                      {formatPrice(order.total_amount * COMMISSION_RATE)}
                     </td>
                   </tr>
                 ))}

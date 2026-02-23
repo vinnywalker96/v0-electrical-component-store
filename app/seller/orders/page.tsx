@@ -8,11 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Package, ArrowLeft } from "lucide-react"
 import { useLanguage } from "@/lib/context/language-context"
+import { useCurrency } from "@/lib/context/currency-context"
 
 export default function SellerOrdersPage() {
   const router = useRouter()
   const supabase = createClient()
   const { t } = useLanguage()
+  const { formatPrice } = useCurrency()
   const [loading, setLoading] = useState(true)
   const [seller, setSeller] = useState<any>(null)
   const [orders, setOrders] = useState<any[]>([])
@@ -126,14 +128,14 @@ export default function SellerOrdersPage() {
                         <td className="py-3 px-4">
                           <span
                             className={`px-2 py-1 rounded text-xs capitalize ${order.payment_status === "paid"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-orange-100 text-orange-800"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-orange-100 text-orange-800"
                               }`}
                           >
                             {order.payment_status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right font-semibold">R{sellerTotal.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-right font-semibold">{formatPrice(sellerTotal)}</td>
                         <td className="py-3 px-4 text-center">
                           <Link href={`/seller/orders/${order.id}`}>
                             <Button variant="outline" size="sm">

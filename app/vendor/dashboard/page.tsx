@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
@@ -14,7 +14,7 @@ import { useLanguage } from "@/lib/context/language-context"
 
 export default function VendorDashboardPage() {
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const dispatch = useAppDispatch()
   const [loading, setLoading] = useState(true)
   const [seller, setSeller] = useState<any>(null)

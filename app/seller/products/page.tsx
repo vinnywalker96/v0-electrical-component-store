@@ -10,12 +10,14 @@ import { Plus, Edit, Eye } from "lucide-react"
 import { DeleteProductButton } from "@/components/delete-product-button"
 import { useLanguage } from "@/lib/context/language-context"
 import { getTranslation } from "@/lib/utils/translation"
+import { useCurrency } from "@/lib/context/currency-context"
 
 
 export default function SellerProductsPage() {
   const router = useRouter()
   const supabase = createClient()
   const { language, t } = useLanguage()
+  const { formatPrice } = useCurrency()
   const [loading, setLoading] = useState(true)
   const [seller, setSeller] = useState<any>(null)
   const [products, setProducts] = useState<any[]>([])
@@ -134,7 +136,7 @@ export default function SellerProductsPage() {
                       </td>
                       <td className="py-3 px-4">{product.category}</td>
                       <td className="py-3 px-4 text-right">
-                        {product.price > 0 ? `R${product.price.toFixed(2)}` : t("seller_products.not_set")}
+                        {product.price > 0 ? formatPrice(product.price) : t("seller_products.not_set")}
                       </td>
                       <td className="py-3 px-4 text-right">
                         <span

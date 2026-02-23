@@ -133,7 +133,7 @@ export default function Navbar() {
           </div>
 
           {/* Right Side Icons */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             {mounted && <LanguageSwitcher />}
             {mounted && <CurrencySwitcher />}
 
