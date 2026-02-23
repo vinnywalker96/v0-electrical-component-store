@@ -8,11 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, ArrowLeft, Plus, Minus } from "lucide-react"
 import { useLanguage } from "@/lib/context/language-context"
 import { getTranslation } from "@/lib/utils/translation"
+import { useCurrency } from "@/lib/context/currency-context"
 
 
 export default function CartPage() {
   const { items, total, tax, clearCart, removeFromCart, updateQuantity, loading } = useCart()
   const { language, t } = useLanguage()
+  const { formatPrice } = useCurrency()
   const [translatedNames, setTranslatedNames] = useState<Record<string, string>>({})
 
   // Auto-translate product names when language is Portuguese
@@ -104,7 +106,7 @@ export default function CartPage() {
                         {item.product?.manufacturer} • {item.product?.category}
                       </p>
                       <p className="text-xl font-bold text-blue-600 mt-2">
-                        {item.product?.price ? `$${item.product.price.toFixed(2)}` : "TBD"}
+                        {item.product?.price ? formatPrice(item.product.price) : "TBD"}
                       </p>
                     </div>
 
@@ -134,7 +136,7 @@ export default function CartPage() {
                             {t("cart.item_subtotal")}
                           </p>
                           <p className="text-lg font-bold text-slate-900">
-                            ${((item.product?.price || 0) * item.quantity).toFixed(2)}
+                            {formatPrice((item.product?.price || 0) * item.quantity)}
                           </p>
                         </div>
 
@@ -162,17 +164,17 @@ export default function CartPage() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">{t("cart.items_count", { count: items.length.toString() })}</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="font-medium">{formatPrice(subtotal)}</span>
                 </div>
 
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">{t("cart.tax")}</span>
-                  <span className="font-medium">${tax.toFixed(2)}</span>
+                  <span className="font-medium">{formatPrice(tax)}</span>
                 </div>
 
                 <div className="border-t pt-4 flex justify-between">
                   <span className="font-semibold text-lg">{t("cart.total")}</span>
-                  <span className="font-bold text-lg text-blue-600">${total.toFixed(2)}</span>
+                  <span className="font-bold text-lg text-blue-600">{formatPrice(total)}</span>
                 </div>
 
                 <Link href="/checkout" className="block">

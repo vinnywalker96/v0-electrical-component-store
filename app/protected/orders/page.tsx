@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { useLanguage } from "@/lib/context/language-context"
+import { useCurrency } from "@/lib/context/currency-context"
 
 interface OrderWithItems extends Order {
   items: OrderItem[]
@@ -16,6 +17,7 @@ interface OrderWithItems extends Order {
 export default function OrdersPage() {
   const supabase = createClient()
   const { t } = useLanguage()
+  const { formatPrice } = useCurrency()
   const [orders, setOrders] = useState<OrderWithItems[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -107,7 +109,7 @@ export default function OrdersPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-slate-600 mb-1">{t("orders.total")}</p>
-                      <p className="font-bold text-lg text-blue-600">R{order.total_amount.toFixed(2)}</p>
+                      <p className="font-bold text-lg text-blue-600">{formatPrice(order.total_amount)}</p>
                     </div>
                   </div>
 
@@ -118,8 +120,7 @@ export default function OrdersPage() {
                         <div key={item.id} className="flex justify-between text-sm">
                           <span>{item.product?.name || "Product"}</span>
                           <span className="text-slate-600">
-                            x{item.quantity} @ R{item.unit_price.toFixed(2)} = R
-                            {(item.quantity * item.unit_price).toFixed(2)}
+                            x{item.quantity} @ {formatPrice(item.unit_price)} = {formatPrice(item.quantity * item.unit_price)}
                           </span>
                         </div>
                       ))}

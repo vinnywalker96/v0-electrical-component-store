@@ -4,9 +4,13 @@ import Link from "next/link"
 import { ArrowRight, Zap, Package, Truck, Shield } from "lucide-react"
 import FeaturedProducts from "@/components/featured-products"
 import { useLanguage } from "@/lib/context/language-context"
+import { useCurrency } from "@/lib/context/currency-context"
 
 export default function Home() {
   const { t } = useLanguage()
+  const { formatPrice } = useCurrency()
+
+  const shippingThreshold = formatPrice(500)
 
   return (
     <div className="min-h-screen">
@@ -19,16 +23,16 @@ export default function Home() {
               <p className="text-lg text-white/90 mb-8">
                 {t("home.hero_subtitle")}
               </p>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/shop"
-                  className="bg-accent hover:bg-accent-light text-white font-semibold py-3 px-8 rounded-lg flex items-center gap-2 transition"
+                  className="bg-accent hover:bg-accent-light text-white font-semibold py-3 px-8 rounded-lg flex items-center justify-center gap-2 transition w-full sm:w-auto"
                 >
                   {t("home.shop_now")} <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
                   href="/about"
-                  className="bg-white/20 hover:bg-white/30 text-white font-semibold py-3 px-8 rounded-lg transition"
+                  className="bg-white/20 hover:bg-white/30 text-white font-semibold py-3 px-8 rounded-lg transition text-center w-full sm:w-auto"
                 >
                   {t("home.learn_more")}
                 </Link>
@@ -47,7 +51,7 @@ export default function Home() {
       {/* Trust Section */}
       <section className="py-16 px-4 bg-muted">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
               <Package className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="font-semibold mb-2">{t("home.features.selection_title")}</h3>
@@ -56,7 +60,7 @@ export default function Home() {
             <div className="text-center">
               <Truck className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="font-semibold mb-2">{t("home.features.delivery_title")}</h3>
-              <p className="text-muted-foreground">{t("home.features.delivery_desc")}</p>
+              <p className="text-muted-foreground">{t("home.features.delivery_desc", { amount: shippingThreshold })}</p>
             </div>
             <div className="text-center">
               <Shield className="w-12 h-12 text-primary mx-auto mb-4" />

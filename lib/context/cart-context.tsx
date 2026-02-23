@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useEffect, useState, useCallback } from "react"
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { CartItem, Product } from "@/lib/types"
 
@@ -61,7 +61,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [fetchCart, supabase.auth])
 
-  async function addToCart(productId: string, quantity: number) {
+  const addToCart = useCallback(async (productId: string, quantity: number) => {
     try {
       const {
         data: { user },
@@ -83,9 +83,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       console.error("[v0] Error adding to cart:", error)
       throw error
     }
-  }
+  }, [supabase.auth, supabase.from, fetchCart])
 
-  async function removeFromCart(cartItemId: string) {
+  const removeFromCart = useCallback(async (cartItemId: string) => {
     try {
       const { error } = await supabase.from("cart_items").delete().eq("id", cartItemId)
 
@@ -95,9 +95,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       console.error("[v0] Error removing from cart:", error)
       throw error
     }
-  }
+  }, [supabase.from, fetchCart])
 
-  async function updateQuantity(cartItemId: string, quantity: number) {
+  const updateQuantity = useCallback(async (cartItemId: string, quantity: number) => {
     try {
       if (quantity <= 0) {
         await removeFromCart(cartItemId)
@@ -112,9 +112,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       console.error("[v0] Error updating quantity:", error)
       throw error
     }
-  }
+  }, [supabase.from, removeFromCart, fetchCart])
 
-  async function clearCart() {
+  const clearCart = useCallback(async () => {
     try {
       const {
         data: { user },
@@ -129,26 +129,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       console.error("[v0] Error clearing cart:", error)
       throw error
     }
-  }
+  }, [supabase.auth, supabase.from])
 
-  const subtotal = items.reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0)
-  const tax = Number.parseFloat((subtotal * 0.15).toFixed(2)) // 15% tax
-  const total = Number.parseFloat((subtotal + tax).toFixed(2))
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + (item.product?.price || 0) * item.quantity, 0), [items])
+  const tax = useMemo(() => Number.parseFloat((subtotal * 0.15).toFixed(2)), [subtotal]) // 15% tax
+  const total = useMemo(() => Number.parseFloat((subtotal + tax).toFixed(2)), [subtotal, tax])
+
+  const contextValue = useMemo(() => ({
+    items,
+    total,
+    tax,
+    itemCount: items.length,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    loading,
+  }), [items, total, tax, addToCart, removeFromCart, updateQuantity, clearCart, loading])
 
   return (
-    <CartContext.Provider
-      value={{
-        items,
-        total,
-        tax,
-        itemCount: items.length,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        loading,
-      }}
-    >
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   )

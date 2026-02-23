@@ -62,7 +62,7 @@ export function DashboardLayout({
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
 
   return (
-    <div className="flex min-h-screen bg-slate-50 relative">
+    <div className="flex min-h-screen bg-slate-50 overflow-x-hidden">
       {/* Mobile Toggle Button */}
       <div className="md:hidden fixed top-4 left-4 z-50">
         <Button variant="outline" size="icon" onClick={toggleSidebar} className="bg-white shadow-md">
@@ -86,8 +86,8 @@ export function DashboardLayout({
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-64 ml-0'}`}>
-        <main className="p-4 md:p-8 pt-16 md:pt-8">{children}</main>
+      <div className={`flex-1 min-w-0 transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-64 ml-0'}`}>
+        <main className="p-4 md:p-8 pt-16 md:pt-8 w-full">{children}</main>
       </div>
     </div>
   )

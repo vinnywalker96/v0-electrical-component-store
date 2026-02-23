@@ -145,7 +145,9 @@ export function ProductCard({ product }: ProductCardProps) {
                             ? "🎮"
                             : "⚙"}
               </div>
-              <p className="text-xs text-slate-500">{product.category}</p>
+              <p className="text-xs text-slate-500">
+                {language === "pt" ? (product.name_pt || product.category) : product.category}
+              </p>
             </div>
           )}
         </div>

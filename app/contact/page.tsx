@@ -32,14 +32,14 @@ export default function Contact() {
       <section className="bg-primary text-white py-16 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("contact.title")}</h1>
-          <p className="text-lg text-white/90">Have a question? We&apos;d love to hear from you</p>
+          <p className="text-lg text-white/90">{t("contact.subtitle")}</p>
         </div>
       </section>
 
       <section className="py-16 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="bg-card border border-border rounded-lg p-8">
-            <h2 className="text-2xl font-bold mb-6">Send us a Message</h2>
+            <h2 className="text-2xl font-bold mb-6">{t("contact.send_message")}</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block font-semibold mb-2">{t("contact.name_label")}</label>
@@ -66,7 +66,7 @@ export default function Contact() {
                 />
               </div>
               <div>
-                <label className="block font-semibold mb-2">{t("contact.message_label")}</label>
+                <label className="block font-semibold mb-2">{t("contact.subject_label")}</label>
                 <input
                   type="text"
                   name="subject"
@@ -74,7 +74,7 @@ export default function Contact() {
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-2 border border-border rounded-lg bg-input focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder={t("contact.message_placeholder")}
+                  placeholder={t("contact.subject_placeholder")}
                 />
               </div>
               <div>
@@ -99,16 +99,16 @@ export default function Contact() {
           </div>
 
           <div className="mt-8 bg-muted rounded-lg p-8 text-center">
-            <h3 className="font-bold text-xl mb-4">Business Hours</h3>
+            <h3 className="font-bold text-xl mb-4">{t("contact.business_hours")}</h3>
             <div className="space-y-2 text-muted-foreground">
               <p>
-                <span className="font-semibold text-foreground">Monday - Friday:</span> 8:00 AM - 6:00 PM SAST
+                <span className="font-semibold text-foreground">{t("contact.monday_friday")}:</span> 8:00 AM - 6:00 PM SAST
               </p>
               <p>
-                <span className="font-semibold text-foreground">Saturday:</span> 9:00 AM - 2:00 PM SAST
+                <span className="font-semibold text-foreground">{t("contact.saturday")}:</span> 9:00 AM - 2:00 PM SAST
               </p>
               <p>
-                <span className="font-semibold text-foreground">Sunday:</span> Closed
+                <span className="font-semibold text-foreground">{t("contact.sunday")}:</span> {t("contact.closed")}
               </p>
             </div>
           </div>

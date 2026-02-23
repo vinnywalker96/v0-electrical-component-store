@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -11,6 +11,7 @@ import { Package, ShoppingCart, Users, TrendingUp, LogOut, Settings, CreditCard,
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Import Select components
 import { AdminSalesTable } from "@/components/admin-sales-table" // Import AdminSalesTable
 import { useLanguage } from "@/lib/context/language-context"
+import { useCurrency } from "@/lib/context/currency-context"
 
 import { UserManagementButton } from "@/components/user-management-button";
 
@@ -53,8 +54,8 @@ const getDateRange = (period: "day" | "week" | "month" | "year") => {
 };
 
 export default function AdminDashboardPage() {
-  const supabase = createClient()
   const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
   const [stats, setStats] = useState<DashboardStats>({
     totalProducts: 0,
     totalOrders: 0,
@@ -69,6 +70,7 @@ export default function AdminDashboardPage() {
   const [filterPeriod, setFilterPeriod] = useState<"day" | "week" | "month" | "year">("month"); // New state for filter
   const [activeTab, setActiveTab] = useState<"overview" | "sales">("overview"); // New state for tabs
   const { t } = useLanguage()
+  const { formatPrice } = useCurrency()
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -220,7 +222,7 @@ export default function AdminDashboardPage() {
                   <TrendingUp className="w-8 h-8 md:w-10 md:h-10 text-orange-600" />
                   <div>
                     <p className="text-xs md:text-sm text-slate-600">{t("admin_dashboard.stats.revenue")}</p>
-                    <p className="text-xl md:text-2xl font-bold">R{stats.totalRevenue.toFixed(0)}</p>
+                    <p className="text-xl md:text-2xl font-bold">{formatPrice(stats.totalRevenue)}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -354,7 +356,7 @@ export default function AdminDashboardPage() {
                                 {order.payment_status || "unpaid"}
                               </span>
                             </td>
-                            <td className="py-3 px-4 text-right font-semibold">R{order.total_amount.toFixed(2)}</td>
+                            <td className="py-3 px-4 text-right font-semibold">{formatPrice(order.total_amount)}</td>
                             <td className="py-3 px-4 text-center">
                               <Link href={`/admin/orders/${order.id}`}>
                                 <Button variant="outline" size="sm">

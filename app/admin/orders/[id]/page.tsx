@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { SetOrderPaidButton } from "@/components/set-order-paid-button"
+import { FormattedPrice } from "@/components/formatted-price"
 
 export default async function AdminOrderDetailPage({
   params: paramsPromise,
@@ -145,7 +146,7 @@ export default async function AdminOrderDetailPage({
             <div>
               <p className="text-sm text-muted-foreground">Total</p>
               <p className="flex items-center gap-2 font-semibold">
-                R{order.total_amount.toFixed(2)}
+                <FormattedPrice amount={order.total_amount} />
               </p>
             </div>
 
@@ -225,7 +226,7 @@ export default async function AdminOrderDetailPage({
 
                 <div className="text-right">
                   <p className="font-medium">
-                    R{(item.unit_price * item.quantity).toFixed(2)}
+                    <FormattedPrice amount={item.unit_price * item.quantity} />
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Qty: {item.quantity}

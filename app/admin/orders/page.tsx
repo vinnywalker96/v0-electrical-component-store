@@ -13,10 +13,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 import { useLanguage } from "@/lib/context/language-context"
+import { useCurrency } from "@/lib/context/currency-context"
 
 export default function AdminOrdersPage() {
   const supabase = createClient()
   const { t } = useLanguage()
+  const { formatPrice } = useCurrency()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -226,7 +228,7 @@ export default function AdminOrdersPage() {
                           <select
                             value={order.status}
                             onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                            className="px-2 py-1 border rounded text-sm bg-white"
+                            className="px-2 py-1 border-2 border-primary/50 rounded text-sm bg-white font-medium focus:border-primary outline-none shadow-sm hover:border-primary transition-colors"
                           >
                             <option value="pending">{t("orders.pending")}</option>
                             <option value="processing">{t("orders.processing")}</option>
@@ -236,7 +238,7 @@ export default function AdminOrdersPage() {
                           </select>
                         </td>
                         <td className="py-3 px-4 text-sm capitalize">{order.payment_method.replace(/_/g, " ")}</td>
-                        <td className="py-3 px-4 text-right font-semibold">R{order.total_amount.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-right font-semibold">{formatPrice(order.total_amount)}</td>
                         <td className="py-3 px-4 text-center">
                           <Link href={`/admin/orders/${order.id}`}>
                             <Button variant="outline" size="sm">

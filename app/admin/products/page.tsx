@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import cache from "@/lib/redis"; // Import Cache
 import { useLanguage } from "@/lib/context/language-context"
 import { getTranslation } from "@/lib/utils/translation"
+import { useCurrency } from "@/lib/context/currency-context"
 
 
 const CACHE_EXPIRY_SECONDS = 180; // Cache for 3 minutes (reduced for admin panel)
@@ -21,6 +22,7 @@ const CACHE_EXPIRY_SECONDS = 180; // Cache for 3 minutes (reduced for admin pane
 export default function AdminProductsPage() {
   const supabase = createClient()
   const { language, t } = useLanguage()
+  const { formatPrice } = useCurrency()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
@@ -315,7 +317,7 @@ export default function AdminProductsPage() {
                           </td>
                           <td className="py-3 px-4">{product.category}</td>
                           <td className="py-3 px-4">{product.manufacturer}</td>
-                          <td className="py-3 px-4 text-right">${product.price.toFixed(2)}</td>
+                          <td className="py-3 px-4 text-right">{formatPrice(product.price)}</td>
                           <td className="py-3 px-4 text-right">
                             <span
                               className={`px-2 py-1 rounded text-sm ${product.stock_quantity > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}

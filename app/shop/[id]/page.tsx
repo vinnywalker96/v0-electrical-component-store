@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
@@ -113,7 +113,7 @@ export default function ProductDetailPage() {
   }, [language, product])
 
 
-  async function handleAddToCart() {
+  const handleAddToCart = useCallback(async () => {
     if (!product) return
 
     setAdding(true)
@@ -135,9 +135,9 @@ export default function ProductDetailPage() {
     } finally {
       setAdding(false)
     }
-  }
+  }, [product, quantity, supabase, router, addToCart])
 
-  async function handleContactSeller() {
+  const handleContactSeller = useCallback(async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser()
@@ -150,7 +150,35 @@ export default function ProductDetailPage() {
     if (seller) {
       router.push(`/chat/${seller.user_id}?product=${product?.id}`)
     }
-  }
+  }, [seller, product, router, supabase])
+
+  const displayPrice = useMemo(() =>
+    product ? (product.price > 0 ? formatPrice(product.price) : t("product_detail.price_tbd")) : "",
+    [product, formatPrice, t]
+  )
+
+  const canAddToCart = useMemo(() =>
+    product ? (product.stock_quantity > 0 && product.price > 0) : false,
+    [product]
+  )
+
+  const displayName = useMemo(() => {
+    if (!product) return ""
+    return (language === "pt" && product.name_pt)
+      ? product.name_pt
+      : (language === "pt" && translatedName)
+        ? translatedName
+        : product.name
+  }, [product, language, translatedName])
+
+  const displayDescription = useMemo(() => {
+    if (!product) return ""
+    return (language === "pt" && product.description_pt)
+      ? product.description_pt
+      : (language === "pt" && translatedDesc)
+        ? translatedDesc
+        : product.description
+  }, [product, language, translatedDesc])
 
   if (loading) {
     return (
@@ -175,8 +203,7 @@ export default function ProductDetailPage() {
     )
   }
 
-  const displayPrice = product.price > 0 ? formatPrice(product.price) : t("product_detail.price_tbd")
-  const canAddToCart = product.stock_quantity > 0 && product.price > 0
+
 
   return (
     <main className="min-h-screen bg-background">
@@ -221,18 +248,10 @@ export default function ProductDetailPage() {
           <div>
             <p className="text-accent font-semibold mb-2">{product.category}</p>
             <h1 className="text-3xl font-bold text-foreground mb-4">
-              {language === "pt" && product.name_pt
-                ? product.name_pt
-                : language === "pt" && translatedName
-                  ? translatedName
-                  : product.name}
+              {displayName}
             </h1>
             <p className="text-muted-foreground mb-6">
-              {language === "pt" && product.description_pt
-                ? product.description_pt
-                : language === "pt" && translatedDesc
-                  ? translatedDesc
-                  : product.description}
+              {displayDescription}
             </p>
 
             {seller && (
