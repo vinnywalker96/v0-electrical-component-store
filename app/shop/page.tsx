@@ -225,11 +225,14 @@ export default function ShopPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("shop_page.filters.all_categories")}</SelectItem>
-                    {mainCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {language === "pt" ? cat.name_pt || cat.name : cat.name}
-                      </SelectItem>
-                    ))}
+                    {mainCategories.map((cat) => {
+                      const displayName = cat.name === 'COMPONENTS' ? 'Components' : cat.name;
+                      return (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {language === "pt" ? cat.name_pt || displayName : displayName}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -246,11 +249,14 @@ export default function ShopPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("categories.no_subcategory")}</SelectItem>
-                    {subCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {language === "pt" ? cat.name_pt || cat.name : cat.name}
-                      </SelectItem>
-                    ))}
+                    {subCategories.map((cat) => {
+                      const displayName = cat.name === 'COMPONENTS' ? 'Components' : cat.name;
+                      return (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {language === "pt" ? cat.name_pt || displayName : displayName}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
