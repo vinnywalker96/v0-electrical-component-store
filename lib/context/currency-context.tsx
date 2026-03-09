@@ -63,6 +63,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
 
         // Fetch live exchange rates via proxy to avoid CSP issues
+        const allowedCurrencies = ["ZAR", "NAD", "MZN", "AOA"];
         let liveRates: Record<string, number> | null = null;
         try {
           const res = await fetch("/api/currency");
@@ -75,16 +76,18 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
 
         // Update database rows with live API exchange rates
-        const updatedData = data.map(c => {
-          if (c.currency_code === "ZAR") return c;
-          if (liveRates && liveRates[c.currency_code]) {
-            // The DB formula divides price by exchange_rate_to_zar. 
-            // The API returns ZAR -> Currency multiplier.
-            // So exchange_rate_to_zar is 1 / apiRate
-            c.exchange_rate_to_zar = 1 / liveRates[c.currency_code];
-          }
-          return c;
-        });
+        const updatedData = data
+          .filter(c => allowedCurrencies.includes(c.currency_code))
+          .map(c => {
+            if (c.currency_code === "ZAR") return c;
+            if (liveRates && liveRates[c.currency_code]) {
+              // The DB formula divides price by exchange_rate_to_zar. 
+              // The API returns ZAR -> Currency multiplier.
+              // So exchange_rate_to_zar is 1 / apiRate
+              c.exchange_rate_to_zar = 1 / liveRates[c.currency_code];
+            }
+            return c;
+          });
 
         setAllCurrencies(updatedData)
 
