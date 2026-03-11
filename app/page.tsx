@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { ArrowRight, Zap, Package, Truck, Shield } from "lucide-react"
 import FeaturedProducts from "@/components/featured-products"
 import { useLanguage } from "@/lib/context/language-context"
@@ -74,13 +75,13 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* Featured Products */}
-      <FeaturedProducts />
+      < FeaturedProducts />
 
       {/* CTA Section */}
-      <section className="py-16 px-4">
+      < section className="py-16 px-4" >
         <div className="max-w-7xl mx-auto bg-card rounded-lg p-12 text-center border border-border">
           <h2 className="text-3xl font-bold mb-4">{t("home.ready_title")}</h2>
           <p className="text-muted-foreground mb-8 text-lg">
@@ -101,7 +102,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </section>
-    </div>
+      </section >
+    </div >
   )
 }

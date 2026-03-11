@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { Menu, X, ShoppingCart, User, LogOut, Settings, LayoutDashboard, Store } from "lucide-react"
@@ -104,11 +105,18 @@ export default function Navbar() {
   return (
     <nav className="bg-background border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-            <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-white">⚡</div>
-            <span className="text-foreground">KG Components</span>
+          <Link href="/" className="flex items-center">
+            <div className="relative w-[200px] h-[50px] md:w-[280px] md:h-[60px]">
+              <Image
+                src="/logo.png"
+                alt="KG Components Logo"
+                fill
+                className="object-contain object-left"
+                priority
+              />
+            </div>
           </Link>
 
           {/* Desktop Menu */}
@@ -220,7 +228,7 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden fixed inset-x-0 top-16 bg-background border-b border-border shadow-xl z-40 transition-all duration-300 ease-in-out transform ${isOpen ? "translate-y-0 opacity-100 visible" : "-translate-y-4 opacity-0 invisible"
+          className={`md:hidden fixed inset-x-0 top-20 bg-background border-b border-border shadow-xl z-40 transition-all duration-300 ease-in-out transform ${isOpen ? "translate-y-0 opacity-100 visible" : "-translate-y-4 opacity-0 invisible"
             }`}
         >
           <div className="p-4 space-y-2">

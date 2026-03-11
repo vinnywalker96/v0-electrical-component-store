@@ -3,6 +3,7 @@
 import type React from "react"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { UserCircle, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -32,9 +33,16 @@ export function SidebarNav({ navItems, userProfile, onLogout, isOpen, onClose }:
     <aside className={`w-64 bg-white border-r border-slate-200 fixed h-screen flex flex-col z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}>
       <div className="p-6 flex-1 overflow-y-auto">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl mb-8">
-          <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-white">⚡</div>
-          <span>KG Components</span>
+        <Link href="/" className="flex items-center mb-8">
+          <div className="relative w-[180px] h-[45px]">
+            <Image
+              src="/logo.png"
+              alt="KG Components Logo"
+              fill
+              className="object-contain object-left"
+              priority
+            />
+          </div>
         </Link>
 
         {/* Close button for mobile */}
