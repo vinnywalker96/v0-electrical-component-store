@@ -153,7 +153,7 @@ export default function ProductDetailPage() {
   }, [seller, product, router, supabase])
 
   const displayPrice = useMemo(() =>
-    product ? (product.price > 0 ? formatPrice(product.price) : t("product_detail.price_tbd")) : "",
+    product ? (product.price > 0 ? formatPrice(product.price, product.currency || "ZAR") : t("product_detail.price_tbd")) : "",
     [product, formatPrice, t]
   )
 
@@ -306,6 +306,45 @@ export default function ProductDetailPage() {
                     </dd>
                   </div>
                 </dl>
+                {product.specifications && (
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <dt className="text-muted-foreground text-sm mb-2">{t("product_detail.specifications")}</dt>
+                    <dd className="text-sm">
+                      {(() => {
+                        const specs = product.specifications;
+                        if (typeof specs === "object" && specs !== null && "text" in specs) {
+                          return <div className="whitespace-pre-wrap">{String((specs as any).text)}</div>;
+                        }
+                        if (typeof specs === "string") {
+                          try {
+                            const parsed = JSON.parse(specs);
+                            if (typeof parsed === "object" && parsed !== null) {
+                              return (
+                                <ul className="list-disc pl-5 space-y-1">
+                                  {Object.entries(parsed).map(([k, v]) => (
+                                    <li key={k}><span className="font-medium capitalize">{k.replace(/_/g, " ")}:</span> {String(v)}</li>
+                                  ))}
+                                </ul>
+                              );
+                            }
+                          } catch {
+                            return <div className="whitespace-pre-wrap">{specs}</div>;
+                          }
+                        }
+                        if (typeof specs === "object" && specs !== null) {
+                          return (
+                            <ul className="list-disc pl-5 space-y-1">
+                              {Object.entries(specs).map(([k, v]) => (
+                                <li key={k}><span className="font-medium capitalize">{k.replace(/_/g, " ")}:</span> {String(v)}</li>
+                              ))}
+                            </ul>
+                          );
+                        }
+                        return <div className="whitespace-pre-wrap">{String(specs)}</div>;
+                      })()}
+                    </dd>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

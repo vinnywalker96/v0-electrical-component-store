@@ -18,12 +18,24 @@ CREATE INDEX IF NOT EXISTS idx_categories_parent_id ON categories(parent_id);
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read on categories
-CREATE POLICY "Public can view categories" ON categories FOR SELECT USING (true);
--- Allow admin/service_role to manage categories (adjust policy as needed for scraper)
-CREATE POLICY "Admins can manage categories" ON categories 
-  FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
-  );
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE policyname = 'Public can view categories' AND tablename = 'categories'
+    ) THEN
+        CREATE POLICY "Public can view categories" ON categories FOR SELECT USING (true);
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE policyname = 'Admins can manage categories' AND tablename = 'categories'
+    ) THEN
+        CREATE POLICY "Admins can manage categories" ON categories 
+          FOR ALL USING (
+            EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
+          );
+    END IF;
+END
+$$;
 
 -- Update products table to support translations and category linkage
 ALTER TABLE products 
