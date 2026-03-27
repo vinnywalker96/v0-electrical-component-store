@@ -107,7 +107,7 @@ export function ProductCard({ product }: ProductCardProps) {
     }
   }
 
-  const displayPrice = product.price > 0 ? formatPrice(product.price) : t("product_card.coming_soon")
+  const displayPrice = product.price > 0 ? formatPrice(product.price, product.currency || "ZAR") : t("product_card.coming_soon")
   const isPriceAvailable = product.price > 0
 
   return (

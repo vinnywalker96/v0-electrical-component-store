@@ -5,6 +5,12 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
     formats: ['image/webp', 'image/avif'],
   },
   // Performance optimizations

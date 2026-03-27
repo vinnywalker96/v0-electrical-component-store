@@ -103,6 +103,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
+    "baseline-browser-mapping": "^2.10.11",
     "dotenv": "^17.2.3",
     "eslint-config-next": "^16.1.1",
     "eslint-config-prettier": "^10.1.8",

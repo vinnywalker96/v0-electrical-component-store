@@ -16,8 +16,8 @@ interface CurrencyContextType {
   currentCurrency: Currency | null
   allCurrencies: Currency[]
   setCurrency: (code: string) => void
-  convertPrice: (priceInZAR: number) => number
-  formatPrice: (priceInZAR: number) => string
+  convertPrice: (price: number, baseCurrency?: string) => number
+  formatPrice: (price: number, baseCurrency?: string) => string
   loading: boolean
 }
 
@@ -129,20 +129,34 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, [allCurrencies])
 
-  const convertPrice = useCallback((priceInZAR: number): number => {
-    if (!currentCurrency || currentCurrency.currency_code === "ZAR") {
-      return priceInZAR
+  const convertPrice = useCallback((price: number, baseCurrency: string = "ZAR"): number => {
+    if (!currentCurrency) {
+      return price
+    }
+
+    let priceInZAR = price;
+    if (baseCurrency !== "ZAR") {
+      const baseObj = allCurrencies.find(c => c.currency_code === baseCurrency);
+      if (baseObj) {
+        priceInZAR = price * baseObj.exchange_rate_to_zar;
+      }
+    }
+
+    if (currentCurrency.currency_code === "ZAR") {
+      return priceInZAR;
     }
     return priceInZAR / currentCurrency.exchange_rate_to_zar
-  }, [currentCurrency])
+  }, [currentCurrency, allCurrencies])
 
-  const formatPrice = useCallback((priceInZAR: number): string => {
+  const formatPrice = useCallback((price: number, baseCurrency: string = "ZAR"): string => {
     if (!currentCurrency) {
-      return `R ${priceInZAR.toFixed(2)}`
+      if (baseCurrency === "ZAR") return `R ${(price || 0).toFixed(2)}`
+      const baseObj = allCurrencies.find(c => c.currency_code === baseCurrency);
+      return `${baseObj ? baseObj.symbol : baseCurrency} ${(price || 0).toFixed(2)}`;
     }
-    const converted = convertPrice(priceInZAR)
+    const converted = convertPrice(price, baseCurrency)
     return `${currentCurrency.symbol} ${converted.toFixed(2)}`
-  }, [currentCurrency, convertPrice])
+  }, [currentCurrency, allCurrencies, convertPrice])
 
   const contextValue = useMemo(() => ({
     currentCurrency, allCurrencies, setCurrency, convertPrice, formatPrice, loading

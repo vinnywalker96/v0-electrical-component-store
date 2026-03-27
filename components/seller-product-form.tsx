@@ -52,19 +52,30 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
   const [loading, setLoading] = useState(false)
 
 
+  let initialSpecs = "";
+  if (product?.specifications) {
+    // Legacy support if there's any JSON object leftover
+    if (typeof product.specifications === "object" && product.specifications !== null && "text" in product.specifications) {
+      initialSpecs = String((product.specifications as any).text);
+    } else {
+      initialSpecs = typeof product.specifications === "string" ? product.specifications : JSON.stringify(product.specifications, null, 2);
+    }
+  }
+
   const [formData, setFormData] = useState({
     name: product?.name || "",
     name_pt: product?.name_pt || "",
     description: product?.description || "",
     description_pt: product?.description_pt || "",
-    sku: product?.sku || "", // Added SKU field
+    sku: product?.sku || "",
     category: product?.category || "Resistors",
     manufacturer: product?.manufacturer || "",
     price: product?.price || 0,
+    currency: product?.currency || "ZAR",
     stock_quantity: product?.stock_quantity || 0,
     image_url: product?.image_url || "",
-    specifications: product?.specifications ? JSON.stringify(product.specifications, null, 2) : "",
-    technical_documents: product?.technical_documents || [], // Updated to array
+    specifications: initialSpecs,
+    technical_documents: product?.technical_documents || [],
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,15 +86,7 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
     try {
       const supabase = createClient()
 
-      // Parse specifications
-      let specs = {}
-      if (formData.specifications.trim()) {
-        try {
-          specs = JSON.parse(formData.specifications)
-        } catch {
-          throw new Error("Invalid JSON in specifications field")
-        }
-      }
+      const specs = formData.specifications.trim() || null
 
       const productData = {
         name: formData.name,
@@ -92,8 +95,10 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
         description_pt: formData.description_pt,
         sku: formData.sku, // Added SKU to productData
         category: formData.category,
+        brand: formData.manufacturer || "Generic",
         manufacturer: formData.manufacturer,
         price: Number.parseFloat(formData.price.toString()) || 0,
+        currency: formData.currency,
         stock_quantity: Number.parseInt(formData.stock_quantity.toString()) || 0,
         image_url: formData.image_url || null,
         specifications: specs,
@@ -251,9 +256,9 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="price">Price (R)</Label>
+              <Label htmlFor="price">Price</Label>
               <Input
                 id="price"
                 type="number"
@@ -262,6 +267,25 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
                 onChange={(e) => setFormData({ ...formData, price: Number.parseFloat(e.target.value) || 0 })}
                 placeholder="0.00"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency</Label>
+              <Select
+                value={formData.currency}
+                onValueChange={(value) => setFormData({ ...formData, currency: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["ZAR", "USD", "EUR", "GBP", "NAD", "MZN", "AOA"].map((curr) => (
+                    <SelectItem key={curr} value={curr}>
+                      {curr}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -296,15 +320,15 @@ export function SellerProductForm({ sellerId, storeName, product, onSuccess }: S
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="specifications">Specifications (JSON format)</Label>
+            <Label htmlFor="specifications">Specifications</Label>
             <Textarea
               id="specifications"
               value={formData.specifications}
               onChange={(e) => setFormData({ ...formData, specifications: e.target.value })}
-              placeholder='{"voltage": "5V", "current": "20mA"}'
+              placeholder="Enter product specifications, ratings, dimensions, etc."
               rows={4}
             />
-            <p className="text-xs text-muted-foreground">Optional: Enter product specifications as valid JSON</p>
+            <p className="text-xs text-muted-foreground">Optional: Enter regular text describing the specifications</p>
           </div>
 
           <div className="space-y-2">

@@ -55,8 +55,8 @@ export function ImageUploadField({
       <Label>{label}</Label>
 
       {currentImageUrl && (
-        <div className="relative w-40 h-40 border rounded-lg overflow-hidden">
-          <Image src={currentImageUrl || "/placeholder.svg"} alt={label} fill className="object-cover" />
+        <div className="relative w-40 h-40 border rounded-lg overflow-hidden bg-white flex items-center justify-center">
+          <img src={currentImageUrl || "/placeholder.svg"} alt={label} className="w-full h-full object-contain" />
           {onRemove && (
             <Button
               type="button"

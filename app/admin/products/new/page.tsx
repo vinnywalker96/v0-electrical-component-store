@@ -44,6 +44,7 @@ export default function NewProductPage() {
     category: "Resistors",
     manufacturer: "Generic",
     price: 0,
+    currency: "ZAR",
     stock_quantity: 0,
     specifications: "",
   })
@@ -65,7 +66,7 @@ export default function NewProductPage() {
     setSaving(true)
 
     try {
-      const specs = formData.specifications ? JSON.parse(formData.specifications) : {}
+      const specs = formData.specifications.trim() || null
 
       const { error: insertError } = await supabase.from("products").insert({
         name: formData.name,
@@ -73,8 +74,10 @@ export default function NewProductPage() {
         description: formData.description,
         description_pt: formData.description_pt,
         category: formData.category,
+        brand: formData.manufacturer || "Generic",
         manufacturer: formData.manufacturer,
         price: Number.parseFloat(formData.price.toString()),
+        currency: formData.currency,
         stock_quantity: Number.parseInt(formData.stock_quantity.toString()),
         specifications: specs,
         image_url: imageUrl, // Include image_url in the insert
@@ -84,7 +87,7 @@ export default function NewProductPage() {
 
       router.push("/admin/products")
     } catch (err: any) {
-      console.error("[v0] Error creating product:", err)
+      console.error("[v0] Error creating product:", err.message, err.details, err.hint, err)
       setError(err.message || "Failed to create product")
     } finally {
       setSaving(false)
@@ -196,9 +199,9 @@ export default function NewProductPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Price ($) *</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Price *</label>
                   <Input
                     type="number"
                     step="0.01"
@@ -210,6 +213,21 @@ export default function NewProductPage() {
                     placeholder="0.00"
                     required
                   />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Currency</label>
+                  <select
+                    value={formData.currency}
+                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                    className="w-full border rounded px-3 py-2"
+                  >
+                    {["ZAR", "USD", "EUR", "GBP", "NAD", "MZN", "AOA"].map((curr) => (
+                      <option key={curr} value={curr}>
+                        {curr}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -227,14 +245,14 @@ export default function NewProductPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">Specifications (JSON)</label>
+                <label className="text-sm font-medium text-foreground mb-2 block">Specifications</label>
                 <Textarea
                   value={formData.specifications}
                   onChange={(e) => setFormData({ ...formData, specifications: e.target.value })}
-                  placeholder='{"key": "value", "color": "red"}'
+                  placeholder="Enter product specifications, dimensions, materials, etc."
                   rows={4}
                 />
-                <p className="text-xs text-slate-600 mt-1">Optional: Enter specifications as valid JSON</p>
+                <p className="text-xs text-slate-600 mt-1">Optional: Enter regular text describing the specifications</p>
               </div>
 
               <div className="flex gap-4">

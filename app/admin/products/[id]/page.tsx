@@ -93,7 +93,7 @@ export default async function AdminProductDetailPage({ params }: { params: { id:
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Price</p>
-                <p className="text-lg font-semibold">R{productWithSeller.price.toFixed(2)}</p>
+                <p className="text-lg font-semibold">{productWithSeller.currency || 'ZAR'} {productWithSeller.price.toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Stock Quantity</p>
@@ -111,11 +111,42 @@ export default async function AdminProductDetailPage({ params }: { params: { id:
               </div>
             )}
             {productWithSeller.specifications && Object.keys(productWithSeller.specifications).length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Specifications</p>
-                <pre className="bg-gray-100 p-4 rounded-md text-sm whitespace-pre-wrap">
-                  {JSON.stringify(productWithSeller.specifications, null, 2)}
-                </pre>
+              <div className="mt-2">
+                <p className="text-sm font-medium text-muted-foreground mb-2">Specifications</p>
+                <div className="bg-gray-50 p-4 rounded-md text-sm text-foreground">
+                  {(() => {
+                    const specs = productWithSeller.specifications;
+                    if (typeof specs === "object" && specs !== null && "text" in specs) {
+                      return <div className="whitespace-pre-wrap">{String((specs as any).text)}</div>;
+                    }
+                    if (typeof specs === "string") {
+                      try {
+                        const parsed = JSON.parse(specs);
+                        if (typeof parsed === "object" && parsed !== null) {
+                          return (
+                            <ul className="list-none space-y-1">
+                              {Object.entries(parsed).map(([k, v]) => (
+                                <li key={k}><span className="font-medium capitalize">{k.replace(/_/g, " ")}:</span> {String(v)}</li>
+                              ))}
+                            </ul>
+                          );
+                        }
+                      } catch {
+                        return <div className="whitespace-pre-wrap">{specs}</div>;
+                      }
+                    }
+                    if (typeof specs === "object" && specs !== null) {
+                      return (
+                        <ul className="list-none space-y-1">
+                          {Object.entries(specs).map(([k, v]) => (
+                            <li key={k}><span className="font-medium capitalize">{k.replace(/_/g, " ")}:</span> {String(v)}</li>
+                          ))}
+                        </ul>
+                      );
+                    }
+                    return <div className="whitespace-pre-wrap">{String(specs)}</div>;
+                  })()}
+                </div>
               </div>
             )}
           </CardContent>

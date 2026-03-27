@@ -8,12 +8,13 @@ export interface Product {
   category_id?: string // Link to categories table
   manufacturer: string
   price: number
+  currency?: string // Added for base currency
   stock_quantity: number
   sku?: string // Added for product SKU
   image_url?: string
   primary_image_url?: string // Added for primary product image
   images?: string[] // Added for multiple product images
-  specifications?: Record<string, unknown>
+  specifications?: string | any // Now plain text, `any` included for legacy JSON compatibility
   technical_documents?: string[] // Added for technical documentation URLs
   category_path?: string[] // Added for breadcrumbs
   seller_id?: string
