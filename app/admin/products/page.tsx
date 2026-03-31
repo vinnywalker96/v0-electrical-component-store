@@ -62,12 +62,12 @@ export default function AdminProductsPage() {
     const fetchFilters = async () => {
       // Fetch unique categories
       const { data: catData } = await supabase.from("products").select("category").neq("category", null)
-      const uniqueCategories = [...new Set((catData || []).map(p => p.category))]
+      const uniqueCategories = [...new Set((catData || []).map(p => p.category))].filter(val => val && val.toString().trim() !== "") as string[]
       setCategories(uniqueCategories);
 
       // Fetch unique manufacturers
       const { data: manufacturerData } = await supabase.from("products").select("manufacturer").neq("manufacturer", null)
-      const uniqueManufacturers = [...new Set((manufacturerData || []).map(p => p.manufacturer))]
+      const uniqueManufacturers = [...new Set((manufacturerData || []).map(p => p.manufacturer))].filter(val => val && val.toString().trim() !== "") as string[]
       setManufacturers(uniqueManufacturers);
     }
     fetchFilters();
