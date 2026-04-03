@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { AdminEditProductModalButton } from "@/components/admin-edit-product-modal-button"
+import { AdminEditProductForm } from "@/components/admin-product-edit-form"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
@@ -35,8 +35,8 @@ export default async function AdminEditProductPage({ params }: { params: { id:st
       <h1 className="text-3xl font-bold mb-2">Edit Product</h1>
       <p className="text-muted-foreground mb-8">Update your product information</p>
 
-      {/* Render the modal button which will fetch and display the product form */}
-      <AdminEditProductModalButton productId={id} />
+      {/* Render the inline product form */}
+      <AdminEditProductForm productId={id} />
     </div>
   )
 }

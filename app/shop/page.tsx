@@ -18,14 +18,12 @@ export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedSeller, setSelectedSeller] = useState<string>("all")
   const [selectedManufacturer, setSelectedManufacturer] = useState<string>("all")
   const [dbCategories, setDbCategories] = useState<Category[]>([])
   const [selectedMainCategoryId, setSelectedMainCategoryId] = useState<string>("all")
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>("all")
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
   const [maxPrice, setMaxPrice] = useState(10000)
-  const [sellers, setSellers] = useState<any[]>([])
   const [isMounted, setIsMounted] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const { t, language } = useLanguage()
@@ -57,7 +55,7 @@ export default function ShopPage() {
 
       const { data, error } = await supabase
         .from("products")
-        .select("*, seller:sellers(id, store_name, rating)")
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -82,35 +80,6 @@ export default function ShopPage() {
     }
   }, [supabase, setProducts, setMaxPrice, setPriceRange]);
 
-  const fetchSellers = useCallback(async () => {
-    try {
-      const CACHE_KEY_SELLERS = "shop:approved_sellers";
-      let cachedSellers = null;
-      try {
-        cachedSellers = await cache.get(CACHE_KEY_SELLERS);
-      } catch (cacheError) {
-        console.warn("Cache GET error for sellers:", cacheError);
-      }
-
-      if (cachedSellers) {
-        setSellers(JSON.parse(cachedSellers));
-        console.log("Sellers loaded from cache.");
-        return;
-      }
-
-      const { data } = await supabase.from("sellers").select("id, store_name").eq("verification_status", "approved");
-      setSellers(data || []);
-
-      try {
-        await cache.set(CACHE_KEY_SELLERS, JSON.stringify(data), { ex: CACHE_EXPIRY_SECONDS });
-      } catch (cacheError) {
-        console.warn("Cache SET error for sellers:", cacheError);
-      }
-    } catch (error) {
-      console.error("Error fetching sellers:", error);
-    }
-  }, [supabase, setSellers]);
-
   const fetchCategories = useCallback(async () => {
     try {
       const { data, error } = await supabase
@@ -127,9 +96,8 @@ export default function ShopPage() {
 
   useEffect(() => {
     fetchProducts()
-    fetchSellers()
     fetchCategories()
-  }, [fetchProducts, fetchSellers, fetchCategories])
+  }, [fetchProducts, fetchCategories])
 
   const mainCategories = useMemo<Category[]>(() => dbCategories.filter(c => !c.parent_id), [dbCategories])
   const subCategories = useMemo<Category[]>(() => {
@@ -155,12 +123,11 @@ export default function ShopPage() {
         product.category_id === selectedSubCategoryId
 
       const matchesManufacturer = selectedManufacturer === "all" || product.manufacturer === selectedManufacturer
-      const matchesSeller = selectedSeller === "all" || !product.seller_id || product.seller_id === selectedSeller
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
 
-      return matchesSearch && matchesMainCategory && matchesSubCategory && matchesManufacturer && matchesSeller && matchesPrice
+      return matchesSearch && matchesMainCategory && matchesSubCategory && matchesManufacturer && matchesPrice
     })
-  }, [products, searchQuery, selectedMainCategoryId, selectedSubCategoryId, selectedManufacturer, selectedSeller, priceRange, mainCategories])
+  }, [products, searchQuery, selectedMainCategoryId, selectedSubCategoryId, selectedManufacturer, priceRange, mainCategories])
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
@@ -180,7 +147,6 @@ export default function ShopPage() {
     setSelectedMainCategoryId("all")
     setSelectedSubCategoryId("all")
     setSelectedManufacturer("all")
-    setSelectedSeller("all")
     setPriceRange([0, maxPrice])
   }, [maxPrice])
 
@@ -275,23 +241,6 @@ export default function ShopPage() {
                     {manufacturers.map((manufacturer) => (
                       <SelectItem key={manufacturer} value={manufacturer}>
                         {manufacturer}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">{t("shop_page.filters.seller")}</label>
-                <Select value={selectedSeller} onValueChange={setSelectedSeller}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("shop_page.filters.all_sellers")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("shop_page.filters.all_sellers")}</SelectItem>
-                    {sellers.map((seller) => (
-                      <SelectItem key={seller.id} value={seller.id}>
-                        {seller.store_name}
                       </SelectItem>
                     ))}
                   </SelectContent>

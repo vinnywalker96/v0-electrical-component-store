@@ -79,20 +79,7 @@ export default function CheckoutPage() {
     fetchUser()
   }, [supabase, router, setFormData])
 
-  const itemsBySeller = items.reduce(
-    (acc, item) => {
-      const sellerId = item.product?.seller_id || "direct"
-      if (!acc[sellerId]) {
-        acc[sellerId] = {
-          seller: item.product?.seller,
-          items: [],
-        }
-      }
-      acc[sellerId].items.push(item)
-      return acc
-    },
-    {} as Record<string, any>,
-  )
+
 
   const handleAddressChange = (addressId: string) => {
     setSelectedAddress(addressId)
@@ -449,25 +436,15 @@ export default function CheckoutPage() {
                 <CardTitle>{t("checkout.order_summary")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {Object.entries(itemsBySeller).map(([sellerId, data]) => (
-                    <div key={sellerId} className="border-b pb-3">
-                      {data.seller && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-                          <Store className="h-3 w-3" />
-                          <span className="font-semibold">{data.seller.store_name}</span>
-                        </div>
-                      )}
-                      {data.items.map((item: any) => (
-                        <div key={item.id} className="text-sm flex justify-between ml-4 mb-1">
-                          <span>
-                            {item.product?.name} x{item.quantity}
-                          </span>
-                          <span className="font-medium">
-                            {formatPrice((item.product?.price || 0) * item.quantity)}
-                          </span>
-                        </div>
-                      ))}
+                <div className="space-y-4 max-h-96 overflow-y-auto pb-3">
+                  {items.map((item: any) => (
+                    <div key={item.id} className="text-sm flex justify-between ml-4 mb-2">
+                       <span>
+                          {item.product?.name} x{item.quantity}
+                       </span>
+                       <span className="font-medium">
+                          {formatPrice((item.product?.price || 0) * item.quantity)}
+                       </span>
                     </div>
                   ))}
                 </div>
