@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
@@ -10,24 +10,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Globe } from "lucide-react"
-import { ImageUploadField } from "@/components/image-upload-field" // Import ImageUploadField
-
-const CATEGORIES = [
-  "Resistors",
-  "LEDs",
-  "Capacitors",
-  "Wires & Connectors",
-  "Breadboards",
-  "Microcontrollers",
-  "Switches",
-  "Diodes",
-  "PCBs",
-  "Cables",
-  "Potentiometers",
-  "Relays",
-  "Circuit Boards",
-  "Cables & Wires",
-]
+import { ImageUploadField } from "@/components/image-upload-field"
+import { Category } from "@/lib/types"
 
 export default function NewProductPage() {
   const router = useRouter()
@@ -36,12 +20,35 @@ export default function NewProductPage() {
   const [error, setError] = useState<string | null>(null)
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined) // New state for image URL
 
+  const [dbCategories, setDbCategories] = useState<Category[]>([])
+  const [selectedMainCategoryId, setSelectedMainCategoryId] = useState<string>("")
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>("")
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .order("name", { ascending: true })
+      
+      if (!error && data) {
+        setDbCategories(data as Category[])
+      }
+    }
+    fetchCategories()
+  }, [supabase])
+
+  const mainCategories = useMemo(() => dbCategories.filter((c) => !c.parent_id), [dbCategories])
+  const subCategories = useMemo(() => {
+    if (!selectedMainCategoryId) return []
+    return dbCategories.filter((c) => c.parent_id === selectedMainCategoryId)
+  }, [dbCategories, selectedMainCategoryId])
+
   const [formData, setFormData] = useState({
     name: "",
     name_pt: "",
     description: "",
     description_pt: "",
-    category: "Resistors",
     manufacturer: "Generic",
     price: 0,
     currency: "ZAR",
@@ -63,17 +70,24 @@ export default function NewProductPage() {
       return
     }
 
+    if (!selectedMainCategoryId) {
+      setError("Please select a main category")
+      return
+    }
+
     setSaving(true)
 
     try {
       const specs = formData.specifications.trim() || null
+      // Store whichever category is most specific (sub if selected, else main)
+      const finalCategoryId = selectedSubCategoryId || selectedMainCategoryId
 
       const { error: insertError } = await supabase.from("products").insert({
         name: formData.name,
         name_pt: formData.name_pt,
         description: formData.description,
         description_pt: formData.description_pt,
-        category: formData.category,
+        category_id: finalCategoryId,
         brand: formData.manufacturer || "Generic",
         manufacturer: formData.manufacturer,
         price: Number.parseFloat(formData.price.toString()),
@@ -175,15 +189,35 @@ export default function NewProductPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Category</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Main Category *</label>
                   <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full border rounded px-3 py-2"
+                    value={selectedMainCategoryId}
+                    onChange={(e) => {
+                      setSelectedMainCategoryId(e.target.value)
+                      setSelectedSubCategoryId("") // reset subcategory on main cat change
+                    }}
+                    className="w-full border rounded px-3 py-2 mb-4"
+                    required
                   >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
+                    <option value="" disabled>Select Main Category</option>
+                    {mainCategories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <label className="text-sm font-medium text-foreground mb-2 block">Sub Category</label>
+                  <select
+                    value={selectedSubCategoryId}
+                    onChange={(e) => setSelectedSubCategoryId(e.target.value)}
+                    className="w-full border rounded px-3 py-2"
+                    disabled={!selectedMainCategoryId || subCategories.length === 0}
+                  >
+                    <option value="">No Subcategory</option>
+                    {subCategories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
                       </option>
                     ))}
                   </select>

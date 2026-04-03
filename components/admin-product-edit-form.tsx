@@ -12,22 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Globe } from "lucide-react"
 import { ImageUploadField } from "@/components/image-upload-field" 
 
-const CATEGORIES = [
-  "Resistors",
-  "LEDs",
-  "Capacitors",
-  "Wires & Connectors",
-  "Breadboards",
-  "Microcontrollers",
-  "Switches",
-  "Diodes",
-  "PCBs",
-  "Cables",
-  "Potentiometers",
-  "Relays",
-  "Circuit Boards",
-  "Cables & Wires",
-]
+import { Category } from "@/lib/types"
+import { useMemo } from "react"
 
 export function AdminEditProductForm({ productId }: { productId: string }) {
   const router = useRouter()
@@ -42,13 +28,36 @@ export function AdminEditProductForm({ productId }: { productId: string }) {
     name_pt: "",
     description: "",
     description_pt: "",
-    category: "Resistors",
     manufacturer: "Generic",
     price: 0,
     currency: "ZAR",
     stock_quantity: 0,
     specifications: "",
   })
+
+  const [dbCategories, setDbCategories] = useState<Category[]>([])
+  const [selectedMainCategoryId, setSelectedMainCategoryId] = useState<string>("")
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>("")
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .order("name", { ascending: true })
+      
+      if (!error && data) {
+        setDbCategories(data as Category[])
+      }
+    }
+    fetchCategories()
+  }, [supabase])
+
+  const mainCategories = useMemo(() => dbCategories.filter((c) => !c.parent_id), [dbCategories])
+  const subCategories = useMemo(() => {
+    if (!selectedMainCategoryId) return []
+    return dbCategories.filter((c) => c.parent_id === selectedMainCategoryId)
+  }, [dbCategories, selectedMainCategoryId])
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -67,7 +76,6 @@ export function AdminEditProductForm({ productId }: { productId: string }) {
             name_pt: data.name_pt || "",
             description: data.description || "",
             description_pt: data.description_pt || "",
-            category: data.category || "Resistors",
             manufacturer: data.manufacturer || "Generic",
             price: data.price || 0,
             currency: data.currency || "ZAR",
@@ -75,6 +83,13 @@ export function AdminEditProductForm({ productId }: { productId: string }) {
             specifications: data.specifications || "",
           })
           setImageUrl(data.image_url)
+
+          if (data.category_id) {
+            // Wait for dbCategories to populate before auto-selecting? Actually we can just check it once dbCategories has length.
+            // But we can hold data.category_id and do it in another useEffect. 
+            // For now, let's just set initial state directly. We'll handle matching in the hook.
+            // This is handled by a separate effect below.
+          }
         }
       } catch (err: any) {
         console.error("Error fetching product:", err)
@@ -86,6 +101,25 @@ export function AdminEditProductForm({ productId }: { productId: string }) {
 
     fetchProduct()
   }, [productId, supabase])
+
+  useEffect(() => {
+    if (dbCategories.length > 0 && !selectedMainCategoryId) {
+      supabase.from("products").select("category_id").eq("id", productId).single().then(({ data }) => {
+        if (data?.category_id) {
+          const matchedCat = dbCategories.find(c => c.id === data.category_id)
+          if (matchedCat) {
+            if (matchedCat.parent_id) {
+              setSelectedMainCategoryId(matchedCat.parent_id)
+              setSelectedSubCategoryId(matchedCat.id)
+            } else {
+              setSelectedMainCategoryId(matchedCat.id)
+            }
+          }
+        }
+      })
+    }
+  }, [dbCategories, productId, selectedMainCategoryId, supabase])
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -101,10 +135,16 @@ export function AdminEditProductForm({ productId }: { productId: string }) {
       return
     }
 
+    if (!selectedMainCategoryId) {
+      setError("Please select a main category")
+      return
+    }
+
     setSaving(true)
 
     try {
       const specs = formData.specifications.trim() || null
+      const finalCategoryId = selectedSubCategoryId || selectedMainCategoryId
 
       const { error: updateError } = await supabase
         .from("products")
@@ -113,7 +153,7 @@ export function AdminEditProductForm({ productId }: { productId: string }) {
           name_pt: formData.name_pt,
           description: formData.description,
           description_pt: formData.description_pt,
-          category: formData.category,
+          category_id: finalCategoryId,
           brand: formData.manufacturer || "Generic",
           manufacturer: formData.manufacturer,
           price: Number.parseFloat(formData.price.toString()),
@@ -211,15 +251,35 @@ export function AdminEditProductForm({ productId }: { productId: string }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">Category</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">Main Category *</label>
               <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full border rounded px-3 py-2"
+                value={selectedMainCategoryId}
+                onChange={(e) => {
+                  setSelectedMainCategoryId(e.target.value)
+                  setSelectedSubCategoryId("") // reset subcategory on main cat change
+                }}
+                className="w-full border rounded px-3 py-2 mb-4"
+                required
               >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
+                <option value="" disabled>Select Main Category</option>
+                {mainCategories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+
+              <label className="text-sm font-medium text-foreground mb-2 block">Sub Category</label>
+              <select
+                value={selectedSubCategoryId}
+                onChange={(e) => setSelectedSubCategoryId(e.target.value)}
+                className="w-full border rounded px-3 py-2"
+                disabled={!selectedMainCategoryId || subCategories.length === 0}
+              >
+                <option value="">No Subcategory</option>
+                {subCategories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
                   </option>
                 ))}
               </select>

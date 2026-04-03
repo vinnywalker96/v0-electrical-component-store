@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import type { Product } from "@/lib/types"
@@ -25,14 +25,24 @@ export default function AdminProductsPage() {
   const { formatPrice } = useCurrency()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [searching, setSearching] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [manufacturerFilter, setManufacturerFilter] = useState("all")
   const [stockStatusFilter, setStockStatusFilter] = useState("all")
-  const [categories, setCategories] = useState<string[]>([])
+  const [categories, setCategories] = useState<{ id: string; name: string; parent_id: string | null }[]>([])
   const [manufacturers, setManufacturers] = useState<string[]>([])
+  const [subCategoryFilter, setSubCategoryFilter] = useState("all")
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]) // For bulk actions
   const [translatedNames, setTranslatedNames] = useState<Record<string, string>>({})
+
+  // Derived main / sub categories
+  const mainCategories = useMemo(() => categories.filter(c => !c.parent_id), [categories])
+  const subCategories = useMemo(() => {
+    if (categoryFilter === "all") return []
+    return categories.filter(c => c.parent_id === categoryFilter)
+  }, [categories, categoryFilter])
 
   // Auto-translate product names when translation is missing
   useEffect(() => {
@@ -60,10 +70,12 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     const fetchFilters = async () => {
-      // Fetch unique categories
-      const { data: catData } = await supabase.from("products").select("category").neq("category", null)
-      const uniqueCategories = [...new Set((catData || []).map(p => p.category))].filter(val => val && val.toString().trim() !== "") as string[]
-      setCategories(uniqueCategories);
+      // Fetch ALL categories (mains + subs) from the categories table — same source as shop page
+      const { data: catData } = await supabase
+        .from("categories")
+        .select("id, name, parent_id")
+        .order("name", { ascending: true })
+      setCategories((catData || []) as { id: string; name: string; parent_id: string | null }[]);
 
       // Fetch unique manufacturers
       const { data: manufacturerData } = await supabase.from("products").select("manufacturer").neq("manufacturer", null)
@@ -71,13 +83,21 @@ export default function AdminProductsPage() {
       setManufacturers(uniqueManufacturers);
     }
     fetchFilters();
-  }, [supabase, setCategories, setManufacturers]);
+  }, [supabase]);
+
+  // Debounce search — only fire fetch 400ms after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 400)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   useEffect(() => {
     const fetchProducts = async () => {
-      setLoading(true);
+      // Only full-page load on first fetch or filter change; use subtle searching state for search
+      const isFirstLoad = products.length === 0
+      if (isFirstLoad) setLoading(true); else setSearching(true);
       try {
-        const cacheKey = `admin:products:search=${searchQuery}:cat=${categoryFilter}:manufacturer=${manufacturerFilter}:stock=${stockStatusFilter}`;
+        const cacheKey = `admin:products:search=${debouncedSearch}:cat=${categoryFilter}:sub=${subCategoryFilter}:manufacturer=${manufacturerFilter}:stock=${stockStatusFilter}`;
 
         try {
           const cachedProducts = await cache.get(cacheKey);
@@ -92,11 +112,13 @@ export default function AdminProductsPage() {
 
         let query = supabase.from("products").select("*")
 
-        if (searchQuery) {
-          query = query.ilike("name", `%${searchQuery}%`)
+        if (debouncedSearch) {
+          query = query.ilike("name", `%${debouncedSearch}%`)
         }
         if (categoryFilter !== "all") {
-          query = query.eq("category", categoryFilter)
+          // If a subcategory is selected, filter by it; otherwise filter by the main category
+          const filterById = subCategoryFilter !== "all" ? subCategoryFilter : categoryFilter
+          query = query.eq("category_id", filterById)
         }
         if (manufacturerFilter !== "all") {
           query = query.eq("manufacturer", manufacturerFilter)
@@ -129,11 +151,12 @@ export default function AdminProductsPage() {
         })
       } finally {
         setLoading(false)
+        setSearching(false)
       }
     }
 
     fetchProducts()
-  }, [supabase, searchQuery, categoryFilter, manufacturerFilter, stockStatusFilter])
+  }, [supabase, debouncedSearch, categoryFilter, subCategoryFilter, manufacturerFilter, stockStatusFilter])
 
   const handleSelectProduct = (productId: string) => {
     setSelectedProducts(prev =>
@@ -231,18 +254,44 @@ export default function AdminProductsPage() {
         {/* Filters */}
         <Card className="mb-8">
           <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Input
-              placeholder={t("admin_dashboard.search_by_name")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <div className="relative">
+              <Input
+                placeholder={t("admin_dashboard.search_by_name")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searching && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 animate-pulse">Searching...</span>
+              )}
+            </div>
+            <Select
+              value={categoryFilter}
+              onValueChange={(val) => {
+                setCategoryFilter(val)
+                setSubCategoryFilter("all") // reset sub when main changes
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder={t("admin_dashboard.all_categories")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("admin_dashboard.all_categories")}</SelectItem>
-                {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                {mainCategories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            {/* Subcategory dropdown — always visible, disabled until a main category is selected */}
+            <Select
+              value={subCategoryFilter}
+              onValueChange={setSubCategoryFilter}
+              disabled={categoryFilter === "all"}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={categoryFilter === "all" ? "Select category first" : "All Subcategories"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Subcategories</SelectItem>
+                {subCategories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={manufacturerFilter} onValueChange={setManufacturerFilter}>
@@ -315,7 +364,7 @@ export default function AdminProductsPage() {
                                   : product.name}
                             </Link>
                           </td>
-                          <td className="py-3 px-4">{product.category}</td>
+                          <td className="py-3 px-4">{categories.find(c => c.id === product.category_id)?.name || product.category || "—"}</td>
                           <td className="py-3 px-4">{product.manufacturer}</td>
                           <td className="py-3 px-4 text-right">{formatPrice(product.price)}</td>
                           <td className="py-3 px-4 text-right">
