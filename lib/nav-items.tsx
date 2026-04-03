@@ -21,7 +21,6 @@ export const getAdminNavItems = (t: (key: string) => string) => [
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
   { href: "/admin/users", label: t("navigation.users"), icon: <Users className="w-5 h-5" /> },
-  { href: "/admin/vendors", label: t("navigation.vendors"), icon: <Store className="w-5 h-5" /> },
   {
     href: "/admin/products",
     label: t("navigation.products"),
@@ -47,34 +46,6 @@ export const getAdminNavItems = (t: (key: string) => string) => [
   { href: "/auth/logout", label: t("navigation.logout"), icon: <LogOut className="w-5 h-5" /> },
 ]
 
-export const getSellerNavItems = (t: (key: string) => string) => [
-  {
-    href: "/seller/dashboard",
-    label: t("navigation.dashboard"),
-    icon: <LayoutDashboard className="w-5 h-5" />,
-  },
-  {
-    href: "/seller/products",
-    label: t("navigation.products"),
-    icon: <Package className="w-5 h-5" />,
-  },
-  {
-    href: "/seller/orders",
-    label: t("navigation.orders"),
-    icon: <ShoppingBag className="w-5 h-5" />,
-  },
-  {
-    href: "/seller/messages",
-    label: t("navigation.messages"),
-    icon: <MessageSquare className="w-5 h-5" />,
-  },
-  {
-    href: "/seller/settings",
-    label: t("navigation.settings"),
-    icon: <Settings className="w-5 h-5" />,
-  },
-  { href: "/auth/logout", label: t("navigation.logout"), icon: <LogOut className="w-5 h-5" /> },
-]
 
 export const getCustomerNavItems = (t: (key: string) => string) => [
   {

@@ -84,13 +84,11 @@ export default function Navbar() {
   }
 
   const getDashboardLink = () => {
-    if (userRole === "vendor") return "/vendor/dashboard"
     if (userRole === "admin" || userRole === "super_admin") return "/admin/dashboard"
     return "/protected/dashboard"
   }
 
   const getDashboardLabel = () => {
-    if (userRole === "vendor") return t("navigation.vendor_dashboard") || "Vendor Dashboard"
     if (userRole === "admin" || userRole === "super_admin") return t("navigation.admin_dashboard") || "Admin Dashboard"
     return t("navigation.dashboard") || "Dashboard"
   }
@@ -177,8 +175,7 @@ export default function Navbar() {
                       <DropdownMenuItem asChild>
                         <Link href={
                           (pathname || "").startsWith("/admin") ? "/admin/profile" :
-                            (pathname || "").startsWith("/seller") ? "/seller/profile" :
-                              "/protected/profile"
+                            "/protected/profile"
                         } className="flex items-center gap-2 cursor-pointer">
                           <User className="w-4 h-4" />
                           {t("navigation.profile")}
@@ -260,8 +257,7 @@ export default function Navbar() {
                 </Link>
                 <Link href={
                   (pathname || "").startsWith("/admin") ? "/admin/profile" :
-                    (pathname || "").startsWith("/seller") ? "/seller/profile" :
-                      "/protected/profile"
+                    "/protected/profile"
                 } className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-xl transition" onClick={() => setIsOpen(false)}>
                   <User className="w-5 h-5" />
                   <span className="font-medium">{t("navigation.profile")}</span>

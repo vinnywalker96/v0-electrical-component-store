@@ -306,12 +306,6 @@ export default function AdminDashboardPage() {
                     {t("admin_dashboard.actions.create_user")}
                   </Button>
                 </Link>
-                <Link href="/admin/vendors/new">
-                  <Button className="w-full h-12 justify-start gap-2 bg-purple-600 hover:bg-purple-700">
-                    <Settings size={18} />
-                    {t("admin_dashboard.actions.create_vendor")}
-                  </Button>
-                </Link>
               </div>
             )}
 

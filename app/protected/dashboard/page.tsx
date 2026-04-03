@@ -22,7 +22,6 @@ export default function DashboardPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
-  const [isSeller, setIsSeller] = useState(false)
   const [stats, setStats] = useState({
     completed: 0,
     inProgress: 0,
@@ -46,8 +45,6 @@ export default function DashboardPage() {
             setProfile(profileData)
           }
 
-          const { data: sellerData } = await supabase.from("sellers").select("id").eq("user_id", user.id).single()
-          setIsSeller(!!sellerData)
 
           const { data: ordersData } = await supabase
             .from("orders")
@@ -89,11 +86,6 @@ export default function DashboardPage() {
           <p className="text-slate-600 mt-1">{t("user_dashboard.welcome_back")}</p>
         </div>
         <div className="flex items-center gap-4">
-          {isSeller && (
-            <Link href="/seller/dashboard">
-              <Button>{t("user_dashboard.go_to_vendor_dashboard")}</Button>
-            </Link>
-          )}
           <Avatar className="w-12 h-12">
             <AvatarImage src={profile?.profile_image_url || ""} />
             <AvatarFallback className="bg-primary text-white">

@@ -61,7 +61,7 @@ export function SidebarNav({ navItems, userProfile, onLogout, isOpen, onClose }:
                   {userProfile.first_name || userProfile.email}
                 </p>
                 <p className="text-xs text-slate-500 capitalize">
-                  {userProfile.role ? t(`admin_users.${userProfile.role}`) : t("seller_orders.customer")}
+                  {userProfile.role ? t(`admin_users.${userProfile.role}`) : t("admin_users.customer")}
                 </p>
               </div>
             </div>

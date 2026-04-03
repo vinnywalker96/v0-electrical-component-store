@@ -17,8 +17,6 @@ export interface Product {
   specifications?: string | any // Now plain text, `any` included for legacy JSON compatibility
   technical_documents?: string[] // Added for technical documentation URLs
   category_path?: string[] // Added for breadcrumbs
-  seller_id?: string
-  seller?: Seller // Added for seller relationship
   created_at: string
   updated_at: string
 }
@@ -46,7 +44,6 @@ export interface Order {
   id: string
   user_id: string
   user?: UserProfile // Added for user profile relationship
-  seller_id?: string
   status: string
   total_amount: number
   tax_amount: number
@@ -72,7 +69,6 @@ export interface OrderItem {
   product_id: string
   quantity: number
   unit_price: number
-  commission_amount?: number
   product?: Product
 }
 
@@ -82,7 +78,7 @@ export interface UserProfile {
   first_name?: string
   last_name?: string
   phone?: string
-  role: "customer" | "vendor" | "admin" | "super_admin"
+  role: "customer" | "admin" | "super_admin"
   account_tier?: "basic" | "professional" | "business"
   profile_image_url?: string
   monthly_fee?: number
@@ -94,51 +90,6 @@ export interface UserProfile {
   updated_at: string
 }
 
-export interface Seller {
-  id: string
-  user_id: string
-  store_name: string
-  store_description: string
-  store_logo: string // Added for store logo
-  store_banner: string // Added for store banner
-  business_address: string
-  contact_phone: string
-  contact_email: string
-  vendor_type: "startup_reseller" | "established_reseller" | "enterprise_reseller" | "freelance_reseller" // Added for vendor type
-  account_tier: "basic" | "professional" | "business" // Added for account tier
-  identity_document_url?: string // Added for identity document URL
-  company_registration_number?: string // Added for company registration number
-  tax_number?: string // Added for tax number
-  verification_documents?: VendorDocument[] // Added for verification documents
-  verification_status: "pending" | "under_review" | "approved" | "rejected" // Added for verification status
-  profile_image_url?: string // Added for profile image URL
-  monthly_fee: number // Added for monthly fee
-  account_tier_expires_at?: string // Added for account tier expires at
-  commission_rate: number
-  total_commission_earned: number
-  pending_commission: number
-  total_sales: number
-  is_verified: boolean
-  is_active: boolean
-  is_blocked?: boolean // Added for block functionality
-  blocked_at?: string // Added for block timestamp
-  block_reason?: string // Added for block reason
-  rating: number
-  created_at: string
-  updated_at: string
-}
-
-export interface Commission {
-  id: string
-  seller_id: string
-  order_id: string
-  order_item_id?: string
-  amount: number
-  status: "pending" | "paid" | "cancelled"
-  paid_at?: string
-  created_at: string
-  updated_at: string
-}
 
 export interface Address {
   id: string
@@ -161,24 +112,6 @@ export interface Message {
   created_at: string
 }
 
-export interface VendorDocument {
-  id: string
-  seller_id: string
-  document_type:
-  | "identity_document"
-  | "company_registration"
-  | "tax_certificate"
-  | "bank_statement"
-  | "proof_of_address"
-  | "other"
-  document_url: string
-  document_name?: string
-  verification_status: "pending" | "approved" | "rejected"
-  rejected_reason?: string
-  uploaded_at: string
-  verified_at?: string
-  verified_by?: string
-}
 
 export interface Currency {
   id: string
@@ -195,7 +128,7 @@ export interface Currency {
 export interface AccountTierFeatures {
   id: string
   tier_name: "basic" | "professional" | "business"
-  user_type: "customer" | "vendor"
+  user_type: "customer"
   monthly_fee: number
   max_products?: number
   max_images_per_product?: number

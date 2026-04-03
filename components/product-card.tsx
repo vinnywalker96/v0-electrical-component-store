@@ -15,7 +15,7 @@ import { getTranslation, detectLanguage } from "@/lib/utils/translation"
 
 
 interface ProductCardProps {
-  product: Product & { seller?: any }
+  product: Product
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -152,13 +152,6 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        {product.seller && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Store className="h-3 w-3" />
-            <span>{product.seller.store_name}</span>
-            {product.seller.rating && <span className="ml-1">⭐ {product.seller.rating.toFixed(1)}</span>}
-          </div>
-        )}
       </CardHeader>
       <CardContent className="flex-1">
         <h3 className="font-semibold text-sm line-clamp-2">
