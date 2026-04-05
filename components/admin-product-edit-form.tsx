@@ -145,6 +145,7 @@ export function AdminEditProductForm({ productId }: { productId: string }) {
     try {
       const specs = formData.specifications.trim() || null
       const finalCategoryId = selectedSubCategoryId || selectedMainCategoryId
+      const categoryName = dbCategories.find(c => c.id === finalCategoryId)?.name || ""
 
       const { error: updateError } = await supabase
         .from("products")
@@ -153,6 +154,7 @@ export function AdminEditProductForm({ productId }: { productId: string }) {
           name_pt: formData.name_pt,
           description: formData.description,
           description_pt: formData.description_pt,
+          category: categoryName, // Added to fix not-null constraint
           category_id: finalCategoryId,
           brand: formData.manufacturer || "Generic",
           manufacturer: formData.manufacturer,

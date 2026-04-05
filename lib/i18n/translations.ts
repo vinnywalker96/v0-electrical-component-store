@@ -322,6 +322,16 @@ export const translations = {
       delivered: "Delivered",
       cancelled: "Cancelled",
     },
+    seller_orders: {
+      order_hash: "Order #",
+      pending: "Pending",
+      completed: "Completed",
+      shipped: "Shipped",
+      processing: "Processing",
+      cancelled: "Cancelled",
+      email_static: "Email cannot be changed",
+      customer: "Customer",
+    },
     auth: {
       login: "Login",
       signup: "Sign Up",
@@ -1017,6 +1027,16 @@ export const translations = {
       shipped: "Enviado",
       delivered: "Entregue",
       cancelled: "Cancelado",
+    },
+    seller_orders: {
+      order_hash: "Pedido #",
+      pending: "Pendente",
+      completed: "Concluído",
+      shipped: "Enviado",
+      processing: "Processando",
+      cancelled: "Cancelado",
+      email_static: "O e-mail não pode ser alterado",
+      customer: "Cliente",
     },
     auth: {
       login: "Entrar",

@@ -81,12 +81,16 @@ export default function NewProductPage() {
       const specs = formData.specifications.trim() || null
       // Store whichever category is most specific (sub if selected, else main)
       const finalCategoryId = selectedSubCategoryId || selectedMainCategoryId
+      
+      // Look up category name for historical/legacy 'category' column
+      const categoryName = dbCategories.find(c => c.id === finalCategoryId)?.name || ""
 
       const { error: insertError } = await supabase.from("products").insert({
         name: formData.name,
         name_pt: formData.name_pt,
         description: formData.description,
         description_pt: formData.description_pt,
+        category: categoryName, // Added to fix not-null constraint
         category_id: finalCategoryId,
         brand: formData.manufacturer || "Generic",
         manufacturer: formData.manufacturer,

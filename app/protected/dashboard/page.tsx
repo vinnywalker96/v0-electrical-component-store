@@ -11,6 +11,7 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  LayoutDashboard,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useCurrency } from "@/lib/context/currency-context"
@@ -86,7 +87,15 @@ export default function DashboardPage() {
           <p className="text-slate-600 mt-1">{t("user_dashboard.welcome_back")}</p>
         </div>
         <div className="flex items-center gap-4">
-          <Avatar className="w-12 h-12">
+          {(profile?.role === "admin" || profile?.role === "super_admin") && (
+            <Link href="/admin/dashboard">
+              <Button variant="outline" className="hidden sm:flex items-center gap-2 border-slate-200 hover:border-blue-200 hover:bg-blue-50 transition-all text-slate-700">
+                <LayoutDashboard size={18} className="text-blue-600" />
+                {t("navigation.admin_dashboard")}
+              </Button>
+            </Link>
+          )}
+          <Avatar className="w-12 h-12 shadow-sm border border-slate-100">
             <AvatarImage src={profile?.profile_image_url || ""} />
             <AvatarFallback className="bg-primary text-white">
               {(profile?.first_name?.[0] || user?.email?.[0] || "U").toUpperCase()}

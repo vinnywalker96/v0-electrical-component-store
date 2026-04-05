@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { LayoutDashboard, Store } from "lucide-react"
+import { LayoutDashboard, ArrowLeft, Package } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"
 import { ImageUploadField } from "@/components/image-upload-field"
@@ -299,35 +299,38 @@ export default function ProfilePage() {
       </Card>
 
       {/* Dashboards */}
-      {(profile?.role === "admin" ||
-        profile?.role === "super_admin" ||
-        profile?.role === "vendor") && (
-          <Card className="mt-6">
+          <Card className="mt-6 border-none shadow-lg bg-gradient-to-br from-slate-50 to-white">
             <CardHeader>
-              <CardTitle>{t("navigation.dashboard")}</CardTitle>
+              <CardTitle className="text-xl font-bold flex items-center gap-2">
+                <LayoutDashboard className="w-5 h-5 text-blue-600" />
+                {t("navigation.dashboard")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {(profile.role === "admin" ||
                 profile.role === "super_admin") && (
                   <Link href="/admin/dashboard">
-                    <Button variant="outline" className="w-full justify-start">
-                      <LayoutDashboard className="w-4 h-4 mr-2" />
-                      {t("admin_dashboard.title")}
+                    <Button variant="default" className="w-full justify-between group h-12 px-6 bg-blue-600 hover:bg-blue-700 transition-all">
+                      <span className="flex items-center gap-3">
+                        <LayoutDashboard className="w-5 h-5" />
+                        {t("admin_dashboard.title")}
+                      </span>
+                      <ArrowLeft className="w-4 h-4 rotate-180 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </Link>
                 )}
 
-              {(profile.role === "vendor" || profile.role === "admin" || profile.role === "super_admin") && (
-                <Link href="/seller/dashboard">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Store className="w-4 h-4 mr-2" />
-                    {t("vendor_dashboard.vendor_dashboard")}
-                  </Button>
-                </Link>
-              )}
+              <Link href="/protected/dashboard">
+                <Button variant="outline" className="w-full justify-between group h-12 px-6 border-slate-200 hover:border-blue-200 hover:bg-blue-50 transition-all text-slate-700">
+                  <span className="flex items-center gap-3">
+                    <Package className="w-5 h-5 text-slate-500" />
+                    {t("navigation.dashboard")} (Customer)
+                  </span>
+                  <ArrowLeft className="w-4 h-4 rotate-180 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
-        )}
     </>
   )
 }
