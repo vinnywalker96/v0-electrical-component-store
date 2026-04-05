@@ -307,8 +307,8 @@ export default function ProfilePage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {(profile.role === "admin" ||
-                profile.role === "super_admin") && (
+              {(profile?.role === "admin" ||
+                profile?.role === "super_admin") && (
                   <Link href="/admin/dashboard">
                     <Button variant="default" className="w-full justify-between group h-12 px-6 bg-blue-600 hover:bg-blue-700 transition-all">
                       <span className="flex items-center gap-3">
