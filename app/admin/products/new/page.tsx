@@ -78,6 +78,17 @@ export default function NewProductPage() {
     setSaving(true)
 
     try {
+      // Check for existing product with the same name
+      const { data: existingProduct } = await supabase
+        .from("products")
+        .select("id")
+        .eq("name", formData.name.trim())
+        .maybeSingle()
+
+      if (existingProduct) {
+        throw new Error("A product with this name already exists. Please choose a unique name.")
+      }
+
       const specs = formData.specifications.trim() || null
       // Store whichever category is most specific (sub if selected, else main)
       const finalCategoryId = selectedSubCategoryId || selectedMainCategoryId

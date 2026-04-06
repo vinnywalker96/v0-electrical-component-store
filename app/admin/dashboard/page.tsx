@@ -152,7 +152,7 @@ export default function AdminDashboardPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-[1500px] mx-auto px-0 py-0">
         <div className="flex justify-between items-center mb-8">
           <div>
             <div className="flex gap-4 mb-4">

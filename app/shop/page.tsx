@@ -11,6 +11,7 @@ import cache from "@/lib/redis" // Import Cache
 import { useLanguage } from "@/lib/context/language-context"
 import { useCurrency } from "@/lib/context/currency-context"
 import type { Category } from "@/lib/types"
+import { Search, ChevronDown, ChevronRight, Filter, SlidersHorizontal } from "lucide-react"
 
 const CACHE_EXPIRY_SECONDS = 300; // Cache for 5 minutes (reduced from 60 for better freshness)
 
@@ -56,7 +57,7 @@ export default function ShopPage() {
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("name", { ascending: true });
 
       if (error) throw error;
       setProducts(data || []);
@@ -99,13 +100,25 @@ export default function ShopPage() {
     fetchCategories()
   }, [fetchProducts, fetchCategories])
 
-  const mainCategories = useMemo<Category[]>(() => dbCategories.filter(c => !c.parent_id), [dbCategories])
+  const mainCategories = useMemo<Category[]>(() => {
+    const mains = dbCategories.filter(c => !c.parent_id);
+    const unique = new Map();
+    mains.forEach(c => { if (!unique.has(c.name)) unique.set(c.name, c); });
+    return Array.from(unique.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [dbCategories])
+
   const subCategories = useMemo<Category[]>(() => {
     if (selectedMainCategoryId === "all") return []
-    return dbCategories.filter(c => c.parent_id === selectedMainCategoryId)
+    const subs = dbCategories.filter(c => c.parent_id === selectedMainCategoryId)
+    const unique = new Map();
+    subs.forEach(c => { if (!unique.has(c.name)) unique.set(c.name, c); });
+    return Array.from(unique.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [dbCategories, selectedMainCategoryId])
 
-  const manufacturers = useMemo(() => [...new Set(products.map((p) => p.manufacturer).filter(Boolean))], [products])
+  const manufacturers = useMemo(() => {
+    const unique = [...new Set(products.map((p) => p.manufacturer).filter(Boolean))];
+    return unique.sort((a, b) => a.localeCompare(b));
+  }, [products])
 
   const filteredProducts = useMemo<Product[]>(() => {
     return (products as Product[]).filter((product: Product) => {
@@ -152,147 +165,141 @@ export default function ShopPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">{t("shop_page.title")}</h1>
-            <p className="text-muted-foreground">{t("shop_page.subtitle")}</p>
+      <div className="max-w-[1500px] mx-auto px-4 md:px-12 py-12">
+        <div className="flex flex-col space-y-12">
+          {/* Header Section */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">{t("shop_page.title")}</h1>
+              <p className="text-muted-foreground">{t("shop_page.subtitle")}</p>
+            </div>
+            <Button
+              className="md:hidden"
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              {showFilters ? t("common.hide_filters") : t("common.show_filters")}
+            </Button>
           </div>
-          <Button
-            className="md:hidden"
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            {showFilters ? t("common.hide_filters") : t("common.show_filters")}
-          </Button>
-        </div>
 
-        {/* Filters */}
-        {isMounted && (
-          <div className={`space-y-6 bg-card rounded-xl border-2 border-border p-8 mb-10 shadow-lg relative ${showFilters ? 'block' : 'hidden md:block'}`}>
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
-            {/* Top Row: Search and Categories */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-4">
-                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">{t("shop_page.filters.search")}</label>
-                <Input
-                  placeholder={t("shop_page.filters.search_placeholder")}
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="lg:col-span-4">
-                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">{t("shop_page.filters.category")}</label>
+          {/* High-Fidelity Shop Filter Bar - 4-and-1 Grid Layout */}
+          <div className="bg-white p-8 rounded-[3.5rem] border border-slate-100 shadow-2xl shadow-slate-200/40 mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
+            <div className="space-y-8">
+              {/* Row 1: Search + 3 Selects (Fixed Grid) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
+                  <Input
+                    placeholder={t("shop_page.filters.search_placeholder")}
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="pl-14 h-14 bg-slate-50/50 border-none rounded-full text-slate-900 font-bold placeholder:text-slate-300 focus-visible:ring-blue-500/10 shadow-inner"
+                  />
+                </div>
+                
+                {/* Main Category */}
                 <Select value={selectedMainCategoryId} onValueChange={handleMainCategoryChange}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="h-14 bg-white border-slate-100 rounded-full font-bold text-slate-600 shadow-sm px-8 hover:shadow-md transition-all">
                     <SelectValue placeholder={t("shop_page.filters.all_categories")} />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("shop_page.filters.all_categories")}</SelectItem>
-                    {mainCategories.map((cat) => {
-                      const displayName = cat.name === 'COMPONENTS' ? 'Components' : cat.name;
-                      return (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {language === "pt" ? cat.name_pt || displayName : displayName}
-                        </SelectItem>
-                      );
-                    })}
+                  <SelectContent className="rounded-[2rem] border-slate-100 shadow-2xl p-2 bg-white/95 backdrop-blur-xl">
+                    <SelectItem value="all" className="rounded-2xl font-bold py-4 uppercase tracking-tighter opacity-50">{t("shop_page.filters.all_categories")}</SelectItem>
+                    {mainCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id} className="rounded-2xl font-bold py-4">
+                        {language === "pt" ? cat.name_pt || cat.name : cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-              </div>
 
-              <div className="lg:col-span-4">
-                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">{t("shop_page.filters.subcategory")}</label>
+                {/* Subcategory */}
                 <Select
                   value={selectedSubCategoryId}
                   onValueChange={setSelectedSubCategoryId}
-                  disabled={selectedMainCategoryId === "all"}
+                  disabled={selectedMainCategoryId === "all" || subCategories.length === 0}
                 >
-                  <SelectTrigger className={`w-full ${selectedMainCategoryId === "all" ? 'opacity-50' : ''}`}>
-                    <SelectValue placeholder={selectedMainCategoryId === "all" ? t("categories.select_category_first") : t("categories.no_subcategory")} />
+                  <SelectTrigger className="h-14 bg-white border-slate-100 rounded-full font-bold text-slate-600 shadow-sm px-8 hover:shadow-md transition-all disabled:opacity-30">
+                    <SelectValue placeholder="All Subcategories" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("categories.no_subcategory")}</SelectItem>
-                    {subCategories.map((cat) => {
-                      const displayName = cat.name === 'COMPONENTS' ? 'Components' : cat.name;
-                      return (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {language === "pt" ? cat.name_pt || displayName : displayName}
-                        </SelectItem>
-                      );
-                    })}
+                  <SelectContent className="rounded-[2rem] border-slate-100 shadow-2xl p-2">
+                    <SelectItem value="all" className="rounded-2xl font-bold py-4 uppercase tracking-tighter opacity-50">All Subcategories</SelectItem>
+                    {subCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id} className="rounded-2xl font-bold py-4">
+                        {language === "pt" ? cat.name_pt || cat.name : cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
 
-            {/* Bottom Row: Manufacturer, Seller, Price, Reset */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4 border-t border-border/50">
-              <div>
-                <label className="text-sm font-semibold text-foreground mb-2.5 block uppercase tracking-wide">{t("shop_page.filters.manufacturer")}</label>
+                {/* Manufacturer */}
                 <Select value={selectedManufacturer} onValueChange={setSelectedManufacturer}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("shop_page.filters.all_manufacturers")} />
+                  <SelectTrigger className="h-14 bg-white border-slate-100 rounded-full font-bold text-slate-600 shadow-sm px-8 hover:shadow-md transition-all">
+                    <SelectValue placeholder="All Manufacturers" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("shop_page.filters.all_manufacturers")}</SelectItem>
-                    {manufacturers.map((manufacturer) => (
-                      <SelectItem key={manufacturer} value={manufacturer}>
-                        {manufacturer}
-                      </SelectItem>
+                  <SelectContent className="rounded-[2rem] border-slate-100 shadow-2xl p-2">
+                    <SelectItem value="all" className="rounded-2xl font-bold py-4 uppercase tracking-tighter opacity-50">All Manufacturers</SelectItem>
+                    {manufacturers.map((mf) => (
+                      <SelectItem key={mf} value={mf} className="rounded-2xl font-bold py-4">{mf}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  {t("shop_page.filters.max_price")}: {formatPrice(priceRange[1])}
-                </label>
-                <Slider
-                  value={[priceRange[1]]}
-                  onValueChange={handlePriceChange}
-                  min={0}
-                  max={maxPrice}
-                  step={10}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="flex items-end">
-                <Button
-                  onClick={handleReset}
-                  variant="outline"
-                  className="w-full"
-                >
-                  {t("shop_page.filters.reset")}
-                </Button>
+              {/* Bottom Row: Price Range + Applied Filters Display */}
+              <div className="flex flex-col md:flex-row items-center gap-10 pt-4">
+                <div className="flex-1 w-full space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">Budget Constraint</span>
+                    <span className="text-sm font-black text-blue-600 bg-blue-50 px-6 py-2 rounded-full border border-blue-100">{formatPrice(0)} — {formatPrice(priceRange[1])}</span>
+                  </div>
+                  <Slider
+                    min={0}
+                    max={maxPrice}
+                    step={100}
+                    value={[priceRange[1]]}
+                    onValueChange={handlePriceChange}
+                    className="py-6"
+                  />
+                </div>
+                
+                <div className="flex items-center gap-6 shrink-0">
+                  <div className="flex flex-col items-end">
+                    <span className="text-2xl font-black text-slate-900 leading-none">{filteredProducts.length}</span>
+                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-1">Matched Units</span>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleReset}
+                    className="h-12 px-8 rounded-full font-black uppercase tracking-[0.2em] text-[10px] text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-all border border-slate-100"
+                  >
+                    Clear Path
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        )}
 
-        {/* Products Grid */}
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">{t("shop_page.loading")}</p>
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-12 bg-muted rounded-lg">
-            <p className="text-muted-foreground text-lg">{t("shop_page.no_results")}</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
+          {/* Products Grid */}
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">{t("shop_page.loading")}</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-12 bg-muted rounded-lg">
+              <p className="text-muted-foreground text-lg">{t("shop_page.no_results")}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
 
-        <div className="mt-8 text-center text-sm text-muted-foreground">
-          {t("shop_page.showing_results", { count: filteredProducts.length.toString(), total: products.length.toString() })}
+          <div className="mt-8 text-center text-sm text-muted-foreground">
+            {t("shop_page.showing_results", { count: filteredProducts.length.toString(), total: products.length.toString() })}
+          </div>
         </div>
       </div>
     </main>
