@@ -30,11 +30,11 @@ export function SidebarNav({ navItems, userProfile, onLogout, isOpen, onClose }:
   const { t } = useLanguage()
 
   return (
-    <aside className={`w-64 bg-white border-r border-slate-200 fixed h-screen flex flex-col z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+    <aside className={`w-52 bg-white border-r border-slate-200 fixed h-screen flex flex-col z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}>
       <div className="p-6 flex-1 overflow-y-auto">
         <Link href="/" className="flex items-center mb-8">
-          <div className="relative w-[180px] h-[45px]">
+          <div className="relative w-[140px] h-[35px]">
             <Image
               src="/logo.png"
               alt="KG Components Logo"
@@ -47,20 +47,19 @@ export function SidebarNav({ navItems, userProfile, onLogout, isOpen, onClose }:
 
         {/* Close button for mobile */}
         <button onClick={onClose} className="md:hidden absolute top-6 right-6 p-1 text-slate-500">
-          {/* We already have the X in the layout, but another here is fine or we keep it simple */}
         </button>
 
         {userProfile && (
-          <div className="mb-6 p-3 bg-slate-50 rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                <UserCircle className="w-6 h-6 text-primary" />
+          <div className="mb-6 p-2 bg-slate-50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                <UserCircle className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-900 truncate">
+                <p className="text-xs font-semibold text-slate-900 truncate">
                   {userProfile.first_name || userProfile.email}
                 </p>
-                <p className="text-xs text-slate-500 capitalize">
+                <p className="text-[10px] text-slate-500 capitalize">
                   {userProfile.role ? t(`admin_users.${userProfile.role}`) : t("admin_users.customer")}
                 </p>
               </div>

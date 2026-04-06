@@ -143,6 +143,18 @@ export function AdminEditProductForm({ productId }: { productId: string }) {
     setSaving(true)
 
     try {
+      // Check for existing product with the same name, excluding this one
+      const { data: existingProduct } = await supabase
+        .from("products")
+        .select("id")
+        .eq("name", formData.name.trim())
+        .neq("id", productId)
+        .maybeSingle()
+
+      if (existingProduct) {
+        throw new Error("A product with this name already exists. Please choose a unique name.")
+      }
+
       const specs = formData.specifications.trim() || null
       const finalCategoryId = selectedSubCategoryId || selectedMainCategoryId
       const categoryName = dbCategories.find(c => c.id === finalCategoryId)?.name || ""

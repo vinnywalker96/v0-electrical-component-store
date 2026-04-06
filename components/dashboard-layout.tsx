@@ -86,8 +86,8 @@ export function DashboardLayout({
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <div className={`flex-1 min-w-0 transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-64 ml-0'}`}>
-        <main className="p-4 md:p-8 pt-16 md:pt-8 w-full">{children}</main>
+      <div className={`flex-1 min-w-0 transition-all duration-300 ${isSidebarOpen ? 'md:ml-52' : 'md:ml-52 ml-0'}`}>
+        <main className="p-4 md:p-6 pt-16 md:pt-6 w-full">{children}</main>
       </div>
     </div>
   )

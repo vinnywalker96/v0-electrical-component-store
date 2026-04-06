@@ -35,6 +35,10 @@ export const translations = {
       confirm: "Confirm",
       show_filters: "Show Filters",
       hide_filters: "Hide Filters",
+      showing: "Showing",
+      to: "to",
+      of: "of",
+      products: "products",
     },
     home: {
       hero_title: "Quality Electrical Components at Your Fingertips",
