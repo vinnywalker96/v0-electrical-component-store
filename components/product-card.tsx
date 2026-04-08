@@ -111,9 +111,13 @@ export function ProductCard({ product }: ProductCardProps) {
   const isPriceAvailable = product.price > 0
 
   return (
-    <Card className="flex flex-col h-full">
-      <CardHeader>
-        <div className="w-full h-40 bg-gradient-to-br from-blue-50 to-slate-100 rounded-lg flex items-center justify-center mb-2 overflow-hidden">
+    <Card className="flex flex-col sm:flex-col h-full overflow-hidden">
+      {/* Mobile: horizontal layout — image left, content right */}
+      {/* sm+: standard vertical card */}
+      <div className="flex flex-row sm:flex-col h-full">
+
+        {/* Image block */}
+        <div className="w-28 shrink-0 sm:w-full h-auto sm:h-44 bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center overflow-hidden sm:rounded-none rounded-l-lg">
           {product.image_url ? (
             <NextImage
               src={product.image_url}
@@ -124,73 +128,86 @@ export function ProductCard({ product }: ProductCardProps) {
               height={160}
               className="object-contain w-full h-full p-2"
               onError={(e) => {
-                // Fallback to category icon if image fails to load
-                e.currentTarget.style.display = 'none';
+                e.currentTarget.style.display = "none"
               }}
             />
           ) : (
-            <div className="text-center">
-              <div className="text-3xl text-blue-600 mb-1">
+            <div className="text-center p-2">
+              <div className="text-2xl sm:text-3xl text-blue-600 mb-1">
                 {product.category === "Resistors"
                   ? "⧉"
                   : product.category === "Capacitors"
-                    ? "||"
-                    : product.category === "Potentiometers"
-                      ? "⚙"
-                      : product.category === "Wires & Connectors"
-                        ? "🔌"
-                        : product.category === "Breadboards"
-                          ? "📍"
-                          : product.category === "Microcontrollers"
-                            ? "🎮"
-                            : "⚙"}
+                  ? "||"
+                  : product.category === "Potentiometers"
+                  ? "⚙"
+                  : product.category === "Wires & Connectors"
+                  ? "🔌"
+                  : product.category === "Breadboards"
+                  ? "📍"
+                  : product.category === "Microcontrollers"
+                  ? "🎮"
+                  : "⚙"}
               </div>
-              <p className="text-xs text-slate-500">
-                {language === "pt" ? (product.name_pt || product.category) : product.category}
+              <p className="text-[10px] text-slate-500 hidden sm:block">
+                {language === "pt" ? product.name_pt || product.category : product.category}
               </p>
             </div>
           )}
         </div>
 
-      </CardHeader>
-      <CardContent className="flex-1">
-        <h3 className="font-semibold text-sm line-clamp-2">
-          {language === "pt"
-            ? (translatedName || product.name_pt || product.name)
-            : (translatedName || product.name || product.name_pt)}
-        </h3>
-        <p className="text-xs text-slate-600 mt-1 line-clamp-2">
-          {language === "pt"
-            ? (translatedDesc || product.description_pt || product.description)
-            : (translatedDesc || product.description || product.description_pt)}
-        </p>
-        <p className="text-xs text-slate-500 mt-2">{product.manufacturer}</p>
-        <div className="flex justify-between items-center mt-3">
-          <span
-            className={`text-sm font-semibold px-2 py-1 rounded ${isPriceAvailable ? "text-primary bg-primary/10" : "text-orange-600 bg-orange-50"}`}
-          >
-            {displayPrice}
-          </span>
-          <span className="text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded">
-            {product.stock_quantity > 0 ? t("product_card.in_stock") : t("product_card.out_of_stock")}
-          </span>
+        {/* Content block */}
+        <div className="flex flex-col flex-1 min-w-0">
+          {/* Text */}
+          <div className="flex-1 px-3 py-3 sm:px-4 sm:py-3">
+            <h3 className="font-semibold text-sm leading-tight line-clamp-2">
+              {language === "pt"
+                ? translatedName || product.name_pt || product.name
+                : translatedName || product.name || product.name_pt}
+            </h3>
+            <p className="text-xs text-slate-600 mt-1 line-clamp-2 hidden sm:block">
+              {language === "pt"
+                ? translatedDesc || product.description_pt || product.description
+                : translatedDesc || product.description || product.description_pt}
+            </p>
+            <p className="text-xs text-slate-500 mt-1">{product.manufacturer}</p>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <span
+                className={`text-sm font-semibold px-2 py-0.5 rounded ${
+                  isPriceAvailable ? "text-primary bg-primary/10" : "text-orange-600 bg-orange-50"
+                }`}
+              >
+                {displayPrice}
+              </span>
+              <span className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                {product.stock_quantity > 0 ? t("product_card.in_stock") : t("product_card.out_of_stock")}
+              </span>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 px-3 pb-3 sm:px-4 sm:pb-4 shrink-0">
+            <Link href={`/shop/${product.id}`} className="flex-1">
+              <Button variant="outline" size="sm" className="w-full text-xs bg-transparent">
+                {t("product_card.details")}
+              </Button>
+            </Link>
+            <Button
+              size="sm"
+              disabled={!isPriceAvailable || product.stock_quantity === 0 || loading}
+              className="flex-1 text-xs"
+              onClick={handleAddToCart}
+            >
+              {loading
+                ? t("product_card.adding")
+                : added
+                ? t("product_card.added")
+                : isPriceAvailable
+                ? t("product_card.add_to_cart")
+                : t("product_card.coming_soon")}
+            </Button>
+          </div>
         </div>
-      </CardContent>
-      <CardFooter className="flex gap-2">
-        <Link href={`/shop/${product.id}`} className="flex-1">
-          <Button variant="outline" size="sm" className="w-full text-xs bg-transparent">
-            {t("product_card.details")}
-          </Button>
-        </Link>
-        <Button
-          size="sm"
-          disabled={!isPriceAvailable || product.stock_quantity === 0 || loading}
-          className="flex-1 text-xs"
-          onClick={handleAddToCart}
-        >
-          {loading ? t("product_card.adding") : added ? t("product_card.added") : isPriceAvailable ? t("product_card.add_to_cart") : t("product_card.coming_soon")}
-        </Button>
-      </CardFooter>
+      </div>
     </Card>
   )
 }
