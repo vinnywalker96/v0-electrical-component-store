@@ -94,7 +94,7 @@ export default function FeaturedProducts() {
           <p className="text-muted-foreground text-lg">{t("featured_products.subtitle")}</p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {products.map((product) => (
             <Link key={product.id} href={`/shop/${product.id}`} className="group">
               <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition h-full flex flex-col">
