@@ -102,11 +102,11 @@ export default function Navbar() {
 
   return (
     <nav className="bg-background border-b border-border sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center h-20">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4">
+        <div className="flex justify-between items-center h-16 sm:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <div className="relative w-[200px] h-[50px] md:w-[280px] md:h-[60px]">
+          <Link href="/" className="flex items-center shrink-0">
+            <div className="relative w-[140px] h-[38px] sm:w-[200px] sm:h-[50px] md:w-[280px] md:h-[60px]">
               <Image
                 src="/logo.png"
                 alt="KG Components Logo"
@@ -139,9 +139,12 @@ export default function Navbar() {
           </div>
 
           {/* Right Side Icons */}
-          <div className="flex items-center gap-2 md:gap-4">
-            {mounted && <LanguageSwitcher />}
-            {mounted && <CurrencySwitcher />}
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
+            {/* Language/Currency — hide on very small screens, shown in mobile menu instead */}
+            <div className="hidden sm:flex items-center gap-1 md:gap-2">
+              {mounted && <LanguageSwitcher />}
+              {mounted && <CurrencySwitcher />}
+            </div>
 
             <Link href="/cart" className="relative p-2 hover:bg-muted rounded transition">
               <ShoppingCart className="w-5 h-5" />
@@ -155,7 +158,6 @@ export default function Navbar() {
             {!loading && (
               <>
                 {user ? (
-                  /* Added profile dropdown menu */
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="p-2 h-auto">
@@ -170,7 +172,6 @@ export default function Navbar() {
                           {getDashboardLabel()}
                         </Link>
                       </DropdownMenuItem>
-
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
                         <Link href={
@@ -217,7 +218,11 @@ export default function Navbar() {
             )}
 
             {/* Mobile Menu Toggle */}
-            <button className="md:hidden p-2 hover:bg-muted rounded transition" onClick={() => setIsOpen(!isOpen)}>
+            <button
+              className="md:hidden p-2 hover:bg-muted rounded transition"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle mobile menu"
+            >
               {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
@@ -225,10 +230,11 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden fixed inset-x-0 top-20 bg-background border-b border-border shadow-xl z-40 transition-all duration-300 ease-in-out transform ${isOpen ? "translate-y-0 opacity-100 visible" : "-translate-y-4 opacity-0 invisible"
-            }`}
+          className={`md:hidden fixed inset-x-0 top-16 sm:top-20 bg-background border-b border-border shadow-xl z-40 transition-all duration-300 ease-in-out transform ${
+            isOpen ? "translate-y-0 opacity-100 visible" : "-translate-y-4 opacity-0 invisible"
+          }`}
         >
-          <div className="p-4 space-y-2">
+          <div className="p-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
             <Link href="/" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-xl transition" onClick={() => setIsOpen(false)}>
               <span className="font-medium">{t("common.home")}</span>
             </Link>
@@ -241,6 +247,12 @@ export default function Navbar() {
             <Link href="/contact" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-xl transition" onClick={() => setIsOpen(false)}>
               <span className="font-medium">{t("common.contact")}</span>
             </Link>
+
+            {/* Language & Currency on very small screens */}
+            <div className="sm:hidden flex items-center gap-3 px-4 py-3">
+              {mounted && <LanguageSwitcher />}
+              {mounted && <CurrencySwitcher />}
+            </div>
 
             {user && (
               <>
@@ -276,7 +288,7 @@ export default function Navbar() {
             )}
 
             {!user && !loading && (
-              <div className="grid grid-cols-2 gap-4 mt-4 px-2">
+              <div className="grid grid-cols-2 gap-3 mt-4 px-2 pb-2">
                 <Link href="/auth/login" className="w-full" onClick={() => setIsOpen(false)}>
                   <Button variant="outline" className="w-full rounded-xl">
                     {t("dropdown.login")}

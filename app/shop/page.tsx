@@ -183,7 +183,7 @@ export default function ShopPage() {
           </div>
 
           {/* High-Fidelity Shop Filter Bar - 4-and-1 Grid Layout */}
-          <div className="bg-white p-8 rounded-[3.5rem] border border-slate-100 shadow-2xl shadow-slate-200/40 mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className={`${showFilters ? "block" : "hidden md:block"} bg-white p-4 md:p-8 rounded-[2rem] md:rounded-[3.5rem] border border-slate-100 shadow-2xl shadow-slate-200/40 mb-8 animate-in fade-in slide-in-from-top-4 duration-700`}>
             <div className="space-y-8">
               {/* Row 1: Search + 3 Selects (Fixed Grid) */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -197,7 +197,7 @@ export default function ShopPage() {
                     className="pl-14 h-14 bg-slate-50/50 border-none rounded-full text-slate-900 font-bold placeholder:text-slate-300 focus-visible:ring-blue-500/10 shadow-inner"
                   />
                 </div>
-                
+
                 {/* Main Category */}
                 <Select value={selectedMainCategoryId} onValueChange={handleMainCategoryChange}>
                   <SelectTrigger className="h-14 bg-white border-slate-100 rounded-full font-bold text-slate-600 shadow-sm px-8 hover:shadow-md transition-all">
@@ -247,7 +247,7 @@ export default function ShopPage() {
               </div>
 
               {/* Bottom Row: Price Range + Applied Filters Display */}
-              <div className="flex flex-col md:flex-row items-center gap-10 pt-4">
+              <div className="flex flex-col lg:flex-row items-center gap-6 md:gap-10 pt-4">
                 <div className="flex-1 w-full space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">Budget Constraint</span>
@@ -262,14 +262,14 @@ export default function ShopPage() {
                     className="py-6"
                   />
                 </div>
-                
+
                 <div className="flex items-center gap-6 shrink-0">
                   <div className="flex flex-col items-end">
                     <span className="text-2xl font-black text-slate-900 leading-none">{filteredProducts.length}</span>
                     <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-1">Matched Units</span>
                   </div>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     onClick={handleReset}
                     className="h-12 px-8 rounded-full font-black uppercase tracking-[0.2em] text-[10px] text-slate-400 hover:bg-slate-50 hover:text-slate-900 transition-all border border-slate-100"
                   >
@@ -290,7 +290,7 @@ export default function ShopPage() {
               <p className="text-muted-foreground text-lg">{t("shop_page.no_results")}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
