@@ -130,6 +130,7 @@ export default function ShopPage() {
 
       const matchesMainCategory = selectedMainCategoryId === "all" ||
         product.category_id === selectedMainCategoryId ||
+        dbCategories.find(c => c.id === product.category_id)?.parent_id === selectedMainCategoryId ||
         (product as any).category_path?.includes(mainCategories.find(c => c.id === selectedMainCategoryId)?.name)
 
       const matchesSubCategory = selectedSubCategoryId === "all" ||
