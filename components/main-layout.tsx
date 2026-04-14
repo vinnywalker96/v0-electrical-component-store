@@ -13,8 +13,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   const isDashboard =
     pathname.startsWith("/admin") ||
     pathname.startsWith("/seller") ||
-    pathname.startsWith("/protected") ||
-    pathname.startsWith("/chat")
+    pathname.startsWith("/protected")
 
   const supabase = createClient()
 

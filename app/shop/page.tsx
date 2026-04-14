@@ -18,6 +18,7 @@ const CACHE_EXPIRY_SECONDS = 300; // Cache for 5 minutes (reduced from 60 for be
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedManufacturer, setSelectedManufacturer] = useState<string>("all")
   const [dbCategories, setDbCategories] = useState<Category[]>([])
@@ -49,7 +50,6 @@ export default function ShopPage() {
       if (cachedProducts) {
         setProducts(JSON.parse(cachedProducts));
         console.log("Products loaded from cache.");
-        // We still need to set loading to false, even with cache
         setLoading(false);
         return;
       }
@@ -82,6 +82,7 @@ export default function ShopPage() {
   }, [supabase, setProducts, setMaxPrice, setPriceRange]);
 
   const fetchCategories = useCallback(async () => {
+    setCategoriesLoading(true)
     try {
       const { data, error } = await supabase
         .from("categories")
@@ -92,6 +93,8 @@ export default function ShopPage() {
       setDbCategories(data || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
+    } finally {
+      setCategoriesLoading(false)
     }
   }, [supabase]);
 
@@ -99,6 +102,29 @@ export default function ShopPage() {
     fetchProducts()
     fetchCategories()
   }, [fetchProducts, fetchCategories])
+
+  // Create a map that resolves any category ID to its TOP-LEVEL parent ID
+  const categoryTreeMap = useMemo(() => {
+    const map = new Map<string, string>();
+    
+    dbCategories.forEach(cat => {
+      // Find the root
+      let current = cat;
+      const visited = new Set(); // Prevent infinite loops
+      while (current.parent_id && !visited.has(current.parent_id)) {
+        visited.add(current.id);
+        const parent = dbCategories.find(c => c.id === current.parent_id);
+        if (parent) {
+          current = parent;
+        } else {
+          break;
+        }
+      }
+      map.set(cat.id, current.id);
+    });
+    
+    return map;
+  }, [dbCategories]);
 
   const mainCategories = useMemo<Category[]>(() => {
     const mains = dbCategories.filter(c => !c.parent_id);
@@ -121,6 +147,9 @@ export default function ShopPage() {
   }, [products])
 
   const filteredProducts = useMemo<Product[]>(() => {
+    // If we're still loading critical data, don't filter yet to avoid flicker
+    if (loading) return [];
+
     return (products as Product[]).filter((product: Product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -128,19 +157,50 @@ export default function ShopPage() {
         product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.description_pt && product.description_pt.toLowerCase().includes(searchQuery.toLowerCase()))
 
-      const matchesMainCategory = selectedMainCategoryId === "all" ||
-        product.category_id === selectedMainCategoryId ||
-        (product as any).category_path?.includes(mainCategories.find(c => c.id === selectedMainCategoryId)?.name)
+      let matchesMainCategory = selectedMainCategoryId === "all"
+      if (!matchesMainCategory) {
+        // 1. Direct ID match
+        if (product.category_id === selectedMainCategoryId) {
+          matchesMainCategory = true;
+        } 
+        // 2. Recursive ID matching via Tree Map
+        else if (product.category_id && categoryTreeMap.get(product.category_id) === selectedMainCategoryId) {
+          matchesMainCategory = true;
+        }
+        // 3. Fallback: Check if product has a legacy category string matching a name in this tree
+        else if (!product.category_id && product.category) {
+          const matchingCat = dbCategories.find(c => c.name.toLowerCase() === product.category?.toLowerCase());
+          if (matchingCat && categoryTreeMap.get(matchingCat.id) === selectedMainCategoryId) {
+            matchesMainCategory = true;
+          }
+        }
+        // 4. Fallback: Breadcrumb name matching
+        else if ((product as any).category_path?.includes(mainCategories.find(c => c.id === selectedMainCategoryId)?.name)) {
+          matchesMainCategory = true;
+        }
+      }
 
-      const matchesSubCategory = selectedSubCategoryId === "all" ||
-        product.category_id === selectedSubCategoryId
+      let matchesSubCategory = selectedSubCategoryId === "all"
+      if (!matchesSubCategory) {
+        // 1. Direct ID match
+        if (product.category_id === selectedSubCategoryId) {
+          matchesSubCategory = true;
+        }
+        // 2. Legacy name match
+        else if (!product.category_id && product.category) {
+          const selectedSubName = subCategories.find(c => c.id === selectedSubCategoryId)?.name?.toLowerCase();
+          if (selectedSubName && product.category.toLowerCase() === selectedSubName) {
+            matchesSubCategory = true;
+          }
+        }
+      }
 
       const matchesManufacturer = selectedManufacturer === "all" || product.manufacturer === selectedManufacturer
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
 
       return matchesSearch && matchesMainCategory && matchesSubCategory && matchesManufacturer && matchesPrice
     })
-  }, [products, searchQuery, selectedMainCategoryId, selectedSubCategoryId, selectedManufacturer, priceRange, mainCategories])
+  }, [products, searchQuery, selectedMainCategoryId, selectedSubCategoryId, selectedManufacturer, priceRange, mainCategories, subCategories, categoryTreeMap, dbCategories, loading])
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
@@ -201,7 +261,7 @@ export default function ShopPage() {
                 {/* Main Category */}
                 <Select value={selectedMainCategoryId} onValueChange={handleMainCategoryChange}>
                   <SelectTrigger className="h-14 bg-white border-slate-100 rounded-full font-bold text-slate-600 shadow-sm px-8 hover:shadow-md transition-all">
-                    <SelectValue placeholder={t("shop_page.filters.all_categories")} />
+                    <SelectValue placeholder={categoriesLoading ? "Loading Categories..." : t("shop_page.filters.all_categories")} />
                   </SelectTrigger>
                   <SelectContent className="rounded-[2rem] border-slate-100 shadow-2xl p-2 bg-white/95 backdrop-blur-xl">
                     <SelectItem value="all" className="rounded-2xl font-bold py-4 uppercase tracking-tighter opacity-50">{t("shop_page.filters.all_categories")}</SelectItem>
@@ -217,10 +277,10 @@ export default function ShopPage() {
                 <Select
                   value={selectedSubCategoryId}
                   onValueChange={setSelectedSubCategoryId}
-                  disabled={selectedMainCategoryId === "all" || subCategories.length === 0}
+                  disabled={selectedMainCategoryId === "all" || subCategories.length === 0 || categoriesLoading}
                 >
                   <SelectTrigger className="h-14 bg-white border-slate-100 rounded-full font-bold text-slate-600 shadow-sm px-8 hover:shadow-md transition-all disabled:opacity-30">
-                    <SelectValue placeholder="All Subcategories" />
+                    <SelectValue placeholder={categoriesLoading ? "Loading..." : "All Subcategories"} />
                   </SelectTrigger>
                   <SelectContent className="rounded-[2rem] border-slate-100 shadow-2xl p-2">
                     <SelectItem value="all" className="rounded-2xl font-bold py-4 uppercase tracking-tighter opacity-50">All Subcategories</SelectItem>

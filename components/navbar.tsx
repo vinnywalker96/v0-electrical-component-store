@@ -132,7 +132,10 @@ export default function Navbar() {
               {t("common.contact")}
             </Link>
             {user && (
-              <Link href="/chat" className="text-foreground hover:text-primary transition">
+              <Link
+                href={userRole === "admin" || userRole === "super_admin" ? "/admin/messages" : "/protected/messages"}
+                className="text-foreground hover:text-primary transition"
+              >
                 {t("common.messages")}
               </Link>
             )}
@@ -257,7 +260,7 @@ export default function Navbar() {
             {user && (
               <>
                 <div className="h-px bg-border my-2 mx-4" />
-                <Link href="/chat" className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-xl transition" onClick={() => setIsOpen(false)}>
+                <Link href={userRole === "admin" || userRole === "super_admin" ? "/admin/messages" : "/protected/messages"} className="flex items-center gap-3 px-4 py-3 hover:bg-muted rounded-xl transition" onClick={() => setIsOpen(false)}>
                   <span className="font-medium">{t("common.messages")}</span>
                 </Link>
                 <Link href={getDashboardLink()} className="flex items-center gap-3 px-4 py-3 bg-primary/5 text-primary hover:bg-primary/10 rounded-xl transition" onClick={() => {

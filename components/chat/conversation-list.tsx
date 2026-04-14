@@ -1,11 +1,12 @@
-"use client"
-
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MessageSquare } from "lucide-react"
+import { MessageSquare, Clock, Package, ChevronRight } from "lucide-react"
 import { useLanguage } from "@/lib/context/language-context"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { formatDistanceToNow } from "date-fns"
+import { getConversations, getAdminId } from "@/app/actions/chat"
 
 interface Conversation {
     otherUser: any
@@ -27,54 +28,30 @@ export function ConversationList({ currentUserId, basePath }: ConversationListPr
     const { t } = useLanguage()
     const [conversations, setConversations] = useState<Conversation[]>([])
     const [loading, setLoading] = useState(true)
+    const [adminId, setAdminId] = useState<string | null>(null)
 
     const fetchConversations = async () => {
-        const { data: messages } = await supabase
-            .from("messages")
-            .select(`
-        *,
-        sender:user_profiles!messages_sender_id_fkey(first_name, last_name, email, user_id),
-        receiver:user_profiles!messages_receiver_id_fkey(first_name, last_name, email, user_id),
-        product:products(name, id)
-      `)
-            .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
-            .order("created_at", { ascending: false })
+        const formattedConvs = await getConversations(currentUserId)
 
-        if (messages) {
-            const convMap = new Map()
-            messages.forEach((msg: any) => {
-                const otherUserId = msg.sender_id === currentUserId ? msg.receiver_id : msg.sender_id
-                const productId = msg.product_id || "general"
-                const key = `${otherUserId}-${productId}`
-
-                if (!convMap.has(key)) {
-                    convMap.set(key, {
-                        otherUser: msg.sender_id === currentUserId ? msg.receiver : msg.sender,
-                        otherUserId,
-                        product: msg.product,
-                        productId: msg.product_id,
-                        lastMessage: msg.message,
-                        lastMessageTime: msg.created_at,
-                        unreadCount: msg.receiver_id === currentUserId && !msg.is_read ? 1 : 0,
-                    })
-                } else {
-                    const conv = convMap.get(key)
-                    if (msg.receiver_id === currentUserId && !msg.is_read) {
-                        conv.unreadCount++
-                    }
-                }
-            })
-            setConversations(Array.from(convMap.values()))
+        if (formattedConvs) {
+            setConversations(formattedConvs)
         }
+
+        // Also fetch an admin id for the empty state fallback
+        const adminIdData = await getAdminId()
+        if (adminIdData) {
+             setAdminId(adminIdData)
+        }
+
         setLoading(false)
     }
 
     useEffect(() => {
         fetchConversations()
 
-        // Subscribe to messages changes
+        // Subscribe to messages changes for the conversation list update
         const channel = supabase
-            .channel("conversation-list")
+            .channel("conversation_list_channel")
             .on(
                 "postgres_changes",
                 {
@@ -94,57 +71,99 @@ export function ConversationList({ currentUserId, basePath }: ConversationListPr
     }, [currentUserId, supabase])
 
     if (loading) {
-        return <div>{t("common.loading")}</div>
+        return (
+            <Card className="border-border shadow-sm">
+                 <CardContent className="p-12 flex flex-col items-center justify-center space-y-4">
+                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                     <p className="text-muted-foreground">{t("common.loading")}</p>
+                 </CardContent>
+            </Card>
+        )
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5" />
+        <Card className="border-border shadow-sm overflow-hidden">
+            <CardHeader className="bg-slate-50/50 border-b pb-5">
+                <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                    <MessageSquare className="h-6 w-6 text-primary" />
                     {t("chat.your_conversations")}
                 </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                   {conversations.length} {conversations.length === 1 ? 'conversation' : 'conversations'}
+                </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
                 {conversations.length === 0 ? (
-                    <div className="text-center py-12">
-                        <p className="text-muted-foreground mb-4">{t("chat.no_messages")}</p>
-                        <Link href="/shop" className="text-primary hover:underline">
-                            {t("chat.browse_start")}
-                        </Link>
+                    <div className="text-center py-16 px-4">
+                        <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                             <MessageSquare className="h-8 w-8 text-primary" />
+                        </div>
+                        <h3 className="font-semibold text-lg mb-2">{t("chat.no_messages")}</h3>
+                        <p className="text-muted-foreground mb-6 max-w-sm mx-auto">{t("chat.no_messages_conversation")}</p>
+                        {adminId ? (
+                             <Link href={`${basePath}/${adminId}`} className="inline-flex items-center justify-center bg-primary text-primary-foreground font-medium px-6 py-2.5 rounded-md hover:bg-primary/90 transition-colors shadow-sm">
+                                  <MessageSquare className="w-4 h-4 mr-2" />
+                                  Contact Support
+                             </Link>
+                        ) : (
+                             <Link href="/shop" className="inline-flex items-center justify-center bg-primary text-primary-foreground font-medium px-6 py-2.5 rounded-md hover:bg-primary/90 transition-colors shadow-sm">
+                                  {t("chat.browse_start")}
+                             </Link>
+                        )}
                     </div>
                 ) : (
-                    <div className="space-y-4">
-                        {conversations.map((conv) => (
-                            <Link
-                                key={`${conv.otherUserId}-${conv.productId}`}
-                                href={`${basePath}/${conv.otherUserId}${conv.productId && conv.productId !== "general" ? `?product=${conv.productId}` : ""}`}
-                                className="block"
-                            >
-                                <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition">
-                                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                                        <MessageSquare className="h-6 w-6 text-primary" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <p className="font-semibold">
-                                                {conv.otherUser?.first_name || conv.otherUser?.email?.split("@")[0] || t("chat.user_fallback")}
+                    <div className="divide-y divide-border">
+                        {conversations.map((conv) => {
+                            const otherUserName = (conv.otherUser?.first_name || conv.otherUser?.last_name)
+                                ? `${conv.otherUser.first_name || ""} ${conv.otherUser.last_name || ""}`.trim()
+                                : conv.otherUser?.full_name || t("chat.user_fallback") || "User";
+                            return (
+                                <Link
+                                    key={`${conv.otherUserId}-${conv.productId}`}
+                                    href={`${basePath}/${conv.otherUserId}${conv.productId && conv.productId !== "general" ? `?product=${conv.productId}` : ""}`}
+                                    className="group block"
+                                >
+                                    <div className="flex items-center gap-4 p-5 hover:bg-muted/50 transition duration-200">
+                                        <div className="relative shrink-0">
+                                            <Avatar className="h-14 w-14 border border-border shadow-sm group-hover:border-primary/30 transition-colors">
+                                                <AvatarImage src={conv.otherUser?.avatar_url} />
+                                                <AvatarFallback className="bg-primary/5 text-primary text-lg font-medium">
+                                                    {otherUserName.charAt(0).toUpperCase()}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            {conv.unreadCount > 0 && (
+                                                <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center text-[10px] font-bold border-2 border-background shadow-sm">
+                                                    {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-baseline mb-1">
+                                                <p className="font-semibold text-[15px] text-foreground truncate pr-4">
+                                                    {otherUserName}
+                                                </p>
+                                                <span className="text-[11px] text-muted-foreground flex items-center gap-1 shrink-0 font-medium tracking-wide w-max">
+                                                    <Clock className="w-3 h-3" />
+                                                    {formatDistanceToNow(new Date(conv.lastMessageTime), { addSuffix: true })}
+                                                </span>
+                                            </div>
+                                            {conv.product && (
+                                                <div className="flex items-center gap-1.5 text-xs text-primary mb-1.5 font-medium">
+                                                    <Package className="w-3.5 h-3.5" />
+                                                    <span className="truncate">Re: {conv.product.name}</span>
+                                                </div>
+                                            )}
+                                            <p className={`text-sm line-clamp-1 ${conv.unreadCount > 0 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+                                                {conv.lastMessage}
                                             </p>
-                                            <span className="text-xs text-muted-foreground">
-                                                {new Date(conv.lastMessageTime).toLocaleDateString()}
-                                            </span>
                                         </div>
-                                        {conv.product && <p className="text-sm text-muted-foreground mb-1">Re: {conv.product.name}</p>}
-                                        <p className="text-sm text-muted-foreground line-clamp-1">{conv.lastMessage}</p>
+                                        <div className="shrink-0 text-muted-foreground/40 group-hover:text-primary transition-colors ml-2">
+                                             <ChevronRight className="w-5 h-5" />
+                                        </div>
                                     </div>
-                                    {conv.unreadCount > 0 && (
-                                        <div className="bg-primary text-primary-foreground rounded-full h-6 w-6 flex items-center justify-center text-xs font-semibold">
-                                            {conv.unreadCount}
-                                        </div>
-                                    )}
-                                </div>
-                            </Link>
-                        ))}
+                                </Link>
+                            )
+                        })}
                     </div>
                 )}
             </CardContent>

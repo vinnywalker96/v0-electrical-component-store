@@ -1,0 +1,36 @@
+{
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "expo": "^54.0.1",
+    "expo-linear-gradient": "~15.0.6",
+    "expo-status-bar": "~3.0.7",
+    "react": "19.1.0",
+    "react-native": "0.81.4",
+    "react-native-web": "^0.21.0"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^7.4.6",
+    "@storybook/addon-interactions": "^7.4.6",
+    "@storybook/addon-links": "^7.4.6",
+    "@storybook/addon-onboarding": "^1.0.8",
+    "@storybook/addon-react-native-web": "^0.0.21",
+    "@storybook/blocks": "^7.4.6",
+    "@storybook/react": "^7.4.6",
+    "@storybook/react-webpack5": "^7.4.6",
+    "@storybook/testing-library": "^0.2.2",
+    "expo-pwa": "^0.0.127",
+    "prop-types": "^15.8.1",
+    "react-dom": "19.1.0",
+    "storybook": "^7.4.6"
+  },
+  "private": true,
+  "name": "my-app",
+  "version": "1.0.0"
+}

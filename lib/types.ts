@@ -104,10 +104,10 @@ export interface Address {
 
 export interface Message {
   id: string
+  conversation_id: string
   sender_id: string
-  receiver_id: string
-  product_id: string | null
-  message: string
+  content: string
+  message_type?: string
   is_read: boolean
   created_at: string
 }

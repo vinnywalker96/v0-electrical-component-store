@@ -13,6 +13,7 @@ import type { Product } from "@/lib/types"
 import { useCurrency } from "@/lib/context/currency-context"
 import { useLanguage } from "@/lib/context/language-context"
 import { getTranslation, detectLanguage } from "@/lib/utils/translation"
+import { getSupportSellerId } from "@/app/actions/chat"
 
 
 export default function ProductDetailPage() {
@@ -137,7 +138,7 @@ export default function ProductDetailPage() {
     }
   }, [product, quantity, supabase, router, addToCart])
 
-  const handleContactSeller = useCallback(async () => {
+  const handleContactSupport = useCallback(async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser()
@@ -147,10 +148,18 @@ export default function ProductDetailPage() {
       return
     }
 
-    if (seller) {
-      router.push(`/chat/${seller.user_id}?product=${product?.id}`)
+    try {
+      // Find the correct seller ID for Support via Server Action
+      const sellerId = await getSupportSellerId()
+
+      if (sellerId) {
+        // Redirect to chat with support seller directly
+        router.push(`/protected/messages/${sellerId}`)
+      }
+    } catch (err) {
+      console.error("Error finding support seller:", err)
     }
-  }, [seller, product, router, supabase])
+  }, [router, supabase])
 
   const displayPrice = useMemo(() =>
     product ? (product.price > 0 ? formatPrice(product.price, product.currency || "ZAR") : t("product_detail.price_tbd")) : "",
@@ -254,23 +263,20 @@ export default function ProductDetailPage() {
               {displayDescription}
             </p>
 
-            {seller && (
-              <Card className="mb-6">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm text-muted-foreground">{t("product_detail.sold_by")}</p>
-                      <p className="font-semibold">{seller.store_name}</p>
-                      <p className="text-xs text-muted-foreground">⭐ {seller.rating?.toFixed(1) || "New"}</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={handleContactSeller}>
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      {t("product_detail.contact_seller")}
-                    </Button>
+            <Card className="mb-6">
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-semibold text-lg">{t("product_detail.need_help") || "Need Help?"}</h3>
+                    <p className="text-sm text-muted-foreground">Ask our support team about this product.</p>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                  <Button variant="outline" size="sm" onClick={handleContactSupport}>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    {t("product_detail.contact_support") || "Contact Support"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
             <div className="flex items-center gap-4 mb-6">
               <span className="text-3xl font-bold text-primary">{displayPrice}</span>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Bell } from "lucide-react"
 import Link from "next/link"
+import { getUnreadCount as fetchGlobalUnreadAction } from "@/app/actions/chat"
 
 export function NotificationIcon() {
   const supabase = createClient()
@@ -16,12 +17,7 @@ export function NotificationIcon() {
       } = await supabase.auth.getUser()
 
       if (user) {
-        const { count } = await supabase
-          .from("messages")
-          .select("*", { count: "exact", head: true })
-          .eq("receiver_id", user.id)
-          .eq("is_read", false)
-
+        const count = await fetchGlobalUnreadAction(user.id)
         setUnreadCount(count || 0)
       }
     }
@@ -49,7 +45,7 @@ export function NotificationIcon() {
   }, [supabase])
 
   return (
-    <Link href="/chat" className="relative">
+    <Link href="/protected/messages" className="relative">
       <Bell className="w-6 h-6" />
       {unreadCount > 0 && (
         <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full h-4 w-4 flex items-center justify-center text-xs">
