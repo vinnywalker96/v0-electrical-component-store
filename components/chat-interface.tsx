@@ -13,6 +13,7 @@ import { useLanguage } from "@/lib/context/language-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { sendMessage as sendMessageAction, getMessagesForChat } from "@/app/actions/chat"
+import type { Message } from "@/lib/types"
 
 
 
