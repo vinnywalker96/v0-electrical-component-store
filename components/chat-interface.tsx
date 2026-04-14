@@ -14,15 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { sendMessage as sendMessageAction, getMessagesForChat } from "@/app/actions/chat"
 
-export interface Message {
-  id: string
-  conversation_id: string
-  sender_id: string
-  content: string
-  message_type?: string
-  is_read: boolean
-  created_at: string
-}
+
 
 interface ChatInterfaceProps {
   currentUserId: string
